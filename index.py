@@ -15,6 +15,12 @@ img = ins_get_image('t1')
 
 faces = app.get(img)
 
+fig, axs = plt.subplots(1,6,figsize=(12,5))
+for i, face in enumerate(faces):
+    bbox = face['bbox']
+    bbox = [int(b) for b in bbox]
+    axs[i].imshow(img[bbox[1]:bbox[3],bbox[0]:bbox[2],::-1])
+    axs[i].axis('off')
 print("face",len(faces))
 
 # img = cv2.imread("test.jpg")
