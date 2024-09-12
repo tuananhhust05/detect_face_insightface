@@ -26,6 +26,24 @@ if __name__ == '__main__':
     import glob
     detector = insightface.model_zoo.get_model('scrfd_person_2.5g.onnx', download=True)
     detector.prepare(0, nms_thresh=0.5, input_size=(640, 640))
+    img = cv2.imread("test.jpg")
+    bboxes, vbboxes = detect_person(img, detector)
+    for i in range(bboxes.shape[0]):
+        bbox = bboxes[i]
+        vbbox = vbboxes[i]
+        x1,y1,x2,y2 = bbox
+        vx1,vy1,vx2,vy2 = vbbox
+        cv2.rectangle(img, (x1,y1)  , (x2,y2) , (0,255,0) , 1)
+        alpha = 0.8
+        color = (255, 0, 0)
+        for c in range(3):
+            img[vy1:vy2,vx1:vx2,c] = img[vy1:vy2, vx1:vx2, c]*alpha + color[c]*(1.0-alpha)
+        cv2.circle(img, (vx1,vy1) , 1, color , 2)
+        cv2.circle(img, (vx1,vy2) , 1, color , 2)
+        cv2.circle(img, (vx2,vy1) , 1, color , 2)
+        cv2.circle(img, (vx2,vy2) , 1, color , 2)
+        filename = 'testout.jpg'
+        cv2.imwrite('./outputs/%s'%filename, img)
     # img_paths = glob.glob('data/images/*.jpg')
     # for img_path in img_paths:
     #     img = cv2.imread(img_path)
