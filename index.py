@@ -15,7 +15,7 @@ img = ins_get_image('t1')
 
 faces = app.get(img)
 
-print("face",faces)
+print("face",len(faces))
 
 # img = cv2.imread("test.jpg")
 # # DISPLAY
