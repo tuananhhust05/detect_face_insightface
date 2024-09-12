@@ -24,7 +24,7 @@ def detect_person(img, detector):
 
 if __name__ == '__main__':
     import glob
-    detector = insightface.model_zoo.get_model('buffalo_l', download=True)
+    detector = insightface.model_zoo.get_model('scrfd_person_2.5g.onnx', download=True)
     detector.prepare(0, nms_thresh=0.5, input_size=(640, 640))
     img = cv2.imread("test.jpg")
     bboxes, vbboxes = detect_person(img, detector)
