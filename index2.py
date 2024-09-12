@@ -15,7 +15,7 @@ img = cv2.imread("test.jpg")
 fig,axs = plt.subplots(1,6,figsize=(12,5))
 faces = app.get(img)
 for i,face in enumerate(faces):
-    bbox = face['box']
+    bbox = face['bbox']
     bbox = [int(b) for b in bbox]
     filename = f"1test.jpg"
     cv2.imwrite('./outputs/%s'%filename,img[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
