@@ -11,7 +11,7 @@ print('insightface',insightface.__version__ )
 
 app = FaceAnalysis(name='buffalo_l')
 app.prepare(ctx_id=0, det_size=(640,640))
-img = ins_get_image('test')
+img = ins_get_image('t1')
 
 faces = app.get(img)
 
