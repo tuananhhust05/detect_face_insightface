@@ -5,7 +5,7 @@ import os.path as osp
 import glob
 import cv2
 import insightface
-import matplotlib.plot as plt 
+import matplotlib.pyplot as plt 
 from insightface.app import FaceAnalysis
 from insightface.data import get_image as ins_get_image
 
