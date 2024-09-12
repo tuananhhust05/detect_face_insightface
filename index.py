@@ -11,8 +11,12 @@ print('insightface',insightface.__version__ )
 
 app = FaceAnalysis(name='buffalo_l')
 app.prepare(ctx_id=0, det_size=(640,640))
-img = ins_get_image('test.jpg')
+img = ins_get_image('test')
 
 faces = app.get(img)
 
 print("face",faces)
+
+# img = cv2.imread("test.jpg")
+# # DISPLAY
+# cv2.imshow('Lena Soderberg', img)
