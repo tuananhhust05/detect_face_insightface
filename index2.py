@@ -111,8 +111,10 @@ def extract_frames(video_file):
         del(ele['embedding'])
     cap.release()
     print("End video")
-
+import json 
 extract_frames('videotest.mp4')
 print("array_cosin",array_cosin)
+with open('data.json', 'w') as f:
+    json.dump(array_em, f, indent=4)
 print("array_em",array_em)
 print("array_em",len(array_em))
