@@ -71,7 +71,12 @@ def extract_frames(video_file):
             faces = app.get(frame)
             for i,face in enumerate(faces):
                 if(len(array_em) == 0):
+                    bbox = face['bbox']
+                    bbox = [int(b) for b in bbox]
+                    filename="1.jpg"
+                    cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
                     array_em.append(face['embedding'])
+                    cv2.imwrite('./outputs/%s'%filename,frame)
                 else:
                     flag  = False 
                     for em in array_em:
@@ -83,7 +88,7 @@ def extract_frames(video_file):
                              flag = True
                     if (flag == False): 
                         array_em.append(face['embedding'])
-                        filename = f"{len(array_em)}_face.jpg"
+                        filename = f"{len(array_em)}{cosin_value}_face.jpg"
                         bbox = face['bbox']
                         bbox = [int(b) for b in bbox]
                         cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
