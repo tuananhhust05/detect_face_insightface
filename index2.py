@@ -38,7 +38,7 @@ for i,face in enumerate(faces2):
     cv2.imwrite('./outputs/%s'%filename,img[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
     for em in array_em:
       cosin_value = cosin(em,face['embedding'])
-      array_cosin.append(array_cosin)
+      array_cosin.append(cosin_value)
     #   array_em.append(face['embedding'])
 
 print(array_em)
