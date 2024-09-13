@@ -77,7 +77,7 @@ def extract_frames(video_file):
                     cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
                     array_em.append({
                         "speaker":1,
-                        "frames":[11],
+                        "frames":[frame_count],
                         "embedding":face['embedding']
                     })
                     cv2.imwrite('./outputs/%s'%filename,frame)
