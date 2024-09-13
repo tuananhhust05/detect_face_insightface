@@ -56,7 +56,7 @@ def extract_frames(video_file):
     os.makedirs(output_directory, exist_ok=True)
     
    
-    while True:
+    while True and (frame_count < 3000) :
         ret, frame = cap.read()
         
         if not ret:
@@ -77,7 +77,7 @@ def extract_frames(video_file):
                     cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
                     array_em.append({
                         "speaker":1,
-                        "count":1,
+                        "frames":[11],
                         "embedding":face['embedding']
                     })
                     cv2.imwrite('./outputs/%s'%filename,frame)
@@ -89,11 +89,11 @@ def extract_frames(video_file):
                           print("count speaker", len(array_em))
                           if(cosin_value >  weight_point):
                              flag = True
-                             em["count"] = em["count"] + 1
+                             em["frames"].append(frame_count)
                     if (flag == False): 
                         array_em.append({
                                 "speaker":len(array_em),
-                                "count":1,
+                                "frames":[],
                                 "embedding":face['embedding']
                             }
                         )
@@ -104,7 +104,7 @@ def extract_frames(video_file):
                           cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
                           cv2.imwrite('./outputs/%s'%filename,frame)
                         except:
-                          cap.release()
+                        
                           print("End video") 
             # print(f"Frame {frame_count} has been extracted and saved as {output_file}")
     for ele in array_em:
