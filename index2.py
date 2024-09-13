@@ -18,7 +18,7 @@ array_cosin = []
 array_em = []
 app = FaceAnalysis('buffalo_l')
 app.prepare(ctx_id = 0, det_size=(640,640))
-img = cv2.imread("./videotest_frames/frame_135.jpg") 
+img = cv2.imread("./videotest_frames/frame_11.jpg") 
 fig,axs = plt.subplots(1,6,figsize=(12,5))
 faces = app.get(img)
 
@@ -29,7 +29,7 @@ for i,face in enumerate(faces):
     cv2.imwrite('./outputs/%s'%filename,img[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
     array_em.append(face['embedding'])
 
-img2 = cv2.imread("./videotest_frames/frame_150.jpg")
+img2 = cv2.imread("./videotest_frames/frame_22.jpg")
 faces2 = app.get(img2)
 for i,face in enumerate(faces2):
     bbox = face['bbox']

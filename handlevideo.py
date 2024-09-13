@@ -15,7 +15,7 @@ def extract_frames(video_file):
     os.makedirs(output_directory, exist_ok=True)
     
     count = 0
-    while True and ( count < 10 ):
+    while True and ( count < 100 ):
         ret, frame = cap.read()
         
         if not ret:
