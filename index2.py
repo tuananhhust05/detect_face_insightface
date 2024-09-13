@@ -69,7 +69,7 @@ def extract_frames(video_file):
             # output_file = f"{output_directory}/frame_{frame_count}.jpg"
             # cv2.imwrite(output_file, frame)
             faces = app.get(frame)
-            for face in faces:
+            for i,face in enumerate(faces):
                 if(len(array_em) == 0):
                     array_em.append(face['embedding'])
                 else:
@@ -82,7 +82,11 @@ def extract_frames(video_file):
                           if(cosin_value >  weight_point):
                              flag = True
                     if (flag == False): 
-                       array_em.append(face['embedding'])
+                        array_em.append(face['embedding'])
+                        filename = f"{len(array_em)}_face.jpg"
+                        bbox = face['bbox']
+                        bbox = [int(b) for b in bbox]
+                        cv2.imwrite('./faces/%s'%filename,img[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
             
             # print(f"Frame {frame_count} has been extracted and saved as {output_file}")
     
