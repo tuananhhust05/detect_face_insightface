@@ -91,13 +91,15 @@ def extract_frames(video_file):
                         filename = f"{len(array_em)}_face.jpg"
                         bbox = face['bbox']
                         bbox = [int(b) for b in bbox]
-                        cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
-                        cv2.imwrite('./outputs/%s'%filename,frame)
-            
+                        try:
+                          cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
+                          cv2.imwrite('./outputs/%s'%filename,frame)
+                        except:
+                          cap.release()
+                          print("End video") 
             # print(f"Frame {frame_count} has been extracted and saved as {output_file}")
     
     cap.release()
-    cv2.destroyAllWindows()
     print("End video")
 
 extract_frames('videotest.mp4')
