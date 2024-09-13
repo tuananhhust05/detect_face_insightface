@@ -102,6 +102,7 @@ def extract_frames(video_file):
                         bbox = [int(b) for b in bbox]
                         try:
                           cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
+                          filename = f"{frame_count}{filename}"
                           cv2.imwrite('./outputs/%s'%filename,frame)
                         except:
                         
