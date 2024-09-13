@@ -8,7 +8,13 @@ import insightface
 import matplotlib.pyplot as plt 
 from insightface.app import FaceAnalysis
 from insightface.data import get_image as ins_get_image
+from numpy.linalg import norm
 
+def cosin(question,answer):
+    cosine = np.dot(question,answer)/(norm(question)*norm(answer))
+    return cosine
+
+array_cosin = []
 array_em = []
 app = FaceAnalysis('buffalo_l')
 app.prepare(ctx_id = 0, det_size=(640,640))
@@ -30,8 +36,11 @@ for i,face in enumerate(faces2):
     bbox = [int(b) for b in bbox]
     filename = f"{i}test.jpg"
     cv2.imwrite('./outputs/%s'%filename,img[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
-    array_em.append(face['embedding'])
-print("faces",len(faces))
-print(faces[0])
+    for em in array_em:
+      cosin_value = cosin(em,face['embedding'])
+      array_cosin.append(array_cosin)
+    #   array_em.append(face['embedding'])
+
 print(array_em)
+print(array_cosin)
 
