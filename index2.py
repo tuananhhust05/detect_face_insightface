@@ -75,19 +75,28 @@ def extract_frames(video_file):
                     bbox = [int(b) for b in bbox]
                     filename="1.jpg"
                     cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
-                    array_em.append(face['embedding'])
+                    array_em.append({
+                        "speaker":1,
+                        "count":1,
+                        "embedding":face['embedding']
+                    })
                     cv2.imwrite('./outputs/%s'%filename,frame)
                 else:
                     flag  = False 
                     for em in array_em:
-                        if(flag == False):
-                          cosin_value = cosin(em,face['embedding'])
+                          cosin_value = cosin(em['embedding'],face['embedding'])
                           print("cosin_value",cosin_value)
                           print("count speaker", len(array_em))
                           if(cosin_value >  weight_point):
                              flag = True
+                             em["count"] = em["count"] + 1
                     if (flag == False): 
-                        array_em.append(face['embedding'])
+                        array_em.append({
+                                "speaker":len(array_em),
+                                "count":1,
+                                "embedding":face['embedding']
+                            }
+                        )
                         filename = f"{len(array_em)}_face.jpg"
                         bbox = face['bbox']
                         bbox = [int(b) for b in bbox]
@@ -98,10 +107,12 @@ def extract_frames(video_file):
                           cap.release()
                           print("End video") 
             # print(f"Frame {frame_count} has been extracted and saved as {output_file}")
-    
+    for ele in array_em:
+        del(ele['embedding'])
     cap.release()
     print("End video")
 
 extract_frames('videotest.mp4')
 print("array_cosin",array_cosin)
+print("array_em",array_em)
 print("array_em",len(array_em))
