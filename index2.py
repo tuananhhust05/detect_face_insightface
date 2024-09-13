@@ -73,7 +73,7 @@ def extract_frames(video_file):
                 if(len(array_em) == 0):
                     bbox = face['bbox']
                     bbox = [int(b) for b in bbox]
-                    filename="1.jpg"
+                    filename=f"{frame_count}_1.jpg"
                     cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
                     array_em.append({
                         "speaker":1,
@@ -88,8 +88,17 @@ def extract_frames(video_file):
                           print("cosin_value",cosin_value)
                           print("count speaker", len(array_em))
                           if(cosin_value >  weight_point):
-                             flag = True
-                             em["frames"].append(frame_count)
+                            flag = True
+                            em["frames"].append(frame_count)
+
+                            filename = f"{len(array_em)}_face.jpg"
+                            bbox = face['bbox']
+                            bbox = [int(b) for b in bbox]
+                            try:
+                                filename = f"{frame_count}_{filename}"
+                                cv2.imwrite('./outputs/%s'%filename,frame)
+                            except:
+                                print("Error saving") 
                     if (flag == False): 
                         array_em.append({
                                 "speaker":len(array_em),
@@ -102,10 +111,9 @@ def extract_frames(video_file):
                         bbox = [int(b) for b in bbox]
                         try:
                           cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
-                          filename = f"{frame_count}{filename}"
+                          filename = f"{frame_count}_{filename}"
                           cv2.imwrite('./outputs/%s'%filename,frame)
                         except:
-                        
                           print("End video") 
             # print(f"Frame {frame_count} has been extracted and saved as {output_file}")
     for ele in array_em:
