@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from insightface.app import FaceAnalysis
 from insightface.data import get_image as ins_get_image
 from numpy.linalg import norm
-weight_point = 0.75
+weight_point = 0.5
 
 def cosin(question,answer):
     cosine = np.dot(question,answer)/(norm(question)*norm(answer))
