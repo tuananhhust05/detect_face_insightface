@@ -86,7 +86,8 @@ def extract_frames(video_file):
                         filename = f"{len(array_em)}_face.jpg"
                         bbox = face['bbox']
                         bbox = [int(b) for b in bbox]
-                        cv2.imwrite('./faces/%s'%filename,img[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
+                        cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
+                        cv2.imwrite('./outputs/%s'%filename,frame)
             
             # print(f"Frame {frame_count} has been extracted and saved as {output_file}")
     
