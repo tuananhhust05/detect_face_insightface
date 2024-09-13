@@ -31,7 +31,7 @@ for i,face in enumerate(faces):
 
 img2 = cv2.imread("./videotest_frames/frame_150.jpg")
 faces2 = app.get(img2)
-for i,face in enumerate(faces2):
+for i,face in enumerate(faces):
     bbox = face['bbox']
     bbox = [int(b) for b in bbox]
     filename = f"{i}test.jpg"
@@ -41,6 +41,8 @@ for i,face in enumerate(faces2):
       array_cosin.append(cosin_value)
     #   array_em.append(face['embedding'])
 
-print(array_em)
-print(array_cosin)
+print("array_em",array_em)
+print("array_cosin",array_cosin)
+print("first",faces[0])
+
 
