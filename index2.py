@@ -63,7 +63,7 @@ def extract_frames(video_file):
             break
         
         frame_count += 1
-        
+        print("frame_count",frame_count)
         # Only extract frames at the desired frame rate
         if frame_count % int(cap.get(5) / frame_rate) == 0:
             # output_file = f"{output_directory}/frame_{frame_count}.jpg"
@@ -73,11 +73,16 @@ def extract_frames(video_file):
                 if(len(array_em) == 0):
                     array_em.append(face['embedding'])
                 else:
+                    flag  = False 
                     for em in array_em:
-                        cosin_value = cosin(em,face['embedding'])
-                        print("cosin_value",cosin_value)
-                        if(cosin_value < weight_point):
-                            array_em.append(face['embedding'])
+                        if(flag == False):
+                          cosin_value = cosin(em,face['embedding'])
+                          print("cosin_value",cosin_value)
+                          print("count speaker", len(array_em))
+                          if(cosin_value >  weight_point):
+                             flag = True
+                    if (flag == False): 
+                       array_em.append(face['embedding'])
             
             # print(f"Frame {frame_count} has been extracted and saved as {output_file}")
     
