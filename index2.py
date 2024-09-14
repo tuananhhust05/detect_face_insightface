@@ -121,7 +121,7 @@ def extract_frames(video_file):
     cap.release()
     print("End video")
 import json 
-extract_frames('videotest.mp4')
+extract_frames('video.mp4')
 print("array_cosin",array_cosin)
 with open('data.json', 'w') as f:
     json.dump(array_em, f, indent=4)
