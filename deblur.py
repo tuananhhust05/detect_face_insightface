@@ -43,8 +43,8 @@ noise_var = 0.01
 deblurred_image = wiener_filter(blurred_image, gaussian_kernel(kernel_size, sigma), noise_var)
 
 # Display results using OpenCV (or any other tool you prefer)
-cv2.imshow('Original Image', image)
-cv2.imshow('Blurred Image', blurred_image)
-cv2.imshow('Deblurred Image', deblurred_image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.imshow('Original Image', image)
+# cv2.imshow('Blurred Image', blurred_image)
+# cv2.imshow('Deblurred Image', deblurred_image)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
