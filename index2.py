@@ -11,7 +11,7 @@ from insightface.data import get_image as ins_get_image
 from numpy.linalg import norm
 import time 
 # from deblur import apply_blur
-weight_point = 0.5
+weight_point = 0.4
 
 def cosin(question,answer):
     cosine = np.dot(question,answer)/(norm(question)*norm(answer))
@@ -118,6 +118,7 @@ def extract_frames(video_file):
                             bbox = [int(b) for b in bbox]
                             try:
                                 filename = f"{frame_count}_{filename}"
+                                cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
                                 cv2.imwrite('./outputs/%s'%filename,frame)
                             except:
                                 print("Error saving") 
@@ -132,8 +133,8 @@ def extract_frames(video_file):
                     bbox = face['bbox']
                     bbox = [int(b) for b in bbox]
                     try:
-                        cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
                         filename = f"{frame_count}_{filename}"
+                        cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
                         cv2.imwrite('./outputs/%s'%filename,frame)
                     except:
                         print("End video") 
