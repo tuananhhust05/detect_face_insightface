@@ -28,13 +28,13 @@ def wiener_filter(blurred_image, kernel, noise_var):
     return np.abs(deblurred_image)
 
 # Load and prepare the image
-image = cv2.imread('outputs/101_2_face.jpg', 0)  # Load in grayscale
-image = image / 255.0  # Normalize to 0-1
+# image = cv2.imread('outputs/101_2_face.jpg', 0)  # Load in grayscale
+# image = image / 255.0  # Normalize to 0-1
 
-# Apply blur
-kernel_size = 5
-sigma = 1.0
-blurred_image = apply_blur(image, kernel_size, sigma)
+# # Apply blur
+# kernel_size = 5
+# sigma = 1.0
+# blurred_image = apply_blur(image, kernel_size, sigma)
 
 # Estimate noise variance manually (or through more elaborate means)
 noise_var = 0.01
