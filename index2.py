@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from insightface.app import FaceAnalysis
 from insightface.data import get_image as ins_get_image
 from numpy.linalg import norm
+import time 
 weight_point = 0.5
 
 def cosin(question,answer):
@@ -57,6 +58,7 @@ def extract_frames(video_file):
     
    
     while True and (frame_count < 3000) :
+        time.sleep(0.1)
         ret, frame = cap.read()
         
         if not ret:
