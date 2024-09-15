@@ -73,10 +73,10 @@ def extract_frames(video_file):
             # cv2.imwrite(output_file, frame)
         # kernel_size = 5
         # sigma = 1.0
-        sharpen_kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
-        sharpen = cv2.filter2D(frame, 0 , sharpen_kernel)
+        # sharpen_kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+        # sharpen = cv2.filter2D(frame, 0 , sharpen_kernel)
 
-        frame = cv2.fastNlMeansDenoisingColored(sharpen,None,10,10,7,21)
+        # frame = cv2.fastNlMeansDenoisingColored(sharpen,None,10,10,7,21)
         faces = app.get(frame)
         for i,face in enumerate(faces):
             if(len(array_em) == 0):
