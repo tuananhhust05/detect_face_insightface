@@ -42,7 +42,7 @@ fig,axs = plt.subplots(1,6,figsize=(12,5))
 #       cosin_value = cosin(em,face['embedding'])
 #       array_cosin.append(cosin_value)
      #   array_em.append(face['embedding'])
-
+count = 0
 def extract_frames(video_file):
     cap = cv2.VideoCapture(video_file)
     
@@ -89,6 +89,8 @@ def extract_frames(video_file):
                 for em in array_em:
                     for embed in em["embeddings"]:
                         cosin_value = cosin(embed,face['embedding'])
+                        count = count + 1 
+                        print("so lan tinh", count)
                         print("cosin_value",cosin_value)
                         print("count speaker", len(array_em))
                         if(cosin_value >  weight_point):
