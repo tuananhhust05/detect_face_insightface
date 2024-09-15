@@ -37,10 +37,10 @@ def wiener_filter(blurred_image, kernel, noise_var):
 # blurred_image = apply_blur(image, kernel_size, sigma)
 
 # Estimate noise variance manually (or through more elaborate means)
-noise_var = 0.01
+# noise_var = 0.01
 
 # Deblur the image
-deblurred_image = wiener_filter(blurred_image, gaussian_kernel(kernel_size, sigma), noise_var)
+# deblurred_image = wiener_filter(blurred_image, gaussian_kernel(kernel_size, sigma), noise_var)
 
 # Display results using OpenCV (or any other tool you prefer)
 # cv2.imshow('Original Image', image)
