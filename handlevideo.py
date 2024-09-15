@@ -1,6 +1,7 @@
 import cv2
 import os
-from deblur import apply_blur
+# from deblur import apply_blur
+import numpy as np
 def extract_frames(video_file):
     cap = cv2.VideoCapture(video_file)
     
@@ -21,10 +22,11 @@ def extract_frames(video_file):
         if not ret:
             break
         
-        frame_count += 1
-        kernel_size = 5
-        sigma = 1.0
-        frame = apply_blur(frame, kernel_size, sigma)
+        sharpen_kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+        sharpen = cv2.filter2D(frame, 0 , sharpen_kernel)
+
+        frame = cv2.fastNlMeansDenoisingColored(sharpen,None,10,10,7,21)
+        # frame = apply_blur(frame, kernel_size, sigma)
         output_file = f"{output_directory}/frame_{frame_count}.jpg"
         cv2.imwrite(output_file, frame)
         count = count + 1

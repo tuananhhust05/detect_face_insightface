@@ -1,24 +1,22 @@
 import cv2
 import numpy as np
-from scipy.signal import wiener
 
-def deblur_image(image_path, kernel_size=5):
-    # Read the image
-    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    if img is None:
-        raise ValueError("Could not open or find the image.")
+image = cv2.imread('outputs/101_2_face.jpg')
 
-    # Apply Wiener filter
-    deblurred_img = wiener(img, (kernel_size, kernel_size))
+sharpen_kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+sharpen = cv2.filter2D(image, 0 , sharpen_kernel)
 
-    return deblurred_img
-
+deblurred = cv2.fastNlMeansDenoisingColored(sharpen,None,10,10,7,21)
 # Example usage
-# image_path = 'outputs/101_2_face.jpg'
+image_path = 'outputs/101_2_face.jpg'
 # deblurred_image = deblur_image(image_path)
 
 # Display results using OpenCV
-# cv2.imshow('Original Image', cv2.imread(image_path))
+cv2.imshow('Original Image', cv2.imread(image_path))
+cv2.imshow("deblureed", deblurred)
+cv2.waitKey ()
+
+
 # cv2.imshow('Deblurred Image', np.uint8(deblurred_image))
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()
