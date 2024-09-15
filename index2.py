@@ -73,13 +73,14 @@ def extract_frames(video_file):
             if(len(array_em) == 0):
                 bbox = face['bbox']
                 bbox = [int(b) for b in bbox]
-                filename=f"{frame_count}_1.jpg"
+                filename=f"1.jpg"
                 cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
                 array_em.append({
                     "speaker":1,
                     "frames":[frame_count],
                     "embeddings":[face['embedding']]
                 })
+                filename=f"{frame_count}_1.jpg"
                 cv2.imwrite('./outputs/%s'%filename,frame)
             else:
                 flag  = False 
