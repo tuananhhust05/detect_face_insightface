@@ -10,6 +10,7 @@ from insightface.app import FaceAnalysis
 from insightface.data import get_image as ins_get_image
 from numpy.linalg import norm
 import time 
+from deblur import apply_blur
 weight_point = 0.5
 
 def cosin(question,answer):
@@ -70,6 +71,9 @@ def extract_frames(video_file):
         # if frame_count % int(cap.get(5) / frame_rate) == 0:
             # output_file = f"{output_directory}/frame_{frame_count}.jpg"
             # cv2.imwrite(output_file, frame)
+        kernel_size = 5
+        sigma = 1.0
+        frame = apply_blur(frame, kernel_size, sigma)
         faces = app.get(frame)
         for i,face in enumerate(faces):
             if(len(array_em) == 0):
