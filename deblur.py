@@ -18,10 +18,10 @@ image_path = 'outputs/101_2_face.jpg'
 deblurred_image = deblur_image(image_path)
 
 # Display results using OpenCV
-cv2.imshow('Original Image', cv2.imread(image_path))
-cv2.imshow('Deblurred Image', np.uint8(deblurred_image))
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.imshow('Original Image', cv2.imread(image_path))
+# cv2.imshow('Deblurred Image', np.uint8(deblurred_image))
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
 
 
 # Load and prepare the image
