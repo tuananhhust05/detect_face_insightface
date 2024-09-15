@@ -86,7 +86,10 @@ def extract_frames(video_file):
                 cv2.imwrite('./outputs/%s'%filename,frame)
             else:
                 flag  = False 
+                print("soluong  nguoi hien tai", len(array_em))
                 for em in array_em:
+                    print("em",em)
+                    print("so phan tu con",len(em["embeddings"])
                     for embed in em["embeddings"]:
                         cosin_value = cosin(embed,face['embedding'])
                         count = count + 1 
