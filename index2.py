@@ -10,7 +10,7 @@ from insightface.app import FaceAnalysis
 from insightface.data import get_image as ins_get_image
 from numpy.linalg import norm
 import time 
-from deblur import apply_blur
+# from deblur import apply_blur
 weight_point = 0.5
 
 def cosin(question,answer):
