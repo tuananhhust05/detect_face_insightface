@@ -14,8 +14,8 @@ def deblur_image(image_path, kernel_size=5):
     return deblurred_img
 
 # Example usage
-image_path = 'outputs/101_2_face.jpg'
-deblurred_image = deblur_image(image_path)
+# image_path = 'outputs/101_2_face.jpg'
+# deblurred_image = deblur_image(image_path)
 
 # Display results using OpenCV
 # cv2.imshow('Original Image', cv2.imread(image_path))
