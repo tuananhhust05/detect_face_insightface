@@ -71,9 +71,9 @@ def extract_frames(video_file):
         # if frame_count % int(cap.get(5) / frame_rate) == 0:
             # output_file = f"{output_directory}/frame_{frame_count}.jpg"
             # cv2.imwrite(output_file, frame)
-        kernel_size = 5
-        sigma = 1.0
-        frame = apply_blur(frame, kernel_size, sigma)
+        # kernel_size = 5
+        # sigma = 1.0
+        # frame = apply_blur(frame, kernel_size, sigma)
         faces = app.get(frame)
         for i,face in enumerate(faces):
             if(len(array_em) == 0):

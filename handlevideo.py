@@ -1,6 +1,6 @@
 import cv2
 import os
-
+from deblur import apply_blur
 def extract_frames(video_file):
     cap = cv2.VideoCapture(video_file)
     
@@ -22,7 +22,9 @@ def extract_frames(video_file):
             break
         
         frame_count += 1
-        
+        kernel_size = 5
+        sigma = 1.0
+        frame = apply_blur(frame, kernel_size, sigma)
         output_file = f"{output_directory}/frame_{frame_count}.jpg"
         cv2.imwrite(output_file, frame)
         count = count + 1

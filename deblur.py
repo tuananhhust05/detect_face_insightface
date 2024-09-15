@@ -1,31 +1,28 @@
-import numpy as np
 import cv2
-from scipy.signal import convolve2d
-from scipy.signal import correlate2d
+import numpy as np
+from scipy.signal import wiener
 
-def gaussian_kernel(size, sigma):
-    """Generate a Gaussian kernel."""
-    ax = np.arange(-size // 2 + 1., size // 2 + 1.)
-    xx, yy = np.meshgrid(ax, ax)
-    kernel = np.exp(-(xx**2 + yy**2) / (2. * sigma**2))
-    return kernel / np.sum(kernel)
+def deblur_image(image_path, kernel_size=5):
+    # Read the image
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    if img is None:
+        raise ValueError("Could not open or find the image.")
 
-def apply_blur(image, kernel_size, sigma):
-    """Apply Gaussian blur to an image."""
-    kernel = gaussian_kernel(kernel_size, sigma)
-    blurred_image = convolve2d(image, kernel, mode='same', boundary='wrap')
-    return blurred_image
+    # Apply Wiener filter
+    deblurred_img = wiener(img, (kernel_size, kernel_size))
 
-def wiener_filter(blurred_image, kernel, noise_var):
-    """Apply Wiener filter to deblur the image."""
-    kernel_fft = np.fft.fft2(kernel, s=blurred_image.shape)
-    blurred_fft = np.fft.fft2(blurred_image)
-    kernel_conj = np.conj(kernel_fft)
-    
-    wiener_filter_fft = kernel_conj / (kernel_fft * kernel_conj + noise_var)
-    deblurred_fft = wiener_filter_fft * blurred_fft
-    deblurred_image = np.fft.ifft2(deblurred_fft)
-    return np.abs(deblurred_image)
+    return deblurred_img
+
+# Example usage
+image_path = 'outputs/101_2_face.jpg'
+deblurred_image = deblur_image(image_path)
+
+# Display results using OpenCV
+cv2.imshow('Original Image', cv2.imread(image_path))
+cv2.imshow('Deblurred Image', np.uint8(deblurred_image))
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
 
 # Load and prepare the image
 # image = cv2.imread('outputs/101_2_face.jpg', 0)  # Load in grayscale
