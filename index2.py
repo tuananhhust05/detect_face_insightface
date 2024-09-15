@@ -11,7 +11,7 @@ from insightface.data import get_image as ins_get_image
 from numpy.linalg import norm
 import time 
 # from deblur import apply_blur
-weight_point = 0.3
+weight_point = 0.4
 
 def cosin(question,answer):
     cosine = np.dot(question,answer)/(norm(question)*norm(answer))
@@ -46,7 +46,6 @@ fig,axs = plt.subplots(1,6,figsize=(12,5))
 
 def extract_frames(video_file):
     cap = cv2.VideoCapture(video_file)
-    count = 0
     frame_rate = 2  # Desired frame rate (1 frame every 0.5 seconds)
     frame_count = 0
     
@@ -67,70 +66,58 @@ def extract_frames(video_file):
         
         frame_count += 1
         print("frame_count",frame_count)
-        # Only extract frames at the desired frame rate
-        # if frame_count % int(cap.get(5) / frame_rate) == 0:
-            # output_file = f"{output_directory}/frame_{frame_count}.jpg"
-            # cv2.imwrite(output_file, frame)
-        # kernel_size = 5
-        # sigma = 1.0
-        # sharpen_kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
-        # sharpen = cv2.filter2D(frame, 0 , sharpen_kernel)
+     
 
         # frame = cv2.fastNlMeansDenoisingColored(sharpen,None,10,10,7,21)
         faces = app.get(frame)
+
+
         for i,face in enumerate(faces):
             if(len(array_em) == 0):
                 bbox = face['bbox']
                 bbox = [int(b) for b in bbox]
-                filename=f"1.jpg"
+                filename=f"0.jpg"
                 cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
                 array_em.append({
                     "speaker":1,
                     "frames":[frame_count],
                     "embeddings":[face['embedding']]
                 })
-                filename=f"{frame_count}_1.jpg"
+                filename=f"{frame_count}_0.jpg"
                 cv2.imwrite('./outputs/%s'%filename,frame)
             else:
                 flag  = False 
                 print("so luong  nguoi hien tai", len(array_em))
-                for em in array_em:
+                stt = 0  # số thứ tự của face khớp với face mới detect được 
+                for j in range(len(array_em)):
+                    em = array_em[j]
                     # print("em",em)
                     print("so mat", len(faces))
                     print("so phan tu con",len(em["embeddings"]), frame_count)
                     # print("phan tu dau tien", em["embeddings"][0])
+                    count = 0
                     for x in range(len(em["embeddings"])):
-                        if(  ( ( len(em["embeddings"]) > 6 ) and (x >  (len(em["embeddings"]) - 6 )) ) or (len(em["embeddings"]) <= 6) ):
-                            time.sleep(0.1)
-                            print("phan tu con",x)
+                        # if(  ( ( len(em["embeddings"]) > 6 ) and (x >  (len(em["embeddings"]) - 6 )) ) or (len(em["embeddings"]) <= 6) ):
+                            # time.sleep(0.1)
+                            # print("phan tu con",x)
                             cosin_value = cosin(em["embeddings"][x],face['embedding'])
-                            count = count + 1 
-                            print("so lan tinh", count)
-                            print("cosin_value",cosin_value)
+                            # print("cosin_value",cosin_value)
                             # print("count speaker", len(array_em))
                             if(cosin_value >  weight_point):
-                               flag = True
-                            em["embeddings"].append(face['embedding'])
-                            em["frames"].append(frame_count)
-
-                            filename = f"{len(array_em)}_face.jpg"
-                            bbox = face['bbox']
-                            bbox = [int(b) for b in bbox]
-                            try:
-                                filename = f"{frame_count}_{filename}"
-                                cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
-                                cv2.imwrite('./outputs/%s'%filename,frame)
-                            except:
-                                print("Error saving") 
+                                stt = j
+                                flag = True
+                            count = count + 1 
+                        
+                    print("so lan tinh ....... ", count)
                 if (flag == False): 
-                    # return
+                    
                     array_em.append({
                             "speaker":len(array_em),
                             "frames":[],
                             "embeddings":[face['embedding']]
                         }
                     )
-                    filename = f"{len(array_em)}_face.jpg"
+                    filename = f"{len(array_em) -1 }_face.jpg"
                     bbox = face['bbox']
                     bbox = [int(b) for b in bbox]
                     try:
@@ -139,9 +126,24 @@ def extract_frames(video_file):
                         cv2.imwrite('./outputs/%s'%filename,frame)
                     except:
                         print("End video") 
+                        return
+                if(flag == True):
+                    array_em[stt]["embeddings"].append(face['embedding'])
+                    array_em[stt]["frames"].append(frame_count)
+
+                    filename = f"{stt}_face.jpg"
+                    bbox = face['bbox']
+                    bbox = [int(b) for b in bbox]
+                    try:
+                        filename = f"{frame_count}_{filename}"
+                        cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
+                        cv2.imwrite('./outputs/%s'%filename,frame)
+                    except:
+                        print("Error saving") 
+
         # print(f"Frame {frame_count} has been extracted and saved as {output_file}")
     for ele in array_em:
-        del(ele['embedding'])
+        del(ele['embeddings'])
     cap.release()
     print("End video")
 import json 
@@ -149,5 +151,5 @@ extract_frames('video.mp4')
 print("array_cosin",array_cosin)
 with open('data.json', 'w') as f:
     json.dump(array_em, f, indent=4)
-print("array_em",array_em)
+# print("array_em",array_em)
 print("array_em",len(array_em))
