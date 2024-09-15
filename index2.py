@@ -42,10 +42,10 @@ fig,axs = plt.subplots(1,6,figsize=(12,5))
 #       cosin_value = cosin(em,face['embedding'])
 #       array_cosin.append(cosin_value)
      #   array_em.append(face['embedding'])
-count = 0
+
 def extract_frames(video_file):
     cap = cv2.VideoCapture(video_file)
-    
+    count = 0
     frame_rate = 2  # Desired frame rate (1 frame every 0.5 seconds)
     frame_count = 0
     
