@@ -93,26 +93,27 @@ def extract_frames(video_file):
                     print("so phan tu con",len(em["embeddings"]), frame_count)
                     # print("phan tu dau tien", em["embeddings"][0])
                     for x in range(len(em["embeddings"])):
-                        time.sleep(1)
-                        print("phan tu con",x)
-                        cosin_value = cosin(em["embeddings"][x],face['embedding'])
-                        count = count + 1 
-                        print("so lan tinh", count)
-                        # print("cosin_value",cosin_value)
-                        # print("count speaker", len(array_em))
-                        if(cosin_value >  weight_point):
-                           flag = True
-                           em["embeddings"].append(face['embedding'])
-                        em["frames"].append(frame_count)
+                        if(  ( ( len(em["embeddings"]) > 6 ) and (x >  (len(em["embeddings"]) - 6 )) ) or (len(em["embeddings"]) <= 6) ):
+                            time.sleep(0.5)
+                            print("phan tu con",x)
+                            cosin_value = cosin(em["embeddings"][x],face['embedding'])
+                            count = count + 1 
+                            print("so lan tinh", count)
+                            # print("cosin_value",cosin_value)
+                            # print("count speaker", len(array_em))
+                            if(cosin_value >  weight_point):
+                               flag = True
+                            em["embeddings"].append(face['embedding'])
+                            em["frames"].append(frame_count)
 
-                        filename = f"{len(array_em)}_face.jpg"
-                        bbox = face['bbox']
-                        bbox = [int(b) for b in bbox]
-                        try:
-                            filename = f"{frame_count}_{filename}"
-                            cv2.imwrite('./outputs/%s'%filename,frame)
-                        except:
-                            print("Error saving") 
+                            filename = f"{len(array_em)}_face.jpg"
+                            bbox = face['bbox']
+                            bbox = [int(b) for b in bbox]
+                            try:
+                                filename = f"{frame_count}_{filename}"
+                                cv2.imwrite('./outputs/%s'%filename,frame)
+                            except:
+                                print("Error saving") 
                 if (flag == False): 
                     array_em.append({
                             "speaker":len(array_em),
