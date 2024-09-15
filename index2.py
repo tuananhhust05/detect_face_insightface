@@ -94,7 +94,7 @@ def extract_frames(video_file):
                     # print("phan tu dau tien", em["embeddings"][0])
                     for x in range(len(em["embeddings"])):
                         if(  ( ( len(em["embeddings"]) > 6 ) and (x >  (len(em["embeddings"]) - 6 )) ) or (len(em["embeddings"]) <= 6) ):
-                            time.sleep(0.5)
+                            time.sleep(0.2)
                             print("phan tu con",x)
                             cosin_value = cosin(em["embeddings"][x],face['embedding'])
                             count = count + 1 
