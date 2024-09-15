@@ -93,7 +93,7 @@ def extract_frames(video_file):
                 cv2.imwrite('./outputs/%s'%filename,frame)
             else:
                 flag  = False 
-                print("soluong  nguoi hien tai", len(array_em))
+                print("so luong  nguoi hien tai", len(array_em))
                 for em in array_em:
                     # print("em",em)
                     print("so mat", len(faces))
@@ -101,7 +101,7 @@ def extract_frames(video_file):
                     # print("phan tu dau tien", em["embeddings"][0])
                     for x in range(len(em["embeddings"])):
                         if(  ( ( len(em["embeddings"]) > 6 ) and (x >  (len(em["embeddings"]) - 6 )) ) or (len(em["embeddings"]) <= 6) ):
-                            time.sleep(0.2)
+                            time.sleep(0.1)
                             print("phan tu con",x)
                             cosin_value = cosin(em["embeddings"][x],face['embedding'])
                             count = count + 1 
