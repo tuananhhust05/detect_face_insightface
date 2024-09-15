@@ -90,9 +90,9 @@ def extract_frames(video_file):
                     for embed in em["embeddings"]:
                         cosin_value = cosin(embed,face['embedding'])
                         count = count + 1 
-                        print("so lan tinh", count)
-                        print("cosin_value",cosin_value)
-                        print("count speaker", len(array_em))
+                        # print("so lan tinh", count)
+                        # print("cosin_value",cosin_value)
+                        # print("count speaker", len(array_em))
                         if(cosin_value >  weight_point):
                            flag = True
                            em["embeddings"].append(face['embedding'])
