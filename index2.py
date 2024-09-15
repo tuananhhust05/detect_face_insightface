@@ -11,7 +11,7 @@ from insightface.data import get_image as ins_get_image
 from numpy.linalg import norm
 import time 
 # from deblur import apply_blur
-weight_point = 0.4
+weight_point = 0.3
 
 def cosin(question,answer):
     cosine = np.dot(question,answer)/(norm(question)*norm(answer))
@@ -123,7 +123,7 @@ def extract_frames(video_file):
                             except:
                                 print("Error saving") 
                 if (flag == False): 
-                    return
+                    # return
                     array_em.append({
                             "speaker":len(array_em),
                             "frames":[],
