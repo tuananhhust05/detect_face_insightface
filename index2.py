@@ -89,9 +89,11 @@ def extract_frames(video_file):
                 print("soluong  nguoi hien tai", len(array_em))
                 for em in array_em:
                     # print("em",em)
-                    print("so phan tu con",len(em["embeddings"]))
-                    print("phan tu dau tien", em["embeddings"][0])
+                    print("so mat", len(faces))
+                    print("so phan tu con",len(em["embeddings"]), frame_count)
+                    # print("phan tu dau tien", em["embeddings"][0])
                     for x in range(len(em["embeddings"])):
+                        time.sleep(1)
                         print("phan tu con",x)
                         cosin_value = cosin(em["embeddings"][x],face['embedding'])
                         count = count + 1 
