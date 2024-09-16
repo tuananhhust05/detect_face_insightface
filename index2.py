@@ -203,7 +203,7 @@ with open('data.json', 'r') as file:
         })
 
 with open('result.json', 'w') as f:
-    json.dump(array_em, f, indent=4)
+    json.dump(list_result, f, indent=4)
 
 end = time.time() 
 print("excution time", end - start)
