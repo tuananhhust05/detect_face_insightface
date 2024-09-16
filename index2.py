@@ -189,8 +189,7 @@ with open('data.json', 'r') as file:
               duration_exist.append(0)
            duration_exist.append(list_frame[i])
            if( (list_frame[i + 1] - list_frame[i]) > frame_rate):
-               list_time_exist.append(duration_exist[0]*time_per_frame)
-               list_time_exist.append(duration_exist[len(duration_exist) - 1] * time_per_frame)
+               list_time_exist.append([duration_exist[0]*time_per_frame,duration_exist[len(duration_exist) - 1] * time_per_frame])
                duration_exist = []
            else:
                 if( i == len(list_frame)-2):
