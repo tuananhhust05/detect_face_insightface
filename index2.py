@@ -51,7 +51,7 @@ def extract_frames(video_file):
     print("duration",duration)
 
     cap = cv2.VideoCapture(video_file)
-    frame_rate = 2  # Desired frame rate (1 frame every 0.5 seconds)
+    frame_rate = 10  # Desired frame rate (1 frame every 0.5 seconds)
     frame_count = 0
     
     # Get the video file's name without extension
@@ -74,7 +74,7 @@ def extract_frames(video_file):
         frame_count += 1
         print("frame_count",frame_count)
      
-        if(frame_count % 6 == 0):
+        if(frame_count % frame_rate == 0):
    
 
             # Deblur the image
@@ -159,7 +159,7 @@ def extract_frames(video_file):
         del(ele['embeddings'])
         ele["frame_count"] = frame_count
         ele["duration"] = duration
-        ele["frame_rate"] = 6
+        ele["frame_rate"] = frame_rate
     cap.release()
     print("End video")
 import json 
