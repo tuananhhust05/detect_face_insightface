@@ -74,7 +74,7 @@ list_result = []
 def extract_frames(video_file):
     resetPincone()
     frame_count = 0
-    frame_rate = 15  # default 1s with 30 frame
+    frame_rate = 30  # default 1s with 30 frame
     duration = 0 
     audio = MP4("video.mp4")
     duration = audio.info.length
