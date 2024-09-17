@@ -14,8 +14,9 @@ from mutagen.mp4 import MP4
 from deblur import apply_blur,wiener_filter,gaussian_kernel
 from pinecone import Pinecone, ServerlessSpec
 import uuid
+import json 
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
-index = pc.Index("detectface2")
+index = pc.Index("detectface")
 
 weight_point = 0.4
 
@@ -71,13 +72,16 @@ list_result = []
 
 def extract_frames(video_file):
     resetPincone()
+    frame_count = 0
+    frame_rate = 30  # default 1s with 30 frame
+    duration = 0 
     audio = MP4("video.mp4")
     duration = audio.info.length
     print("duration",duration)
-
+    
     cap = cv2.VideoCapture(video_file)
-    frame_rate = 30  # default 1s with 30 frame
-    frame_count = 0
+    
+    
     
     # Get the video file's name without extension
     video_name = os.path.splitext(os.path.basename(video_file))[0]
@@ -96,7 +100,7 @@ def extract_frames(video_file):
         
         # if(frame_count > 5):
         #     break
-        frame_count += 1
+        frame_count = frame_count +  1
         print("frame_count",frame_count)
      
         if(frame_count % frame_rate == 0):
@@ -126,7 +130,7 @@ def extract_frames(video_file):
                     array_em.append({
                         "speaker":0,
                         "frames":[frame_count],
-                        "embeddings":[face['embedding']]
+                        # "embeddings":[face['embedding']]
                     })
                     filename=f"{frame_count}_0.jpg"
                     cv2.imwrite('./outputs/%s'%filename,frame)
@@ -181,7 +185,7 @@ def extract_frames(video_file):
                         array_em.append({
                                 "speaker":len(array_em),
                                 "frames":[frame_count],
-                                "embeddings":[face['embedding']]
+                                # "embeddings":[face['embedding']]
                             }
                         )
                         filename = f"{len(array_em) -1 }_face.jpg"
@@ -192,8 +196,8 @@ def extract_frames(video_file):
                             cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
                             cv2.imwrite('./outputs/%s'%filename,frame)
                         except:
-                            print("End video") 
-                            return
+                            print("Saving error") 
+                            # return
                         index.upsert(
                             vectors=[
                                     {
@@ -227,6 +231,7 @@ def extract_frames(video_file):
                                         }},
                                 ]
                         )
+          
             # tempt = []
             # for ele in array_em:
             #     tempt.append({
@@ -268,6 +273,7 @@ def extract_frames(video_file):
             # with open('result.json', 'w') as f:
             #     json.dump(list_result, f, indent=4)
         # print(f"Frame {frame_count} has been extracted and saved as {output_file}")
+    
     for ele in array_em:
         del(ele['embeddings'])
         ele["frame_count"] = frame_count
@@ -275,16 +281,19 @@ def extract_frames(video_file):
         ele["frame_rate"] = frame_rate
     cap.release()
     print("End video")
-import json 
+
 
 start = time.time() 
 extract_frames('video.mp4')
-print("array_cosin",array_cosin)
-with open('data.json', 'w') as f:
-    json.dump(array_em, f, indent=4)
-# print("array_em",array_em)
+
+
+
+    
+print("array_em",array_em)
 print("array_em",len(array_em))
 
+with open('data.json', 'w') as f:
+    json.dump(array_em, f, indent=4)
 
 # Open and read the JSON file
 with open('data.json', 'r') as file:
@@ -295,7 +304,7 @@ with open('data.json', 'r') as file:
         list_time_exist = []
         duration_exist = []
         list_frame = em["frames"]
-        print(list_frame)
+        # print(list_frame)
         print("so frame", len(list_frame))
         for i in range(len(list_frame)-1):
            if(list_frame[i] == frame_rate):
