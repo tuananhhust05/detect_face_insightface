@@ -15,7 +15,7 @@ from deblur import apply_blur,wiener_filter,gaussian_kernel
 from pinecone import Pinecone, ServerlessSpec
 import uuid
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
-index = pc.Index("detectface")
+index = pc.Index("detectface2")
 
 weight_point = 0.4
 
