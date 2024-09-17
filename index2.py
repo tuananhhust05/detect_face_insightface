@@ -133,6 +133,7 @@ def extract_frames(video_file):
                         # "embeddings":[face['embedding']]
                     })
                     filename=f"{frame_count}_0.jpg"
+                    frame = cv2.resize(frame, (250,200), interpolation=cv2.INTER_CUBIC)
                     cv2.imwrite('./outputs/%s'%filename,frame)
                     index.upsert(
                         vectors=[
@@ -194,6 +195,7 @@ def extract_frames(video_file):
                         try:
                             filename = f"{frame_count}_{filename}"
                             cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
+                            frame = cv2.resize(frame, (250,200), interpolation=cv2.INTER_CUBIC)
                             cv2.imwrite('./outputs/%s'%filename,frame)
                         except:
                             print("Saving error") 
@@ -218,6 +220,7 @@ def extract_frames(video_file):
                         try:
                             filename = f"{frame_count}_{filename}"
                             cv2.imwrite('./faces/%s'%filename,frame[bbox[1] : bbox[3], bbox[0]: bbox[2], ::-1])
+                            frame = cv2.resize(frame, (250,200), interpolation=cv2.INTER_CUBIC)
                             cv2.imwrite('./outputs/%s'%filename,frame)
                         except:
                             print("Error saving") 
