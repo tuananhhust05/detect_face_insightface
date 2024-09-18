@@ -3,8 +3,7 @@
         "face": 0,
         "similiar": [
             1.0,
-            2.0,
-            3.0
+            2.0
         ]
     },
     {
@@ -19,22 +18,19 @@
         "similiar": [
             0.0,
             1.0,
-            3.0
+            7.0
         ]
     },
     {
         "face": 3,
         "similiar": [
-            0.0,
-            1.0,
-            2.0,
-            10.0
+            13.0
         ]
     },
     {
         "face": 4,
         "similiar": [
-            20.0
+            15.0
         ]
     },
     {
@@ -43,13 +39,13 @@
     },
     {
         "face": 6,
-        "similiar": [
-            17.0
-        ]
+        "similiar": []
     },
     {
         "face": 7,
-        "similiar": []
+        "similiar": [
+            2.0
+        ]
     },
     {
         "face": 8,
@@ -61,9 +57,7 @@
     },
     {
         "face": 10,
-        "similiar": [
-            3.0
-        ]
+        "similiar": []
     },
     {
         "face": 11,
@@ -75,7 +69,10 @@
     },
     {
         "face": 13,
-        "similiar": []
+        "similiar": [
+            16.0,
+            3.0
+        ]
     },
     {
         "face": 14,
@@ -83,17 +80,19 @@
     },
     {
         "face": 15,
-        "similiar": []
+        "similiar": [
+            4.0
+        ]
     },
     {
         "face": 16,
-        "similiar": []
+        "similiar": [
+            13.0
+        ]
     },
     {
         "face": 17,
-        "similiar": [
-            6.0
-        ]
+        "similiar": []
     },
     {
         "face": 18,
@@ -101,16 +100,11 @@
     },
     {
         "face": 19,
-        "similiar": [
-            20.0
-        ]
+        "similiar": []
     },
     {
         "face": 20,
-        "similiar": [
-            19.0,
-            4.0
-        ]
+        "similiar": []
     },
     {
         "face": 21,
@@ -142,26 +136,6 @@
     },
     {
         "face": 28,
-        "similiar": []
-    },
-    {
-        "face": 29,
-        "similiar": []
-    },
-    {
-        "face": 30,
-        "similiar": []
-    },
-    {
-        "face": 31,
-        "similiar": []
-    },
-    {
-        "face": 32,
-        "similiar": []
-    },
-    {
-        "face": 33,
         "similiar": []
     }
 ]
