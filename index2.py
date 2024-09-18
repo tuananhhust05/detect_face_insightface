@@ -120,7 +120,7 @@ def extract_frames(video_file):
             # frame = cv2.fastNlMeansDenoisingColored(sharpen,None,10,10,7,21)
             faces = app.get(frame)
             for i,face in enumerate(faces):
-              if(face["det_score"] > 0.75):
+              if(face["det_score"] > 0.6):
                 print("dimension .....")
                 print(face['embedding'].shape)
                 # print(face['embedding'])
