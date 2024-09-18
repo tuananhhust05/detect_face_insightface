@@ -76,7 +76,7 @@ list_result = []
 
 @jit(target_backend='cuda')
 def extract_frames(video_file):
-    resetPincone()
+    # resetPincone()
     frame_count = 0
     frame_rate = 60  # default 1s with 30 frame
     duration = 0 
