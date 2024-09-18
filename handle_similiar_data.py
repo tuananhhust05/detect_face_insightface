@@ -87,7 +87,7 @@ with open('face_similiar_data.json', 'r') as file:
                 "frames":sorted(frames),
                 "frame_count": 36001,
                 "duration": 1200.0072562358278,
-                "frame_rate": 30,
+                "frame_rate": 60,
                 "array_face":list_face
             })
     with open('final_data.json', 'w') as f:

@@ -5,7 +5,7 @@ vectorFlag = [-1.58570838, -1.01461756, 1.93423057, 1.02658987, -0.262339085, -0
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
 index = pc.Index("detectface2")
 
-weight_point = 0.5
+weight_point = 0.6
 
 final_result = []
 with open('data.json', 'r') as file:
