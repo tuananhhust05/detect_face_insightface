@@ -74,7 +74,7 @@ def resetPincone():
 
 list_result = []
 
-@jit(target_backend='cuda')
+# @jit(target_backend='cuda')
 def extract_frames(video_file):
     # resetPincone()
     frame_count = 0
