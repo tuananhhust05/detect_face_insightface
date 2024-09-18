@@ -21,7 +21,7 @@ from numba import jit
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
 index = pc.Index("detectface2")
 
-weight_point = 0.6
+weight_point = 0.5
 
 def cosin(question,answer):
     cosine = np.dot(question,answer)/(norm(question)*norm(answer))
@@ -78,7 +78,7 @@ list_result = []
 def extract_frames(video_file):
     # resetPincone()
     frame_count = 0
-    frame_rate = 45  # default 1s with 30 frame
+    frame_rate = 30  # default 1s with 30 frame
     duration = 0 
     audio = MP4("video.mp4")
     duration = audio.info.length
