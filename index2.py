@@ -16,6 +16,8 @@ from deblur import apply_blur,wiener_filter,gaussian_kernel
 from pinecone import Pinecone, ServerlessSpec
 import uuid
 import json 
+import numba
+from numba import jit, autojit, int_, void, float_, object_
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
 index = pc.Index("detectface2")
 
