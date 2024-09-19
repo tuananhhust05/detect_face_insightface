@@ -119,7 +119,7 @@ def extract_frames(video_file):
     cap.release()
     print("End video")
 
-
+@jit(target_backend='cuda')
 def extract_per_file(video_file,index_local):
     array_em_result = []
     list_result_ele = []
@@ -251,7 +251,7 @@ async def main():
     t6.join()
     t7.join()
     t8.join()
-    
+
     print("Done!")
     end = time.time() 
     print("excution time", end - start)
