@@ -6,7 +6,6 @@ import os.path as osp
 import glob
 import cv2
 import insightface
-import torch
 import matplotlib.pyplot as plt 
 from insightface.app import FaceAnalysis
 from insightface.data import get_image as ins_get_image
@@ -19,6 +18,9 @@ import json
 import numba
 from numba import jit
 import asyncio
+import torch
+print("torch.cuda.is_available()",torch.cuda.is_available())
+
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
 index = pc.Index("detectface2")
 
