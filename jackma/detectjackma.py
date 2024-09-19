@@ -120,7 +120,7 @@ def extract_frames(video_file):
     print("End video")
 
 
-async def extract_per_file(video_file,index_local):
+def extract_per_file(video_file,index_local):
     array_em_result = []
     list_result_ele = []
     frame_count = 0
@@ -221,12 +221,26 @@ async def extract_per_file(video_file,index_local):
         json.dump(list_result_ele, f, indent=4)
         print("End video")
 
+import threading
+
 async def main():
     start = time.time() 
-    extract_per_file("videos/1.mp4",1),
-    extract_per_file("videos/2.mp4",2),
-    extract_per_file("videos/3.mp4",3),
-    extract_per_file("videos/4.mp4",4)
+    t1 = threading.Thread(target=extract_per_file, args=("videos/1.mp4",1))
+    t2 = threading.Thread(target=extract_per_file, args=("videos/2.mp4",2))
+    t3 = threading.Thread(target=extract_per_file, args=("videos/3.mp4",3))
+    t4 = threading.Thread(target=extract_per_file, args=("videos/4.mp4",4))
+
+    t1.start()
+    t2.start()
+    t3.start()
+    t4.start()
+
+    t1.join()
+    t2.join()
+    t3.join()
+    t4.join()
+
+    print("Done!")
     end = time.time() 
     print("excution time", end - start)
 asyncio.run(main())
