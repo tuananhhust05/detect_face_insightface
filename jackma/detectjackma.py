@@ -222,13 +222,12 @@ async def extract_per_file(video_file,index_local):
         print("End video")
 
 async def main():
-    values = await asyncio.gather(
-        extract_per_file("videos/1.mp4",1),
-        extract_per_file("videos/2.mp4",2),
-        extract_per_file("videos/3.mp4",3),
-        extract_per_file("videos/4.mp4",4)
-    )
-
+    start = time.time() 
+    extract_per_file("videos/1.mp4",1),
+    extract_per_file("videos/2.mp4",2),
+    extract_per_file("videos/3.mp4",3),
+    extract_per_file("videos/4.mp4",4)
+    end = time.time() 
+    print("excution time", end - start)
 asyncio.run(main())
-
 
