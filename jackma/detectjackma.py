@@ -20,7 +20,7 @@ from numba import jit
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
 index = pc.Index("detectface2")
 
-weight_point = 0.4
+weight_point = 0.5
 
 def cosin(question,answer):
     cosine = np.dot(question,answer)/(norm(question)*norm(answer))
@@ -70,6 +70,9 @@ def extract_frames(video_file):
                                 top_k=1,
                                 include_metadata=True,
                                 include_values=True,
+                                filter={
+                                    "face":0
+                                },
                             )
                 matches = search_result["matches"]
                 
