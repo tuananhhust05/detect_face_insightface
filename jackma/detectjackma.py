@@ -73,7 +73,7 @@ def extract_frames(video_file):
                             )
                 matches = search_result["matches"]
                 
-                print("matches", matches)
+#                print("matches", matches)
                 if(len(matches) > 0):
                     if(matches[0]['score'] > weight_point ):
                         if(len(array_em) == 0):
