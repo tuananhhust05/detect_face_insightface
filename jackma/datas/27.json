@@ -4,7 +4,7 @@
         "frames": [
             60
         ],
-        "frame_count": 1335,
+        "frame_count": 1369,
         "duration": 45.997573696145125,
         "frame_rate": 60
     },
@@ -13,7 +13,7 @@
         "frames": [
             120
         ],
-        "frame_count": 1335,
+        "frame_count": 1369,
         "duration": 45.997573696145125,
         "frame_rate": 60
     },
@@ -22,7 +22,7 @@
         "frames": [
             180
         ],
-        "frame_count": 1335,
+        "frame_count": 1369,
         "duration": 45.997573696145125,
         "frame_rate": 60
     },
@@ -31,7 +31,7 @@
         "frames": [
             240
         ],
-        "frame_count": 1335,
+        "frame_count": 1369,
         "duration": 45.997573696145125,
         "frame_rate": 60
     },
@@ -40,7 +40,7 @@
         "frames": [
             300
         ],
-        "frame_count": 1335,
+        "frame_count": 1369,
         "duration": 45.997573696145125,
         "frame_rate": 60
     },
@@ -49,7 +49,34 @@
         "frames": [
             360
         ],
-        "frame_count": 1335,
+        "frame_count": 1369,
+        "duration": 45.997573696145125,
+        "frame_rate": 60
+    },
+    {
+        "speaker": 0,
+        "frames": [
+            420
+        ],
+        "frame_count": 1369,
+        "duration": 45.997573696145125,
+        "frame_rate": 60
+    },
+    {
+        "speaker": 0,
+        "frames": [
+            480
+        ],
+        "frame_count": 1369,
+        "duration": 45.997573696145125,
+        "frame_rate": 60
+    },
+    {
+        "speaker": 0,
+        "frames": [
+            540
+        ],
+        "frame_count": 1369,
         "duration": 45.997573696145125,
         "frame_rate": 60
     },
@@ -58,7 +85,7 @@
         "frames": [
             600
         ],
-        "frame_count": 1335,
+        "frame_count": 1369,
         "duration": 45.997573696145125,
         "frame_rate": 60
     },
@@ -67,7 +94,7 @@
         "frames": [
             660
         ],
-        "frame_count": 1335,
+        "frame_count": 1369,
         "duration": 45.997573696145125,
         "frame_rate": 60
     },
@@ -76,7 +103,7 @@
         "frames": [
             720
         ],
-        "frame_count": 1335,
+        "frame_count": 1369,
         "duration": 45.997573696145125,
         "frame_rate": 60
     },
@@ -85,7 +112,7 @@
         "frames": [
             780
         ],
-        "frame_count": 1335,
+        "frame_count": 1369,
         "duration": 45.997573696145125,
         "frame_rate": 60
     },
@@ -94,7 +121,7 @@
         "frames": [
             840
         ],
-        "frame_count": 1335,
+        "frame_count": 1369,
         "duration": 45.997573696145125,
         "frame_rate": 60
     },
@@ -103,7 +130,7 @@
         "frames": [
             900
         ],
-        "frame_count": 1335,
+        "frame_count": 1369,
         "duration": 45.997573696145125,
         "frame_rate": 60
     },
@@ -112,52 +139,7 @@
         "frames": [
             960
         ],
-        "frame_count": 1335,
-        "duration": 45.997573696145125,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            1020
-        ],
-        "frame_count": 1335,
-        "duration": 45.997573696145125,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            1080
-        ],
-        "frame_count": 1335,
-        "duration": 45.997573696145125,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            1140
-        ],
-        "frame_count": 1335,
-        "duration": 45.997573696145125,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            1200
-        ],
-        "frame_count": 1335,
-        "duration": 45.997573696145125,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            1320
-        ],
-        "frame_count": 1335,
+        "frame_count": 1369,
         "duration": 45.997573696145125,
         "frame_rate": 60
     }

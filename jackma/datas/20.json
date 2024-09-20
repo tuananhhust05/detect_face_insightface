@@ -4,8 +4,8 @@
         "frames": [
             60
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -13,8 +13,8 @@
         "frames": [
             120
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -22,8 +22,8 @@
         "frames": [
             180
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -31,8 +31,8 @@
         "frames": [
             240
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -40,8 +40,8 @@
         "frames": [
             300
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -49,8 +49,8 @@
         "frames": [
             360
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -58,8 +58,8 @@
         "frames": [
             420
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -67,8 +67,8 @@
         "frames": [
             480
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -76,8 +76,8 @@
         "frames": [
             540
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -85,8 +85,8 @@
         "frames": [
             600
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -94,8 +94,8 @@
         "frames": [
             660
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -103,8 +103,8 @@
         "frames": [
             720
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -112,8 +112,8 @@
         "frames": [
             780
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -121,8 +121,8 @@
         "frames": [
             840
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -130,8 +130,8 @@
         "frames": [
             900
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -139,8 +139,8 @@
         "frames": [
             960
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -148,8 +148,8 @@
         "frames": [
             1020
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -157,8 +157,8 @@
         "frames": [
             1080
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -166,8 +166,8 @@
         "frames": [
             1140
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     },
     {
@@ -175,8 +175,17 @@
         "frames": [
             1200
         ],
-        "frame_count": 1256,
-        "duration": 45.9871201814059,
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
+        "frame_rate": 60
+    },
+    {
+        "speaker": 0,
+        "frames": [
+            1260
+        ],
+        "frame_count": 1308,
+        "duration": 45.99873015873016,
         "frame_rate": 60
     }
 ]

@@ -2,55 +2,10 @@
     {
         "speaker": 0,
         "frames": [
-            60
-        ],
-        "frame_count": 1285,
-        "duration": 45.98362811791383,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            120
-        ],
-        "frame_count": 1285,
-        "duration": 45.98362811791383,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            180
-        ],
-        "frame_count": 1285,
-        "duration": 45.98362811791383,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            240
-        ],
-        "frame_count": 1285,
-        "duration": 45.98362811791383,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            300
-        ],
-        "frame_count": 1285,
-        "duration": 45.98362811791383,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
             360
         ],
-        "frame_count": 1285,
-        "duration": 45.98362811791383,
+        "frame_count": 1327,
+        "duration": 45.9824716553288,
         "frame_rate": 60
     },
     {
@@ -58,17 +13,44 @@
         "frames": [
             420
         ],
-        "frame_count": 1285,
-        "duration": 45.98362811791383,
+        "frame_count": 1327,
+        "duration": 45.9824716553288,
         "frame_rate": 60
     },
     {
         "speaker": 0,
         "frames": [
-            480
+            840
         ],
-        "frame_count": 1285,
-        "duration": 45.98362811791383,
+        "frame_count": 1327,
+        "duration": 45.9824716553288,
+        "frame_rate": 60
+    },
+    {
+        "speaker": 0,
+        "frames": [
+            900
+        ],
+        "frame_count": 1327,
+        "duration": 45.9824716553288,
+        "frame_rate": 60
+    },
+    {
+        "speaker": 0,
+        "frames": [
+            960
+        ],
+        "frame_count": 1327,
+        "duration": 45.9824716553288,
+        "frame_rate": 60
+    },
+    {
+        "speaker": 0,
+        "frames": [
+            1020
+        ],
+        "frame_count": 1327,
+        "duration": 45.9824716553288,
         "frame_rate": 60
     },
     {
@@ -76,8 +58,8 @@
         "frames": [
             1080
         ],
-        "frame_count": 1285,
-        "duration": 45.98362811791383,
+        "frame_count": 1327,
+        "duration": 45.9824716553288,
         "frame_rate": 60
     },
     {
@@ -85,8 +67,17 @@
         "frames": [
             1140
         ],
-        "frame_count": 1285,
-        "duration": 45.98362811791383,
+        "frame_count": 1327,
+        "duration": 45.9824716553288,
+        "frame_rate": 60
+    },
+    {
+        "speaker": 0,
+        "frames": [
+            1200
+        ],
+        "frame_count": 1327,
+        "duration": 45.9824716553288,
         "frame_rate": 60
     },
     {
@@ -94,8 +85,17 @@
         "frames": [
             1260
         ],
-        "frame_count": 1285,
-        "duration": 45.98362811791383,
+        "frame_count": 1327,
+        "duration": 45.9824716553288,
+        "frame_rate": 60
+    },
+    {
+        "speaker": 0,
+        "frames": [
+            1320
+        ],
+        "frame_count": 1327,
+        "duration": 45.9824716553288,
         "frame_rate": 60
     }
 ]
