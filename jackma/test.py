@@ -21,6 +21,7 @@ index = pc.Index("detectface2")
 
 weight_point = 0.4
 
+
 def cosin(question, answer):
     question = torch.tensor(question).to(device)
     answer = torch.tensor(answer).to(device)
@@ -30,6 +31,7 @@ def cosin(question, answer):
 array_em = []
 app = FaceAnalysis('buffalo_l')
 app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
+app.to(device)
 list_result = []
 
 def extract_frames(video_file):
