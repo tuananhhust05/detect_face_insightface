@@ -35,7 +35,7 @@ list_result = []
 
 def extract_frames(video_file):
     frame_count = 0
-    frame_rate = 30  # default 1s with 30 frames
+    frame_rate = 60  #  default 1s with 30 frames
     audio = MP4(video_file)
     duration = audio.info.length
     print("duration", duration)
