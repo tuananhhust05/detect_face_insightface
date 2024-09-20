@@ -121,10 +121,11 @@ def extract_frames(video_file,index_local):
                 'duration_exist':list_time_exist
             })
 
+
     with open(f"results/{index_local}.json", 'w') as f:
         json.dump(list_result_ele, f, indent=4)
         print("End video")       
-        
+
     cap.release()
     print("End video")
 
