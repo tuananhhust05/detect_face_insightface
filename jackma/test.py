@@ -17,11 +17,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
-index = pc.Index("detectface2")
+index = pc.Index("facejackma")
 
 weight_point = 0.4
 
-
+# torch for handling vector 
 def cosin(question, answer):
     question = torch.tensor(question).to(device)
     answer = torch.tensor(answer).to(device)
