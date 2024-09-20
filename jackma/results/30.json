@@ -1,26 +1,15 @@
 [
     {
         "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
+        "duration_exist": [
+            [
+                17.245170068027214,
+                21.556462585034016
+            ],
+            [
+                34.49034013605443,
+                38.80163265306123
+            ]
+        ]
     }
 ]

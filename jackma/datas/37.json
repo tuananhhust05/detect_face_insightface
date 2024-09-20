@@ -2,69 +2,13 @@
     {
         "speaker": 0,
         "frames": [
-            300
-        ],
-        "frame_count": 1360,
-        "duration": 45.98596371882086,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            360
-        ],
-        "frame_count": 1360,
-        "duration": 45.98596371882086,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            420
-        ],
-        "frame_count": 1360,
-        "duration": 45.98596371882086,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            1080
-        ],
-        "frame_count": 1360,
-        "duration": 45.98596371882086,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            1140
-        ],
-        "frame_count": 1360,
-        "duration": 45.98596371882086,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            1200
-        ],
-        "frame_count": 1360,
-        "duration": 45.98596371882086,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            1260
-        ],
-        "frame_count": 1360,
-        "duration": 45.98596371882086,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
+            300,
+            360,
+            420,
+            1080,
+            1140,
+            1200,
+            1260,
             1320
         ],
         "frame_count": 1360,

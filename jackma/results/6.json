@@ -1,70 +1,19 @@
 [
     {
         "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
+        "duration_exist": [
+            [
+                0.0,
+                10.494534543855567
+            ],
+            [
+                14.692348361397793,
+                27.285789814024472
+            ],
+            [
+                35.68141744910893,
+                44.07704508419338
+            ]
+        ]
     }
 ]

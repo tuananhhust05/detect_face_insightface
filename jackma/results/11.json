@@ -1,46 +1,15 @@
 [
     {
         "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
-    },
-    {
-        "face": 0,
-        "duration_exist": []
+        "duration_exist": [
+            [
+                0.0,
+                17.1767638105826
+            ],
+            [
+                38.64771857381085,
+                40.794814050133674
+            ]
+        ]
     }
 ]

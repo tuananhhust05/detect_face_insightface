@@ -2,33 +2,9 @@
     {
         "speaker": 0,
         "frames": [
-            60
-        ],
-        "frame_count": 1366,
-        "duration": 45.984807256235825,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            120
-        ],
-        "frame_count": 1366,
-        "duration": 45.984807256235825,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            1260
-        ],
-        "frame_count": 1366,
-        "duration": 45.984807256235825,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
+            60,
+            120,
+            1260,
             1320
         ],
         "frame_count": 1366,

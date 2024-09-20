@@ -2,51 +2,11 @@
     {
         "speaker": 0,
         "frames": [
-            480
-        ],
-        "frame_count": 1280,
-        "duration": 45.9871201814059,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            540
-        ],
-        "frame_count": 1280,
-        "duration": 45.9871201814059,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            600
-        ],
-        "frame_count": 1280,
-        "duration": 45.9871201814059,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            960
-        ],
-        "frame_count": 1280,
-        "duration": 45.9871201814059,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
-            1020
-        ],
-        "frame_count": 1280,
-        "duration": 45.9871201814059,
-        "frame_rate": 60
-    },
-    {
-        "speaker": 0,
-        "frames": [
+            480,
+            540,
+            600,
+            960,
+            1020,
             1080
         ],
         "frame_count": 1280,
