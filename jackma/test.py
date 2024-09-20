@@ -82,8 +82,13 @@ def extract_frames(video_file,index_local):
                         try:
                             bbox = [int(b) for b in face['bbox']]
                             filename = f"{frame_count}_0_face.jpg"
-                            cv2.imwrite(f'./faces/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
-                            cv2.imwrite(f'./outputs/{filename}', frame)
+                            if not os.path.exists(f"./faces/{frame_count}"):
+                                os.path.exists(f"./faces/{frame_count}")
+                            if not os.path.exists(f"./outputs/{frame_count}"):
+                                os.path.exists(f"./outputs/{frame_count}")
+
+                            cv2.imwrite(f'./faces/{frame_count}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
+                            cv2.imwrite(f'./outputs/{frame_count}/{filename}', frame)
                         except Exception as e:
                             print(f"Error saving frame: {e}")
     
