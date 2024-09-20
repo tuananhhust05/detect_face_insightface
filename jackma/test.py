@@ -101,7 +101,7 @@ def process_videos(video_files):
 
     print("Processing complete")
 
-# Run with GPU
+# Run with  GPU
 video_files = [f"videos/{i}.mp4" for i in range(32)]  # Example video file list
 start_time = time.time()
 process_videos(video_files)
