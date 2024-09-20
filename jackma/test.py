@@ -10,7 +10,7 @@ import time
 from numpy.linalg import norm
 from insightface.app import FaceAnalysis
 from pinecone import Pinecone
-from numba import cuda
+
 import threading
 # Check if CUDA is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -32,7 +32,6 @@ app = FaceAnalysis('buffalo_l')
 app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
 list_result = []
 
-@cuda.jit
 def extract_frames(video_file):
     frame_count = 0
     frame_rate = 60  # default 1s with 30 frames
