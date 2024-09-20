@@ -29,11 +29,12 @@ def cosin(question, answer):
     return cosine.item()  # Return as scalar
 
 array_em = []
-app = FaceAnalysis('buffalo_l')
-app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
+
 list_result = []
 
 def extract_frames(video_file):
+    app = FaceAnalysis('buffalo_l')
+    app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
     frame_count = 0
     frame_rate = 30  # default 1s with 30 frames
     audio = MP4(video_file)
