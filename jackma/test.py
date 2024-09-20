@@ -17,7 +17,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
-index = pc.Index("facejackma")
+index = pc.Index("detectface2")
 
 weight_point = 0.4
 
@@ -102,7 +102,7 @@ def process_videos(video_files):
     print("Processing complete")
 
 # Run with GPU
-video_files = [f"videos/{i}.mp4" for i in range(1, 35)]  # Example video file list
+video_files = [f"videos/{i}.mp4" for i in range(100)]  # Example video file list
 start_time = time.time()
 process_videos(video_files)
 end_time = time.time()
