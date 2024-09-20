@@ -71,13 +71,13 @@ def extract_frames(video_file,index_local):
                     matches = search_result["matches"]
 
                     if len(matches) > 0 and matches[0]['score'] > weight_point:
-                        if len(array_em) == 0:
+                        if len(array_em_result) == 0:
                             array_em_result.append({
                                 "speaker": 0,
                                 "frames": [frame_count],
                             })
                         else:
-                            array_em[0]["frames"].append(frame_count)
+                            array_em_result[0]["frames"].append(frame_count)
 
                         try:
                             bbox = [int(b) for b in face['bbox']]
