@@ -134,7 +134,33 @@ def extract_frames(video_file,index_local):
     cap.release()
     print("End video")
 
-def process_videos(video_files):
+def groupJson(video_file,count_thread):
+    final_result = []
+    audio = MP4(video_file)
+    duration = audio.info.length
+    time_per_segment = duration / count_thread
+    print("duration",time_per_segment, duration)
+    list_stt = []
+    for path in os.listdir("results"):
+        if os.path.isfile(os.path.join("results", path)):
+            stt = int(path.split(".")[0])
+            list_stt.append(stt)
+           
+    list_stt=sorted(list_stt)
+    for stt in list_stt:
+        with open(f"results/{stt}.json", 'r') as file:
+           data = json.load(file)
+           print(data)
+           if(len(data) > 0):
+                data = data[0]
+                for duration in data["duration_exist"]:
+                    final_result.append([duration[0] + stt * time_per_segment,duration[1] + stt * time_per_segment])
+           print(f"Result after file {stt}",final_result )
+    with open(f"final_result.json", 'w') as f:
+        json.dump(final_result, f, indent=4)
+        print("End video") 
+
+def process_videos(video_file_origin,video_files,count_thread):
     threads = []
     for i, video_file in enumerate(video_files):
         t = threading.Thread(target=extract_frames, args=(video_file,i))
@@ -144,11 +170,12 @@ def process_videos(video_files):
     for t in threads:
         t.join()
 
+    groupJson(video_file_origin,40)
     print("Processing complete")
 
 # Run with  GPU
 video_files = [f"videos/{i}.mp4" for i in range(40)]  # Example video file list
 start_time = time.time()
-process_videos(video_files)
+process_videos("../video.mp4",video_files,40)
 end_time = time.time()
 print(f"Total execution time: {end_time - start_time}")
