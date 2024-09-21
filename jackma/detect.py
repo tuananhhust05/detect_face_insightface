@@ -169,7 +169,7 @@ def trimvideo(videofile,count_thread):
             command = f"ffmpeg -i ../video.mp4 -ss {time_per_segment*i} -c:v copy -c:a copy  videos/{i}.mp4 -y"
             subprocess.run(command, shell=True, check=True)
         else:
-            command = f"c -i ../video.mp4 -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  videos/{i}.mp4 -y"
+            command = f"ffmpeg -i ../video.mp4 -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  videos/{i}.mp4 -y"
             subprocess.run(command, shell=True, check=True)
 
 def process_videos(video_file_origin,count_thread):
