@@ -83,9 +83,9 @@ def extract_frames(folder,video_file,index_local):
                             bbox = [int(b) for b in face['bbox']]
                             filename = f"{frame_count}_0_face.jpg"
                             if not os.path.exists(f"./faces/{folder}/{index_local}"):
-                                os.makedirs(f"./faces/{folder}{index_local}")
+                                os.makedirs(f"./faces/{folder}/{index_local}")
                             if not os.path.exists(f"./outputs/{folder}/{index_local}"):
-                                os.makedirs(f"./outputs/{folder}{index_local}")
+                                os.makedirs(f"./outputs/{folder}/{index_local}")
 
                             cv2.imwrite(f'./faces/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
                             cv2.imwrite(f'./outputs/{folder}/{index_local}/{filename}', frame)
