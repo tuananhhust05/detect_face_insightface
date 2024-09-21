@@ -33,7 +33,7 @@ app = FaceAnalysis('buffalo_l')
 app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
 list_result = []
 
-def extract_frames(video_file,index_local):
+def extract_frames(folder,video_file,index_local):
     array_em_result = []
     list_result_ele = []
     frame_count = 0
@@ -82,13 +82,13 @@ def extract_frames(video_file,index_local):
                         try:
                             bbox = [int(b) for b in face['bbox']]
                             filename = f"{frame_count}_0_face.jpg"
-                            if not os.path.exists(f"./faces/{index_local}"):
-                                os.makedirs(f"./faces/{index_local}")
-                            if not os.path.exists(f"./outputs/{index_local}"):
-                                os.makedirs(f"./outputs/{index_local}")
+                            if not os.path.exists(f"./faces/{folder}/{index_local}"):
+                                os.makedirs(f"./faces/{folder}{index_local}")
+                            if not os.path.exists(f"./outputs/{folder}/{index_local}"):
+                                os.makedirs(f"./outputs/{folder}{index_local}")
 
-                            cv2.imwrite(f'./faces/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
-                            cv2.imwrite(f'./outputs/{index_local}/{filename}', frame)
+                            cv2.imwrite(f'./faces/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
+                            cv2.imwrite(f'./outputs/{folder}/{index_local}/{filename}', frame)
                         except Exception as e:
                             print(f"Error saving frame: {e}")
     
@@ -97,10 +97,10 @@ def extract_frames(video_file,index_local):
         ele["duration"] = duration
         ele["frame_rate"] = frame_rate
     
-    with open(f"datas/{index_local}.json", 'w') as f:
+    with open(f"datas/{folder}/{index_local}.json", 'w') as f:
        json.dump(array_em_result, f, indent=4)
     
-    with open(f"datas/{index_local}.json", 'r') as file:
+    with open(f"datas/{folder}/{index_local}.json", 'r') as file:
         data = json.load(file)
         for em in data:
             frame_rate = em["frame_rate"] 
@@ -127,28 +127,28 @@ def extract_frames(video_file,index_local):
             })
 
 
-    with open(f"results/{index_local}.json", 'w') as f:
+    with open(f"results/{folder}/{index_local}.json", 'w') as f:
         json.dump(list_result_ele, f, indent=4)
         print("End video")       
 
     cap.release()
     print("End video")
 
-def groupJson(video_file,count_thread):
+def groupJson(folder,video_file,count_thread):
     final_result = []
     audio = MP4(video_file)
     duration = audio.info.length
     time_per_segment = duration / count_thread
     print("duration",time_per_segment, duration)
     list_stt = []
-    for path in os.listdir("results"):
-        if os.path.isfile(os.path.join("results", path)):
+    for path in os.listdir(f"results/{folder}"):
+        if os.path.isfile(os.path.join(f"results/{folder}", path)):
             stt = int(path.split(".")[0])
             list_stt.append(stt)
            
     list_stt=sorted(list_stt)
     for stt in list_stt:
-        with open(f"results/{stt}.json", 'r') as file:
+        with open(f"results/{folder}/{stt}.json", 'r') as file:
            data = json.load(file)
            print(data)
            if(len(data) > 0):
@@ -156,44 +156,63 @@ def groupJson(video_file,count_thread):
                 for duration in data["duration_exist"]:
                     final_result.append([duration[0] + stt * time_per_segment,duration[1] + stt * time_per_segment])
            print(f"Result after file {stt}",final_result )
-    with open(f"final_result.json", 'w') as f:
+    with open(f"final_result/{folder}/final_result.json", 'w') as f:
         json.dump(final_result, f, indent=4)
         print("End video") 
 
-def trimvideo(videofile,count_thread):
+def trimvideo(folder,videofile,count_thread):
     audio = MP4(videofile)
     duration = audio.info.length
     time_per_segment = duration / count_thread
     for i in range(count_thread):
         if(i == count_thread - 1):
-            command = f"ffmpeg -i ../video.mp4 -ss {time_per_segment*i} -c:v copy -c:a copy  videos/{i}.mp4 -y"
+            command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -c:v copy -c:a copy  videos/{folder}/{i}.mp4 -y"
             subprocess.run(command, shell=True, check=True)
         else:
-            command = f"ffmpeg -i ../video.mp4 -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  videos/{i}.mp4 -y"
+            command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  videos/{folder}/{i}.mp4 -y"
             subprocess.run(command, shell=True, check=True)
 
-def process_videos(video_file_origin,count_thread):
+def process_videos(folder,video_file_origin,count_thread):
     
-    trimvideo(video_file_origin,count_thread)
-    video_files = [f"videos/{i}.mp4" for i in range(count_thread)]  # Example video file list
+    trimvideo(folder,video_file_origin,count_thread)
+    video_files = [f"videos/{folder}/{i}.mp4" for i in range(count_thread)]  # Example video file list
     threads = []
     for i, video_file in enumerate(video_files):
-        t = threading.Thread(target=extract_frames, args=(video_file,i))
+        t = threading.Thread(target=extract_frames, args=(folder,video_file,i))
         threads.append(t)
         t.start()
 
     for t in threads:
         t.join()
 
-    groupJson(video_file_origin,count_thread)
+    groupJson(folder,video_file_origin,count_thread)
     print("Processing complete")
 
 def handle_multiplefile(listfile,thread):
     for file in listfile:
-        print(file)
+        file_name = file.split(".")[0]
+        if not os.path.exists(f"./faces/{file_name}"):
+            os.remove(f"./faces/{file_name}")
+            os.makedirs(f"./faces/{file_name}")
+        if not os.path.exists(f"./outputs/{file_name}"):
+            os.remove(f"./outputs/{file_name}")
+            os.makedirs(f"./outputs/{file_name}")
+        if not os.path.exists(f"./videos/{file_name}"):
+            os.remove(f"./videos/{file_name}")
+            os.makedirs(f"./videos/{file_name}")
+        if not os.path.exists(f"./datas/{file_name}"):
+            os.remove(f"./datas/{file_name}")
+            os.makedirs(f"./datas/{file_name}")
+        if not os.path.exists(f"./results/{file_name}"):
+            os.remove(f"./results/{file_name}")
+            os.makedirs(f"./results/{file_name}")
+        if not os.path.exists(f"./final_result/{file_name}"):
+            os.remove(f"./final_result/{file_name}")
+            os.makedirs(f"./final_result/{file_name}")
+        process_videos(file_name,file,thread)
         
 # Run with  GPU
 start_time = time.time()
-process_videos("../video.mp4",40)
+handle_multiplefile(["video.mp4","video8p.mp4"],40)
 end_time = time.time()
 print(f"Total execution time: {end_time - start_time}")
