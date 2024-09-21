@@ -34,7 +34,7 @@ app = FaceAnalysis('buffalo_l')
 app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
 list_result = []
 
-def extract_frames(folder,video_file,index_local):
+def extract_frames(folder,video_file,index_local,time_per_segment):
     array_em_result = []
     list_result_ele = []
     frame_count = 0
@@ -89,12 +89,19 @@ def extract_frames(folder,video_file,index_local):
                                 os.makedirs(f"./outputs/{folder}/{index_local}")
 
                             cv2.imwrite(f'./faces/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
-                            print(bbox)
+
                             top_left = (bbox[0], bbox[1])
                             bottom_right = (bbox[2], bbox[3])
                             color = (255, 0, 0)
                             thickness = 2
                             cv2.rectangle(frame, top_left, bottom_right, color, thickness)
+                            text = frame_count/frame_rate * time_per_segment
+                            text = str(text)
+                            position = (bbox[0], bbox[1])
+                            font = cv2.FONT_HERSHEY_SIMPLEX
+                            font_scale = 1
+
+                            cv2.putText(frame, text, position, font, font_scale, color, thickness)
                             cv2.imwrite(f'./outputs/{folder}/{index_local}/{filename}', frame)
                         except Exception as e:
                             print(f"Error saving frame: {e}")
@@ -180,12 +187,15 @@ def trimvideo(folder,videofile,count_thread):
             subprocess.run(command, shell=True, check=True)
 
 def process_videos(folder,video_file_origin,count_thread):
-    
+    audio = MP4(video_file_origin)
+    duration = audio.info.length
+    time_per_segment = duration / count_thread
+
     trimvideo(folder,video_file_origin,count_thread)
     video_files = [f"videos/{folder}/{i}.mp4" for i in range(count_thread)]  # Example video file list
     threads = []
     for i, video_file in enumerate(video_files):
-        t = threading.Thread(target=extract_frames, args=(folder,video_file,i))
+        t = threading.Thread(target=extract_frames, args=(folder,video_file,i,time_per_segment))
         threads.append(t)
         t.start()
 
