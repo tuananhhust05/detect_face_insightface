@@ -192,23 +192,41 @@ def handle_multiplefile(listfile,thread):
     for file in listfile:
         file_name = file.split(".")[0]
         if not os.path.exists(f"./faces/{file_name}"):
+            os.makedirs(f"./faces/{file_name}")
+        else:
             os.remove(f"./faces/{file_name}")
             os.makedirs(f"./faces/{file_name}")
+
         if not os.path.exists(f"./outputs/{file_name}"):
+            os.makedirs(f"./outputs/{file_name}")
+        else:
             os.remove(f"./outputs/{file_name}")
             os.makedirs(f"./outputs/{file_name}")
+
         if not os.path.exists(f"./videos/{file_name}"):
+            os.makedirs(f"./videos/{file_name}")
+        else:
             os.remove(f"./videos/{file_name}")
             os.makedirs(f"./videos/{file_name}")
+
         if not os.path.exists(f"./datas/{file_name}"):
-            os.remove(f"./datas/{file_name}")
             os.makedirs(f"./datas/{file_name}")
-        if not os.path.exists(f"./results/{file_name}"):
+        else:
             os.remove(f"./results/{file_name}")
             os.makedirs(f"./results/{file_name}")
+
+        if not os.path.exists(f"./results/{file_name}"):
+            os.makedirs(f"./results/{file_name}")
+        else:
+            os.remove(f"./results/{file_name}")
+            os.makedirs(f"./results/{file_name}")
+
         if not os.path.exists(f"./final_result/{file_name}"):
+            os.makedirs(f"./final_result/{file_name}")
+        else:
             os.remove(f"./final_result/{file_name}")
             os.makedirs(f"./final_result/{file_name}")
+            
         process_videos(file_name,file,thread)
         
 # Run with  GPU
