@@ -12,6 +12,7 @@ from insightface.app import FaceAnalysis
 from pinecone import Pinecone
 import subprocess
 import threading
+import matplotlib.pyplot as plt 
 # Check if CUDA is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
@@ -88,6 +89,12 @@ def extract_frames(folder,video_file,index_local):
                                 os.makedirs(f"./outputs/{folder}/{index_local}")
 
                             cv2.imwrite(f'./faces/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
+                            
+                            top_left = (bbox[1], bbox[0])
+                            bottom_right = (bbox[3], bbox[2])
+                            color = (255, 0, 0)
+                            thickness = 2
+                            cv2.rectangle(frame, top_left, bottom_right, color, thickness)
                             cv2.imwrite(f'./outputs/{folder}/{index_local}/{filename}', frame)
                         except Exception as e:
                             print(f"Error saving frame: {e}")
