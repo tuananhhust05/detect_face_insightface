@@ -10,7 +10,7 @@ import time
 from numpy.linalg import norm
 from insightface.app import FaceAnalysis
 from pinecone import Pinecone
-
+import subprocess
 import threading
 # Check if CUDA is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -160,7 +160,22 @@ def groupJson(video_file,count_thread):
         json.dump(final_result, f, indent=4)
         print("End video") 
 
-def process_videos(video_file_origin,video_files,count_thread):
+def trimvideo(videofile,count_thread):
+    audio = MP4(videofile)
+    duration = audio.info.length
+    time_per_segment = duration / count_thread
+    for i in range(count_thread):
+        if(i == count_thread - 1):
+            command = f"ffmpeg -i ../video.mp4 -ss {time_per_segment*i} -c:v copy -c:a copy  videos/{i}.mp4 -y"
+            subprocess.run(command, shell=True, check=True)
+        else:
+            command = f"c -i ../video.mp4 -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  videos/{i}.mp4 -y"
+            subprocess.run(command, shell=True, check=True)
+
+def process_videos(video_file_origin,count_thread):
+    
+    trimvideo(video_file_origin,count_thread)
+    video_files = [f"videos/{i}.mp4" for i in range(count_thread)]  # Example video file list
     threads = []
     for i, video_file in enumerate(video_files):
         t = threading.Thread(target=extract_frames, args=(video_file,i))
@@ -170,12 +185,11 @@ def process_videos(video_file_origin,video_files,count_thread):
     for t in threads:
         t.join()
 
-    groupJson(video_file_origin,40)
+    groupJson(video_file_origin,count_thread)
     print("Processing complete")
 
 # Run with  GPU
-video_files = [f"videos/{i}.mp4" for i in range(40)]  # Example video file list
 start_time = time.time()
-process_videos("../video.mp4",video_files,40)
+process_videos("../video.mp4",40)
 end_time = time.time()
 print(f"Total execution time: {end_time - start_time}")
