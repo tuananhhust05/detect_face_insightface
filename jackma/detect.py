@@ -43,7 +43,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
     duration = audio.info.length
     print("duration", duration)
     cap = cv2.VideoCapture(video_file)
-
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -95,7 +95,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                             color = (255, 0, 0)
                             thickness = 2
                             cv2.rectangle(frame, top_left, bottom_right, color, thickness)
-                            text = frame_count/frame_rate + time_per_segment*index_local
+                            time_per_frame = duration / em["frame_count"]
+                            text = frame_count/total_frames * frame_count + time_per_segment*index_local
                             text = str(text)
                             position = (bbox[0], bbox[1])
                             font = cv2.FONT_HERSHEY_SIMPLEX
