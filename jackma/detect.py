@@ -90,8 +90,8 @@ def extract_frames(folder,video_file,index_local):
 
                             cv2.imwrite(f'./faces/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
                             print(bbox)
-                            top_left = (bbox[1], bbox[0])
-                            bottom_right = (bbox[3], bbox[2])
+                            top_left = (bbox[0], bbox[1])
+                            bottom_right = (bbox[2], bbox[3])
                             color = (255, 0, 0)
                             thickness = 2
                             cv2.rectangle(frame, top_left, bottom_right, color, thickness)
