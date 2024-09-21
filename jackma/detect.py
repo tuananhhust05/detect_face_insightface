@@ -96,7 +96,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                             thickness = 2
                             cv2.rectangle(frame, top_left, bottom_right, color, thickness)
                             time_per_frame = duration / em["frame_count"]
-                            text = frame_count/total_frames * frame_count + time_per_segment*index_local
+                            text = frame_count /30 + time_per_segment*index_local
                             text = str(text)
                             position = (bbox[0], bbox[1])
                             font = cv2.FONT_HERSHEY_SIMPLEX
