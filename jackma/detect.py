@@ -188,6 +188,10 @@ def process_videos(video_file_origin,count_thread):
     groupJson(video_file_origin,count_thread)
     print("Processing complete")
 
+def handle_multiplefile(listfile,thread):
+    for file in listfile:
+        print(file)
+        
 # Run with  GPU
 start_time = time.time()
 process_videos("../video.mp4",40)
