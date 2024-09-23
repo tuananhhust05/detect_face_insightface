@@ -274,7 +274,7 @@ def handle_multiplefile(listfile,thread):
 # f = open("start.txt", "a")
 # f.write(str(start_time))
 
-handle_multiplefile(["video.mp4"],50)
+handle_multiplefile(["video.mp4"],40)
 
 # end_time = time.time()
 # f = open("end.txt", "a")
