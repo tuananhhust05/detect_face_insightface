@@ -264,7 +264,7 @@ list_file = []
 for path in os.listdir(dir_path):
     # check if current path is a file
     if os.path.isfile(os.path.join(dir_path, path)):
-        full_path = f"{dir_path}{path}"
+        full_path = f"{dir_path}/{path}"
         list_file.append(full_path)
 print(list_file)
 
