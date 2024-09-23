@@ -270,6 +270,7 @@ print(list_file)
 
 
 start_time = time.time()
+print("Start ......",str(start_time))
 f = open("start.txt", "a")
 f.write(str(start_time))
 
