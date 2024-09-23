@@ -26,5 +26,6 @@ def getduration(file):
     return seconds
 
 for file in list_file:
+    print(getduration(file))
     total = total + getduration(file)
-    print(total)
+    # print(total)
