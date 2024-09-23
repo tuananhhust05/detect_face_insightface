@@ -266,7 +266,7 @@ for path in os.listdir(dir_path):
     if os.path.isfile(os.path.join(dir_path, path)):
         full_path = f"{dir_path}/{path}"
         list_file.append(full_path)
-print(list_file)
+#print(list_file)
 
 
 # start_time = time.time()
@@ -274,7 +274,7 @@ print(list_file)
 # f = open("start.txt", "a")
 # f.write(str(start_time))
 
-handle_multiplefile(list_file[0],20)
+handle_multiplefile(["video_check/ch02_20240904040117_1.mp4"],20)
 
 # end_time = time.time()
 # f = open("end.txt", "a")
