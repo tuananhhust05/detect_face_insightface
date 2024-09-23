@@ -259,7 +259,7 @@ def handle_multiplefile(listfile,thread):
 
       
 # Run with  GPU
-dir_path = r'/home/hungha/AI_365/Cham_cong/detectvideo/detect_face_insightface/jackma/testvideo/'
+dir_path = r'/mnt/casehdd16tb/DataVideoHTC'
 list_file = []
 for path in os.listdir(dir_path):
     # check if current path is a file
@@ -267,7 +267,16 @@ for path in os.listdir(dir_path):
         full_path = f"{dir_path}{path}"
         list_file.append(full_path)
 print(list_file)
+
+
 start_time = time.time()
+f = open("start.txt", "a")
+f.write(str(start_time))
+
 handle_multiplefile(list_file,40)
+
 end_time = time.time()
+f = open("end.txt", "a")
+f.write(str(end_time))
+
 print(f"Total execution time: {end_time - start_time}")
