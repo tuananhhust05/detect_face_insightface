@@ -29,7 +29,10 @@ def getduration(file):
     fps = data.get(cv2.CAP_PROP_FPS) 
     data.release()
     # calculate duration of the video 
-    seconds = round(frames / fps) 
+    if fps > 0 :
+      seconds = round(frames / fps) 
+    else:
+      seconds = 0
     return seconds
 
 # torch for handling vector 
