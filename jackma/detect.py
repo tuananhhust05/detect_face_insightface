@@ -22,6 +22,16 @@ index = pc.Index("facejackma")
 
 weight_point = 0.4
 
+def getduration(file):
+    data = cv2.VideoCapture(file) 
+    # count the number of frames 
+    frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 
+    fps = data.get(cv2.CAP_PROP_FPS) 
+    data.release()
+    # calculate duration of the video 
+    seconds = round(frames / fps) 
+    return seconds
+
 # torch for handling vector 
 def cosin(question, answer):
     question = torch.tensor(question).to(device)
@@ -39,8 +49,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
     list_result_ele = []
     frame_count = 0
     frame_rate = 60  #  default 1s with 30 frames
-    audio = MP4(video_file)
-    duration = audio.info.length
+    # audio = MP4(video_file)
+    # duration = audio.info.length
+    duration = getduration(video_file)
     print("duration", duration)
     cap = cv2.VideoCapture(video_file)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -61,17 +72,18 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
             faces = app.get(frame)
             for face in faces:
                 if face["det_score"] > 0.5:
-                    embedding = torch.tensor(face['embedding']).to(device)  # Move embedding to GPU
-                    search_result = index.query(
-                        vector=embedding.tolist(),
-                        top_k=1,
-                        include_metadata=True,
-                        include_values=True,
-                        filter={"face": 0},
-                    )
-                    matches = search_result["matches"]
+                    # embedding = torch.tensor(face['embedding']).to(device)  # Move embedding to GPU
+                    # search_result = index.query(
+                    #     vector=embedding.tolist(),
+                    #     top_k=1,
+                    #     include_metadata=True,
+                    #     include_values=True,
+                    #     filter={"face": 0},
+                    # )
+                    # matches = search_result["matches"]
 
-                    if len(matches) > 0 and matches[0]['score'] > weight_point:
+                    # if len(matches) > 0 and matches[0]['score'] > weight_point:
+                    if True:
                         if len(array_em_result) == 0:
                             array_em_result.append({
                                 "speaker": 0,
@@ -151,8 +163,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
 
 def groupJson(folder,video_file,count_thread):
     final_result = []
-    audio = MP4(video_file)
-    duration = audio.info.length
+    # audio = MP4(video_file)
+    # duration = audio.info.length
+    duration = getduration(video_file)
     time_per_segment = duration / count_thread
     print("duration",time_per_segment, duration)
     list_stt = []
@@ -176,8 +189,9 @@ def groupJson(folder,video_file,count_thread):
         print("End video") 
 
 def trimvideo(folder,videofile,count_thread):
-    audio = MP4(videofile)
-    duration = audio.info.length
+    # audio = MP4(videofile)
+    # duration = audio.info.length
+    duration = getduration(videofile)
     time_per_segment = duration / count_thread
     for i in range(count_thread):
         if(i == count_thread - 1):
@@ -187,9 +201,13 @@ def trimvideo(folder,videofile,count_thread):
             command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  videos/{folder}/{i}.mp4 -y"
             subprocess.run(command, shell=True, check=True)
 
+
+    
 def process_videos(folder,video_file_origin,count_thread):
-    audio = MP4(video_file_origin)
-    duration = audio.info.length
+    print("process_videos", folder,video_file_origin,count_thread)
+    # audio = MP4(video_file_origin)
+    # duration = audio.info.length
+    duration = getduration(video_file_origin)
     time_per_segment = duration / count_thread
 
     trimvideo(folder,video_file_origin,count_thread)
@@ -209,6 +227,8 @@ def process_videos(folder,video_file_origin,count_thread):
 def handle_multiplefile(listfile,thread):
     for file in listfile:
         file_name = file.split(".")[0]
+        if "/" in file_name: 
+            file_name = file_name.split("/")[len(file_name.split("/")) - 1]
         if not os.path.exists(f"./faces/{file_name}"):
             os.makedirs(f"./faces/{file_name}")
         
@@ -232,11 +252,22 @@ def handle_multiplefile(listfile,thread):
         if not os.path.exists(f"./final_result/{file_name}"):
             os.makedirs(f"./final_result/{file_name}")
     
+        folder = file_name
+        process_videos(folder,file,thread)
+        subprocess.run("rm -rf videos/{file_name}", shell=True, check=True)
 
-        process_videos(file_name,file,thread)
-        
+
+      
 # Run with  GPU
+dir_path = r'/home/hungha/AI_365/Cham_cong/detectvideo/detect_face_insightface/jackma/testvideo/'
+list_file = []
+for path in os.listdir(dir_path):
+    # check if current path is a file
+    if os.path.isfile(os.path.join(dir_path, path)):
+        full_path = f"{dir_path}{path}"
+        list_file.append(full_path)
+print(list_file)
 start_time = time.time()
-handle_multiplefile(["ch02_20240901000000.mp4"],40)
+handle_multiplefile(list_file,40)
 end_time = time.time()
 print(f"Total execution time: {end_time - start_time}")
