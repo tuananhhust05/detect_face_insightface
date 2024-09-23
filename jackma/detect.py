@@ -237,6 +237,6 @@ def handle_multiplefile(listfile,thread):
         
 # Run with  GPU
 start_time = time.time()
-handle_multiplefile(["/home/ubuntu4080/detect/datacenter/ch02_20240901000000.mp4"],40)
+handle_multiplefile(["ch02_20240901000000.mp4"],40)
 end_time = time.time()
 print(f"Total execution time: {end_time - start_time}")
