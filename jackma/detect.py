@@ -195,10 +195,10 @@ def trimvideo(folder,videofile,count_thread):
     duration = getduration(videofile)
     time_per_segment = duration / count_thread
     for i in range(count_thread):
-        if(i == count_thread - 1):
-            command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -c:v copy -c:a copy  videos/{folder}/{i}.mp4 -y"
-            subprocess.run(command, shell=True, check=True)
-        else:
+        # if(i == count_thread - 1):
+        #     command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -c:v copy -c:a copy  videos/{folder}/{i}.mp4 -y"
+        #     subprocess.run(command, shell=True, check=True)
+        # else:
             command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  videos/{folder}/{i}.mp4 -y"
             subprocess.run(command, shell=True, check=True)
 
