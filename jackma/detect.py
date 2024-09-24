@@ -56,7 +56,7 @@ app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
 list_result = []
 
 def is_model_on_gpu(model):
-    return next(model.parameters()).is_cuda
+    return next(model.backbone.parameters()).is_cuda
 for model_name, model in app.models.items():
     print(f"Checking model: {model_name}")
     print(model_name,is_model_on_gpu(model))
