@@ -89,8 +89,8 @@ list_result = []
 #     return False
 
 
-for model_name, model in app.models.items():
-    print(f"Checking model: {model_name}")
+# for model_name, model in app.models.items():
+#     print(f"Checking model: {model_name}")
     # print(is_any_part_on_gpu(model))
 
 # @jit(nopython=True, target_backend='cuda')
