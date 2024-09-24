@@ -41,8 +41,7 @@ def cosin(question, answer):
     return cosine.item()  # Return as scalar
 
 array_em = []
-app = FaceAnalysis(allowed_modules=['detection'], providers=['CUDAExecutionProvider'])
-# app = FaceAnalysis('buffalo_l')
+app = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
 app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
 list_result = []
 
