@@ -67,30 +67,31 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
         print("frame_count", frame_count)
 
         if frame_count % frame_rate == 0:
-            gpu_image = cv2.cuda_GpuMat()
-            gpu_image.upload(frame)
+#             gpu_image = cv2.cuda_GpuMat()
+#             gpu_image.upload(frame)
 
-# Define a sharpening kernel
-            sharpen_kernel = np.array([[-1, -1, -1], 
-                           [-1,  9, -1], 
-                           [-1, -1, -1]], dtype=np.float32)
+# # Define a sharpening kernel
+#             sharpen_kernel = np.array([[-1, -1, -1], 
+#                            [-1,  9, -1], 
+#                            [-1, -1, -1]], dtype=np.float32)
 
-# Create a filter 2D operation on the GPU
-            gpu_sharpen_filter = cv2.cuda.createFilter2D(gpu_image.type(), -1, sharpen_kernel)
+# # Create a filter 2D operation on the GPU
+#             gpu_sharpen_filter = cv2.cuda.createFilter2D(gpu_image.type(), -1, sharpen_kernel)
 
-# Apply the filter to sharpen the image
-            gpu_sharp = gpu_sharpen_filter.apply(gpu_image)
+# # Apply the filter to sharpen the image
+#             gpu_sharp = gpu_sharpen_filter.apply(gpu_image)
 
-# A workaround for using denoising, Color often need CPU fall-back
-# You could use another GPU-based noise reduction technique or manage sections in CPU
-            gpu_result = gpu_sharp.download()
+# # A workaround for using denoising, Color often need CPU fall-back
+# # You could use another GPU-based noise reduction technique or manage sections in CPU
+#             gpu_result = gpu_sharp.download()
 
-            # This will denoise but is on CPU (not optimal here for GPU workflow):
-            frame_denoised = cv2.fastNlMeansDenoisingColored(gpu_result, None, 10, 10, 7, 21)
+#             # This will denoise but is on CPU (not optimal here for GPU workflow):
+#             frame_denoised = cv2.fastNlMeansDenoisingColored(gpu_result, None, 10, 10, 7, 21)
 
 
-            faces = app.get(frame_denoised)
+            faces = app.get(frame)
             for face in faces:
+                print(face)
                 if face["det_score"] > 0.5:
                     # embedding = torch.tensor(face['embedding']).to(device)  # Move embedding to GPU
                     # search_result = index.query(
