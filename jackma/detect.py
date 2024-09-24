@@ -87,7 +87,7 @@ list_result = []
 #     print(f"Checking model: {model_name}")
 #     print(is_any_part_on_gpu(model))
 
-@jit(nopython=True, target_backend='cuda')
+# @jit(nopython=True, target_backend='cuda')
 def extract_frames(folder,video_file,index_local,time_per_segment):
     array_em_result = []
     list_result_ele = []
