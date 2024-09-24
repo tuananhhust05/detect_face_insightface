@@ -68,23 +68,23 @@ list_result = []
 # def is_model_on_gpu(model):
 #     return next(model.parameters()).is_cuda
 
-def is_any_part_on_gpu(custom_model):
-    for attr in dir(custom_model):
-        # Get attribute
-        attribute = getattr(custom_model, attr)
-        # Check if attribute is a PyTorch tensor
-        if isinstance(attribute, torch.Tensor) and attribute.is_cuda:
-            return True
-        # Alternatively, check if attribute itself is a model that could contain parameters
-        elif isinstance(attribute, torch.nn.Module):
-            if any(param.is_cuda for param in attribute.parameters()):
-                return True
-    return False
+# def is_any_part_on_gpu(custom_model):
+#     for attr in dir(custom_model):
+#         # Get attribute
+#         attribute = getattr(custom_model, attr)
+#         # Check if attribute is a PyTorch tensor
+#         if isinstance(attribute, torch.Tensor) and attribute.is_cuda:
+#             return True
+#         # Alternatively, check if attribute itself is a model that could contain parameters
+#         elif isinstance(attribute, torch.nn.Module):
+#             if any(param.is_cuda for param in attribute.parameters()):
+#                 return True
+#     return False
 
 
-for model_name, model in app.models.items():
-    print(f"Checking model: {model_name}")
-    print(is_any_part_on_gpu(model))
+# for model_name, model in app.models.items():
+#     print(f"Checking model: {model_name}")
+#     print(is_any_part_on_gpu(model))
 
 def extract_frames(folder,video_file,index_local,time_per_segment):
     array_em_result = []
@@ -316,7 +316,7 @@ print("Start ......",str(start_time))
 f = open("start.txt", "a")
 f.write(str(start_time))
 
-# handle_multiplefile(list_file[6:],50)
+handle_multiplefile(list_file[6:],50)
 
 end_time = time.time()
 f = open("end.txt", "a")
