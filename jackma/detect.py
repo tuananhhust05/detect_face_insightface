@@ -318,7 +318,7 @@ print("Start ......",str(start_time))
 f = open("start.txt", "a")
 f.write(str(start_time))
 
-handle_multiplefile(list_file[6:],50)
+handle_multiplefile(list_file,50)
 
 end_time = time.time()
 f = open("end.txt", "a")
