@@ -1,0 +1,15 @@
+[
+    {
+        "speaker": 0,
+        "frames": [
+            7500,
+            7560,
+            7620,
+            8160,
+            8400
+        ],
+        "frame_count": 13206,
+        "duration": 660,
+        "frame_rate": 60
+    }
+]

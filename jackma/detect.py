@@ -41,7 +41,7 @@ def cosin(question, answer):
     return cosine.item()  # Return as scalar
 
 array_em = []
-app = FaceAnalysis('buffalo_l')
+app = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
 app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
 list_result = []
 
@@ -275,7 +275,7 @@ print("Start ......",str(start_time))
 f = open("start.txt", "a")
 f.write(str(start_time))
 
-handle_multiplefile(list_file[3:],50)
+handle_multiplefile(list_file[5:],60)
 
 end_time = time.time()
 f = open("end.txt", "a")

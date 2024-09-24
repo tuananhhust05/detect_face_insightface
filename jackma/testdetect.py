@@ -67,12 +67,29 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
         print("frame_count", frame_count)
 
         if frame_count % frame_rate == 0:
-            # Sharpen and denoise the image
-            sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-            sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
-            frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
+            gpu_image = cv2.cuda_GpuMat()
+            gpu_image.upload(frame)
 
-            faces = app.get(frame)
+# Define a sharpening kernel
+            sharpen_kernel = np.array([[-1, -1, -1], 
+                           [-1,  9, -1], 
+                           [-1, -1, -1]], dtype=np.float32)
+
+# Create a filter 2D operation on the GPU
+            gpu_sharpen_filter = cv2.cuda.createFilter2D(gpu_image.type(), -1, sharpen_kernel)
+
+# Apply the filter to sharpen the image
+            gpu_sharp = gpu_sharpen_filter.apply(gpu_image)
+
+# A workaround for using denoising, Color often need CPU fall-back
+# You could use another GPU-based noise reduction technique or manage sections in CPU
+            gpu_result = gpu_sharp.download()
+
+            # This will denoise but is on CPU (not optimal here for GPU workflow):
+            frame_denoised = cv2.fastNlMeansDenoisingColored(gpu_result, None, 10, 10, 7, 21)
+
+
+            faces = app.get(frame_denoised)
             for face in faces:
                 if face["det_score"] > 0.5:
                     # embedding = torch.tensor(face['embedding']).to(device)  # Move embedding to GPU
@@ -277,7 +294,7 @@ for path in os.listdir(dir_path):
 # f = open("start.txt", "a")
 # f.write(str(start_time))
 
-handle_multiplefile(["video_check/ch02_20240904040117_1.mp4"],20)
+handle_multiplefile(["video8p.mp4"],10)
 
 # end_time = time.time()
 # f = open("end.txt", "a")
