@@ -66,9 +66,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
 
         if frame_count % frame_rate == 0:
             # Sharpen and denoise the image
-            sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-            sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
-            frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
+            # sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+            # sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
+            # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
 
             faces = app.get(frame)
             for face in faces:
