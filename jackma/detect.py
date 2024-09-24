@@ -10,6 +10,7 @@ import json
 import time
 from numpy.linalg import norm
 from insightface.app import FaceAnalysis
+from insightface.model_zoo import model_zoo
 from pinecone import Pinecone
 from numba import jit, cuda
 import subprocess
@@ -63,6 +64,11 @@ array_em = []
 # Initialize FaceAnalysis
 app = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app.prepare(ctx_id=ctx_id, det_size=(640, 640))
+
+model = model_zoo.get_model('/home/ubuntu4080/.insightface/models/buffalo_l/det_10g.onnx')
+model.prepare(ctx_id=0, det_size=(640, 640))
+
+
 print(f"FaceAnalysis is using {'GPU' if ctx_id >=0 else 'CPU'}")
 list_result = []
 
@@ -108,61 +114,67 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
         print("frame_count", frame_count)
 
         if frame_count % frame_rate == 0:
-            # Sharpen and denoise the image
-            # sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-            # sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
-            # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
+ 
+            facechecks = model.detect(frame,input_size=(640, 640))
+            flagDetect = False
+            if(len(facechecks) > 0):
+                if(len(facechecks[0]) > 0):
+                    flagDetect = True
+            if(flagDetect == True):
+                # Sharpen and denoise the image
+                sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+                sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
+                frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
+                faces = app.get(frame)
+                for face in faces:
+                    if face["det_score"] > 0.5:
+                        # embedding = torch.tensor(face['embedding']).to(device)  # Move embedding to GPU
+                        # search_result = index.query(
+                        #     vector=embedding.tolist(),
+                        #     top_k=1,
+                        #     include_metadata=True,
+                        #     include_values=True,
+                        #     filter={"face": 0},
+                        # )
+                        # matches = search_result["matches"]
 
-            faces = app.get(frame)
-            for face in faces:
-                if face["det_score"] > 0.5:
-                    # embedding = torch.tensor(face['embedding']).to(device)  # Move embedding to GPU
-                    # search_result = index.query(
-                    #     vector=embedding.tolist(),
-                    #     top_k=1,
-                    #     include_metadata=True,
-                    #     include_values=True,
-                    #     filter={"face": 0},
-                    # )
-                    # matches = search_result["matches"]
+                        # if len(matches) > 0 and matches[0]['score'] > weight_point:
+                        if True:
+                            if len(array_em_result) == 0:
+                                array_em_result.append({
+                                    "speaker": 0,
+                                    "frames": [frame_count],
+                                })
+                            else:
+                                array_em_result[0]["frames"].append(frame_count)
 
-                    # if len(matches) > 0 and matches[0]['score'] > weight_point:
-                    if True:
-                        if len(array_em_result) == 0:
-                            array_em_result.append({
-                                "speaker": 0,
-                                "frames": [frame_count],
-                            })
-                        else:
-                            array_em_result[0]["frames"].append(frame_count)
+                            try:
+                                bbox = [int(b) for b in face['bbox']]
+                                filename = f"{frame_count}_0_face.jpg"
+                                if not os.path.exists(f"./faces/{folder}/{index_local}"):
+                                    os.makedirs(f"./faces/{folder}/{index_local}")
+                                if not os.path.exists(f"./outputs/{folder}/{index_local}"):
+                                    os.makedirs(f"./outputs/{folder}/{index_local}")
 
-                        try:
-                            bbox = [int(b) for b in face['bbox']]
-                            filename = f"{frame_count}_0_face.jpg"
-                            if not os.path.exists(f"./faces/{folder}/{index_local}"):
-                                os.makedirs(f"./faces/{folder}/{index_local}")
-                            if not os.path.exists(f"./outputs/{folder}/{index_local}"):
-                                os.makedirs(f"./outputs/{folder}/{index_local}")
+                                cv2.imwrite(f'./faces/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
 
-                            cv2.imwrite(f'./faces/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
+                                top_left = (bbox[0], bbox[1])
+                                bottom_right = (bbox[2], bbox[3])
+                                color = (255, 0, 0)
+                                thickness = 2
+                                cv2.rectangle(frame, top_left, bottom_right, color, thickness)
+                                time_per_frame = duration / total_frames
+                                text = frame_count * time_per_frame + time_per_segment*index_local
+                                text = str(text)
+                                position = (bbox[0], bbox[1])
+                                font = cv2.FONT_HERSHEY_SIMPLEX
+                                font_scale = 1
 
-                            top_left = (bbox[0], bbox[1])
-                            bottom_right = (bbox[2], bbox[3])
-                            color = (255, 0, 0)
-                            thickness = 2
-                            cv2.rectangle(frame, top_left, bottom_right, color, thickness)
-                            time_per_frame = duration / total_frames
-                            text = frame_count * time_per_frame + time_per_segment*index_local
-                            text = str(text)
-                            position = (bbox[0], bbox[1])
-                            font = cv2.FONT_HERSHEY_SIMPLEX
-                            font_scale = 1
-
-                            cv2.putText(frame, text, position, font, font_scale, color, thickness)
-                            cv2.imwrite(f'./outputs/{folder}/{index_local}/{filename}', frame)
-                        except Exception as e:
-                            print(f"Error saving frame: {e}")
-    
+                                cv2.putText(frame, text, position, font, font_scale, color, thickness)
+                                cv2.imwrite(f'./outputs/{folder}/{index_local}/{filename}', frame)
+                            except Exception as e:
+                                print(f"Error saving frame: {e}")
+        
     for ele in array_em_result:
         ele["frame_count"] = frame_count
         ele["duration"] = duration
@@ -303,14 +315,14 @@ def handle_multiplefile(listfile,thread):
 
       
 # Run with  GPU
-dir_path = r'/mnt/casehdd16tb/DataVideoHTC'
-list_file = []
-for path in os.listdir(dir_path):
-    # check if current path is a file
-    if os.path.isfile(os.path.join(dir_path, path)):
-        full_path = f"{dir_path}/{path}"
-        list_file.append(full_path)
-print(list_file)
+# dir_path = r'/mnt/casehdd16tb/DataVideoHTC'
+# list_file = []
+# for path in os.listdir(dir_path):
+#     # check if current path is a file
+#     if os.path.isfile(os.path.join(dir_path, path)):
+#         full_path = f"{dir_path}/{path}"
+#         list_file.append(full_path)
+# print(list_file)
 
 
 start_time = time.time()
@@ -318,8 +330,8 @@ print("Start ......",str(start_time))
 f = open("start.txt", "a")
 f.write(str(start_time))
 
-handle_multiplefile(list_file[6:],50)
-
+# handle_multiplefile(list_file[6:],50)
+handle_multiplefile(["/mnt/casehdd16tb/DataVideoHTC/ch02_20240904040117.mp4"],50)
 end_time = time.time()
 f = open("end.txt", "a")
 f.write(str(end_time))
