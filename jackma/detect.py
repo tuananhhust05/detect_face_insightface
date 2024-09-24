@@ -14,6 +14,7 @@ from pinecone import Pinecone
 import subprocess
 import threading
 import matplotlib.pyplot as plt 
+import mxnet as mx
 # Check if CUDA is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
@@ -40,10 +41,23 @@ def cosin(question, answer):
     cosine = torch.dot(question, answer) / (torch.norm(question) * torch.norm(answer))
     return cosine.item()  # Return as scalar
 
+def check_model_on_gpu(model):
+    for param in model.params.values():
+        ctx = param.list_ctx()[0]
+        if ctx != mx.gpu(0):
+            print(f"Parameter {param.name} is on {ctx}, not on GPU.")
+            return False
+    print("All model parameters are on GPU.")
+    return True
+
 array_em = []
 app = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
 app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
 list_result = []
+
+for model_name, model in app.models.items():
+    print(f"Checking model: {model_name}")
+    check_model_on_gpu(model)
 
 def extract_frames(folder,video_file,index_local,time_per_segment):
     array_em_result = []
@@ -275,7 +289,7 @@ print("Start ......",str(start_time))
 f = open("start.txt", "a")
 f.write(str(start_time))
 
-handle_multiplefile(list_file[6:],50)
+# handle_multiplefile(list_file[6:],50)
 
 end_time = time.time()
 f = open("end.txt", "a")
