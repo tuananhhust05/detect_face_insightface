@@ -59,9 +59,15 @@ list_result = []
 
 # def is_model_on_gpu(model):
 #     return next(model.parameters()).is_cuda
+
+def is_model_on_gpu(model):
+    # Check if any parameter in the model is located on the GPU
+    return any(param.is_cuda for param in model.parameters())
+
 for model_name, model in app.models.items():
-    model.to(device)
-    # print(f"Checking model: {model_name}")
+    # model.to(device)
+    print(f"Checking model: {model_name}")
+    print(is_model_on_gpu(model))
     # print(dir(model))
     # print(check_model(model))
 
