@@ -55,13 +55,12 @@ app = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
 app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
 list_result = []
 
-def is_model_on_gpu(model):
-    return next(model.backbone.parameters()).is_cuda
-
+# def is_model_on_gpu(model):
+#     return next(model.parameters()).is_cuda
 for model_name, model in app.models.items():
     print(f"Checking model: {model_name}")
-    print(model)
-    print(model_name,is_model_on_gpu(model))
+    print(dir(model))
+    # check_model_on_gpu(model)
 
 def extract_frames(folder,video_file,index_local,time_per_segment):
     array_em_result = []
