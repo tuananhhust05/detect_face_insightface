@@ -4,7 +4,7 @@ import numpy as np
 import os
 import cv2
 import insightface
-import torch
+# import torch
 from mutagen.mp4 import MP4
 import json
 import time
@@ -15,7 +15,7 @@ import subprocess
 import threading
 import matplotlib.pyplot as plt 
 # Check if CUDA is available
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
@@ -34,11 +34,11 @@ def getduration(file):
     return seconds
 
 # torch for handling vector 
-def cosin(question, answer):
-    question = torch.tensor(question).to(device)
-    answer = torch.tensor(answer).to(device)
-    cosine = torch.dot(question, answer) / (torch.norm(question) * torch.norm(answer))
-    return cosine.item()  # Return as scalar
+# def cosin(question, answer):
+#     question = torch.tensor(question).to(device)
+#     answer = torch.tensor(answer).to(device)
+#     cosine = torch.dot(question, answer) / (torch.norm(question) * torch.norm(answer))
+#     return cosine.item()  # Return as scalar
 
 array_em = []
 app = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
