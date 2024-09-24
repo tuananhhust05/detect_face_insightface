@@ -39,7 +39,7 @@ def cosin(question, answer):
     question = torch.tensor(question).to(device)
     answer = torch.tensor(answer).to(device)
     cosine = torch.dot(question, answer) / (torch.norm(question) * torch.norm(answer))
-    return cosine.item()  # Return as scalar
+    return cosine.item()  
 
 # def check_model_on_gpu(model):
 #     for param in model.params.values():
@@ -60,9 +60,10 @@ list_result = []
 # def is_model_on_gpu(model):
 #     return next(model.parameters()).is_cuda
 for model_name, model in app.models.items():
-    print(f"Checking model: {model_name}")
-    print(dir(model))
-    print(check_model(model))
+    model.to(device)
+    # print(f"Checking model: {model_name}")
+    # print(dir(model))
+    # print(check_model(model))
 
 def extract_frames(folder,video_file,index_local,time_per_segment):
     array_em_result = []
