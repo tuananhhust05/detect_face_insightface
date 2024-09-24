@@ -56,11 +56,11 @@ def check_model(model):
 ctx_id = 0 if device.type == 'cuda' else -1
 
 array_em = []
-app = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
-app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
+# app = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
+# app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
 
 # Initialize FaceAnalysis
-app = FaceAnalysis('buffalo_l')
+app = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app.prepare(ctx_id=ctx_id, det_size=(640, 640))
 print(f"FaceAnalysis is using {'GPU' if ctx_id >=0 else 'CPU'}")
 list_result = []
@@ -68,26 +68,23 @@ list_result = []
 # def is_model_on_gpu(model):
 #     return next(model.parameters()).is_cuda
 
-# def is_any_part_on_gpu(custom_model):
-#     for attr in dir(custom_model):
-#         # Get attribute
-#         attribute = getattr(custom_model, attr)
-#         # Check if attribute is a PyTorch tensor
-#         if isinstance(attribute, torch.Tensor) and attribute.is_cuda:
-#             return True
-#         # Alternatively, check if attribute itself is a model that could contain parameters
-#         elif isinstance(attribute, torch.nn.Module):
-#             if any(param.is_cuda for param in attribute.parameters()):
-#                 return True
-#     return False
+def is_any_part_on_gpu(custom_model):
+    for attr in dir(custom_model):
+        # Get attribute
+        attribute = getattr(custom_model, attr)
+        # Check if attribute is a PyTorch tensor
+        if isinstance(attribute, torch.Tensor) and attribute.is_cuda:
+            return True
+        # Alternatively, check if attribute itself is a model that could contain parameters
+        elif isinstance(attribute, torch.nn.Module):
+            if any(param.is_cuda for param in attribute.parameters()):
+                return True
+    return False
 
 
-# for model_name, model in app.models.items():
-#     # model.to(device)
-#     print(f"Checking model: {model_name}")
-#     print(is_any_part_on_gpu(model))
-    # print(dir(model))
-    # print(check_model(model))
+for model_name, model in app.models.items():
+    print(f"Checking model: {model_name}")
+    print(is_any_part_on_gpu(model))
 
 def extract_frames(folder,video_file,index_local,time_per_segment):
     array_em_result = []
