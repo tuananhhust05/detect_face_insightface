@@ -11,6 +11,7 @@ import time
 from numpy.linalg import norm
 from insightface.app import FaceAnalysis
 from pinecone import Pinecone
+from numba import jit, cuda
 import subprocess
 import threading
 import matplotlib.pyplot as plt 
@@ -86,6 +87,7 @@ list_result = []
 #     print(f"Checking model: {model_name}")
 #     print(is_any_part_on_gpu(model))
 
+@jit(nopython=True, target_backend='cuda')
 def extract_frames(folder,video_file,index_local,time_per_segment):
     array_em_result = []
     list_result_ele = []
