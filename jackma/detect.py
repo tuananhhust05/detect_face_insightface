@@ -83,9 +83,9 @@ list_result = []
 #     return False
 
 
-# for model_name, model in app.models.items():
-#     print(f"Checking model: {model_name}")
-#     print(is_any_part_on_gpu(model))
+for model_name, model in app.models.items():
+    print(f"Checking model: {model_name}")
+    print(is_any_part_on_gpu(model))
 
 # @jit(nopython=True, target_backend='cuda')
 def extract_frames(folder,video_file,index_local,time_per_segment):
@@ -318,7 +318,7 @@ print("Start ......",str(start_time))
 f = open("start.txt", "a")
 f.write(str(start_time))
 
-handle_multiplefile(list_file,50)
+handle_multiplefile(list_file[6:],50)
 
 end_time = time.time()
 f = open("end.txt", "a")
