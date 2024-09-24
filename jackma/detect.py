@@ -14,7 +14,7 @@ from pinecone import Pinecone
 import subprocess
 import threading
 import matplotlib.pyplot as plt 
-import mxnet as mx
+# import mxnet as mx
 # Check if CUDA is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
