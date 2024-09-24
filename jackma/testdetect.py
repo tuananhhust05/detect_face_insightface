@@ -42,9 +42,11 @@ def cosin(question, answer):
     cosine = torch.dot(question, answer) / (torch.norm(question) * torch.norm(answer))
     return cosine.item()  # Return as scalar
 
+ctx_id = 0 if device.type == 'cuda' else -1
 array_em = []
 app = FaceAnalysis('buffalo_l')
-app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
+app.prepare(ctx_id=ctx_id, det_size=(640, 640))
+print(f"FaceAnalysis is using {'GPU' if ctx_id >=0 else 'CPU'}")
 list_result = []
 
 def extract_frames(folder,video_file,index_local,time_per_segment):
