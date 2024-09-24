@@ -41,14 +41,16 @@ def cosin(question, answer):
     cosine = torch.dot(question, answer) / (torch.norm(question) * torch.norm(answer))
     return cosine.item()  # Return as scalar
 
-def check_model_on_gpu(model):
-    for param in model.params.values():
-        ctx = param.list_ctx()[0]
-        # if ctx != mx.gpu(0):
-        print(f"Parameter {param.name} is on {ctx}, not on GPU.")
-            # return False
-    print("All model parameters are on GPU.")
-    return True
+# def check_model_on_gpu(model):
+#     for param in model.params.values():
+#         ctx = param.list_ctx()[0]
+#         # if ctx != mx.gpu(0):
+#         print(f"Parameter {param.name} is on {ctx}, not on GPU.")
+#             # return False
+#     print("All model parameters are on GPU.")
+#     return True
+def check_model(model):
+    return next(model.parameters()).is_cuda
 
 array_em = []
 app = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
@@ -60,7 +62,7 @@ list_result = []
 for model_name, model in app.models.items():
     print(f"Checking model: {model_name}")
     print(dir(model))
-    # check_model_on_gpu(model)
+    print(check_model(model))
 
 def extract_frames(folder,video_file,index_local,time_per_segment):
     array_em_result = []
