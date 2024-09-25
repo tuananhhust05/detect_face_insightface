@@ -331,7 +331,7 @@ f = open("start.txt", "a")
 f.write(str(start_time))
 
 # handle_multiplefile(list_file[6:],50)
-handle_multiplefile(["/mnt/casehdd16tb/DataVideoHTC/ch02_20240904040117.mp4"],65)
+handle_multiplefile(["/home/ubuntu4080/detect/data/ch02_20240904040117.mp4"],65)
 end_time = time.time()
 f = open("end.txt", "a")
 f.write(str(end_time))
