@@ -315,14 +315,14 @@ def handle_multiplefile(listfile,thread):
 
       
 # Run with  GPU
-# dir_path = r'/mnt/casehdd16tb/DataVideoHTC'
-# list_file = []
-# for path in os.listdir(dir_path):
-#     # check if current path is a file
-#     if os.path.isfile(os.path.join(dir_path, path)):
-#         full_path = f"{dir_path}/{path}"
-#         list_file.append(full_path)
-# print(list_file)
+dir_path = r'/home/poc4a5000/facesx'
+list_file = []
+for path in os.listdir(dir_path):
+    # check if current path is a file
+    if os.path.isfile(os.path.join(dir_path, path)):
+        full_path = f"{dir_path}/{path}"
+        list_file.append(full_path)
+print(list_file)
 
 
 start_time = time.time()
@@ -331,7 +331,7 @@ f = open("start.txt", "a")
 f.write(str(start_time))
 
 # handle_multiplefile(list_file[6:],50)
-handle_multiplefile(["/home/ubuntu4080/detect/data/ch02_20240904040117.mp4"],50)
+handle_multiplefile(list_file,50)
 end_time = time.time()
 f = open("end.txt", "a")
 f.write(str(end_time))
