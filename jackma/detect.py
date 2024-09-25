@@ -21,8 +21,8 @@ import matplotlib.pyplot as plt
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
-index = pc.Index("facejackma")
+pc = Pinecone(api_key="6bebb6ba-195f-471e-bb60-e0209bd5c697")
+index = pc.Index("detectcamera")
 
 weight_point = 0.4
 
@@ -128,18 +128,18 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                 faces = app.get(frame)
                 for face in faces:
                     if face["det_score"] > 0.5:
-                        # embedding = torch.tensor(face['embedding']).to(device)  # Move embedding to GPU
-                        # search_result = index.query(
-                        #     vector=embedding.tolist(),
-                        #     top_k=1,
-                        #     include_metadata=True,
-                        #     include_values=True,
-                        #     filter={"face": 0},
-                        # )
-                        # matches = search_result["matches"]
+                        embedding = torch.tensor(face['embedding']).to(device)  # Move embedding to GPU
+                        search_result = index.query(
+                            vector=embedding.tolist(),
+                            top_k=1,
+                            include_metadata=True,
+                            include_values=True,
+                            filter={"face": 0},
+                        )
+                        matches = search_result["matches"]
 
-                        # if len(matches) > 0 and matches[0]['score'] > weight_point:
-                        if True:
+                        if len(matches) > 0 and matches[0]['score'] > weight_point:
+                        # if True:
                             if len(array_em_result) == 0:
                                 array_em_result.append({
                                     "speaker": 0,
