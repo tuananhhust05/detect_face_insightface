@@ -65,7 +65,7 @@ array_em = []
 app = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app.prepare(ctx_id=ctx_id, det_size=(640, 640))
 
-model = model_zoo.get_model('/home/ubuntu4080/.insightface/models/buffalo_l/det_10g.onnx')
+model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
 model.prepare(ctx_id=0, det_size=(640, 640))
 
 
@@ -315,7 +315,7 @@ def handle_multiplefile(listfile,thread):
 
       
 # Run with  GPU
-dir_path = r'/home/ubuntu4080/detect/data'
+dir_path = r'/home/poc4a5000/facesx'
 list_file = []
 for path in os.listdir(dir_path):
     # check if current path is a file
