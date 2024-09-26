@@ -43,14 +43,6 @@ def cosin(question, answer):
     cosine = torch.dot(question, answer) / (torch.norm(question) * torch.norm(answer))
     return cosine.item()  
 
-# def check_model_on_gpu(model):
-#     for param in model.params.values():
-#         ctx = param.list_ctx()[0]
-#         # if ctx != mx.gpu(0):
-#         print(f"Parameter {param.name} is on {ctx}, not on GPU.")
-#             # return False
-#     print("All model parameters are on GPU.")
-#     return True
 def check_model(model):
     return next(model.parameters()).is_cuda
 
@@ -58,42 +50,19 @@ def check_model(model):
 ctx_id = 0 if device.type == 'cuda' else -1
 
 array_em = []
-# app = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
-# app.prepare(ctx_id=0, det_size=(640, 640))  # Ensure InsightFace uses GPU
 
 # Initialize FaceAnalysis
 app = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app.prepare(ctx_id=ctx_id, det_size=(640, 640))
 
-model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
+model = model_zoo.get_model('/home/ubuntu4080/.insightface/models/buffalo_l/det_10g.onnx')
 model.prepare(ctx_id=0, det_size=(640, 640))
 
 
 print(f"FaceAnalysis is using {'GPU' if ctx_id >=0 else 'CPU'}")
 list_result = []
 
-# def is_model_on_gpu(model):
-#     return next(model.parameters()).is_cuda
 
-# def is_any_part_on_gpu(custom_model):
-#     for attr in dir(custom_model):
-#         # Get attribute
-#         attribute = getattr(custom_model, attr)
-#         # Check if attribute is a PyTorch tensor
-#         if isinstance(attribute, torch.Tensor) and attribute.is_cuda:
-#             return True
-#         # Alternatively, check if attribute itself is a model that could contain parameters
-#         elif isinstance(attribute, torch.nn.Module):
-#             if any(param.is_cuda for param in attribute.parameters()):
-#                 return True
-#     return False
-
-
-# for model_name, model in app.models.items():
-#     print(f"Checking model: {model_name}")
-    # print(is_any_part_on_gpu(model))
-
-# @jit(nopython=True, target_backend='cuda')
 def extract_frames(folder,video_file,index_local,time_per_segment):
     array_em_result = []
     list_result_ele = []
@@ -128,18 +97,18 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                 faces = app.get(frame)
                 for face in faces:
                     if face["det_score"] > 0.5:
-                        # embedding = torch.tensor(face['embedding']).to(device)  # Move embedding to GPU
-                        # search_result = index.query(
-                        #     vector=embedding.tolist(),
-                        #     top_k=1,
-                        #     include_metadata=True,
-                        #     include_values=True,
-                        #     filter={"face": 0},
-                        # )
-                        # matches = search_result["matches"]
+                        embedding = torch.tensor(face['embedding']).to(device)  # Move embedding to GPU
+                        search_result = index.query(
+                            vector=embedding.tolist(),
+                            top_k=1,
+                            include_metadata=True,
+                            include_values=True,
+                            filter={"face": 0},
+                        )
+                        matches = search_result["matches"]
 
-                        # if len(matches) > 0 and matches[0]['score'] > weight_point:
-                        if True:
+                        if len(matches) > 0 and matches[0]['score'] > weight_point:
+                        # if True:
                             if len(array_em_result) == 0:
                                 array_em_result.append({
                                     "speaker": 0,
@@ -261,8 +230,6 @@ def trimvideo(folder,videofile,count_thread):
     
 def process_videos(folder,video_file_origin,count_thread):
     print("process_videos", folder,video_file_origin,count_thread)
-    # audio = MP4(video_file_origin)
-    # duration = audio.info.length
     duration = getduration(video_file_origin)
     time_per_segment = duration / count_thread
 
@@ -315,7 +282,7 @@ def handle_multiplefile(listfile,thread):
 
       
 # Run with  GPU
-dir_path = r'/home/poc4a5000/facesx'
+dir_path = r'/home/ubuntu4080/detect/data'
 list_file = []
 for path in os.listdir(dir_path):
     # check if current path is a file
