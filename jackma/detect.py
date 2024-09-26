@@ -315,7 +315,7 @@ def handle_multiplefile(listfile,thread):
 
       
 # Run with  GPU
-dir_path = r'/home/poc4a5000/facesx'
+dir_path = r'/home/ubuntu4080/detect/data'
 list_file = []
 for path in os.listdir(dir_path):
     # check if current path is a file
