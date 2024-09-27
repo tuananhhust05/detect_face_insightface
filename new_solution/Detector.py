@@ -4,7 +4,7 @@ from imutils.video import FPS
 
 class Detector:
     def __init__(self):
-        self.faceModel = cv2.dnn.readNetFromCaffe("models/res10_300x300_ssd_iter_140000.prototxt",
+        self.faceModel = cv2.dnn.readNetFromCaffe("res10_300x300_ssd_iter_140000.prototxt",
             caffeModel="res10_300x300_ssd_iter_140000.caffemodels")
     
     def processImag(self, imgName):
