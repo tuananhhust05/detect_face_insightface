@@ -194,8 +194,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                             duration_exist = []
             list_result_ele.append({
                 'face':em['speaker'],
-                # 'age':em['age'],
-                # 'gender':em['gender'],
+                'age':em['age'],
+                'gender':em['gender'],
                 'duration_exist':list_time_exist
             })
 
