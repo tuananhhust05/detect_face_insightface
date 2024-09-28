@@ -26,7 +26,7 @@ class Detector:
                 (xmin, ymin, xmax, ymax) = bbox.astype("int")
                 print(xmin, ymin, xmax, ymax)
                 cv2.rectangle(self.img, (xmin, ymin), (xmax,ymax), (0,0,255), 2 )
-                cv2.imwrite("face.png", self.img[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
+                cv2.imwrite("face.png", self.img[ymin:ymax, xmin:xmax, ::-1])
 
                 # top_left = (bbox[0], bbox[1])
                 # bottom_right = (bbox[2], bbox[3])
