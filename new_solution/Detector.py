@@ -16,6 +16,7 @@ class Detector:
 
         self.faceModel.setInput(blob)
         predictions = self.faceModel.forward()
+        print("predictions", predictions)
         for i in range(0, predictions.shape[2]):
             if predictions[0, 0, i, 2] > 0.5 :
                 bbox = predictions[0,0,i,3:7]   * np.array([self.width, self.height,self.width, self.height] )
