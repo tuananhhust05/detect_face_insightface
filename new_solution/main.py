@@ -4,4 +4,4 @@ detector = Detector()
 
 detector.processImage("tempt.jpg")
 
-print(detector.result)
+# print(detector.result)
