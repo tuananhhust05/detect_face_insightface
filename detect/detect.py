@@ -88,16 +88,16 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
 
         if frame_count % frame_rate == 0:
  
-            # facechecks = model.detect(frame,input_size=(640, 640))
-            # flagDetect = False
-            # if(len(facechecks) > 0):
-            #     if(len(facechecks[0]) > 0):
-            #         flagDetect = True
+            facechecks = model.detect(frame,input_size=(640, 640))
+            flagDetect = False
+            if(len(facechecks) > 0):
+                if(len(facechecks[0]) > 0):
+                    flagDetect = True
 
-            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-            faces = face_cascade.detectMultiScale(gray_frame, scaleFactor=1.1, minNeighbors=5)
-            if(len(faces) > 0):
+            # gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            # face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+            # faces = face_cascade.detectMultiScale(gray_frame, scaleFactor=1.1, minNeighbors=5)
+            if(flagDetect == True):
                 # Sharpen and denoise the image
                 sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
                 sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
