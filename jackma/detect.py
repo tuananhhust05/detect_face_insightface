@@ -19,7 +19,6 @@ import matplotlib.pyplot as plt
 from imutils.video import FPS 
 from Detector import * 
 
-detector = Detector()
 
 # import mxnet as mx
 # Check if CUDA is available
@@ -79,6 +78,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
     print("duration", duration)
     cap = cv2.VideoCapture(video_file)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    detector = Detector()
+
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -94,10 +96,10 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
             # if(len(facechecks) > 0):
             #     if(len(facechecks[0]) > 0):
             #         flagDetect = True
-            check = detector.processImage(frame)
+            detector.processImage(frame)
 
 
-            if(check.result == True):
+            if(detector.result == True):
                 # Sharpen and denoise the image
                 sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
                 sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
