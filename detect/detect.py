@@ -115,7 +115,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                         if len(matches) > 0 and matches[0]['score'] > weight_point:
                         # if True:
                             print("Age, gender ....", face['gender'], face['age'])
-                            print(array_em_result)
+                           
                             if len(array_em_result) == 0:
                                 array_em_result.append({
                                     "speaker": 0,
@@ -159,7 +159,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
         ele["duration"] = duration
         ele["frame_rate"] = frame_rate
         
-    
+    print(array_em_result)
     with open(f"datas/{folder}/{index_local}.json", 'w') as f:
        json.dump(array_em_result, f, indent=4)
     
@@ -185,9 +185,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                             list_time_exist.append([duration_exist[0]*time_per_frame,duration_exist[len(duration_exist) - 1] * time_per_frame])
                             duration_exist = []
             list_result_ele.append({
-                # 'face':em['speaker'],
+                'face':em['speaker'],
                 # 'age':em['age'],
-                'gender':em['gender'],
+                # 'gender':em['gender'],
                 'duration_exist':list_time_exist
             })
 
