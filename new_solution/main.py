@@ -2,4 +2,4 @@ from Detector import *
 
 detector = Detector()
 
-detector.processImage("jackma.png")
+detector.processImage("tempt.jpg")
