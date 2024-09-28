@@ -1,6 +1,6 @@
 from Detector import * 
-
+import cv2
 detector = Detector()
-
-check = detector.processImage("jackma.png")
+img = cv2.imread("jackma.png")
+check = detector.processImage(img)
 print(detector.result)
