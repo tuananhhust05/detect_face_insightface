@@ -26,7 +26,7 @@ ctx_id = 0 if device.type == 'cuda' else -1
 app = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app.prepare(ctx_id=ctx_id, det_size=(640, 640))
 
-dir_path = r'/output'
+dir_path = r'output'
 list_file = []
 for path in os.listdir(dir_path):
     # check if current path is a file
