@@ -41,7 +41,7 @@ count = 0
 for file in list_file:
    count = count + 1 
    print(file)
-   img = cv2.imread(f"output/{file}")
+   img = cv2.imread(f"{file}")
    faces = app.get(img)
    print("so mat", len(faces))
 
