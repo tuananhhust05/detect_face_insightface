@@ -117,6 +117,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                             if len(array_em_result) == 0:
                                 array_em_result.append({
                                     "speaker": 0,
+                                    "gender":face["gender"],
+                                    "age":face["age"],
                                     "frames": [frame_count],
                                 })
                             else:
@@ -153,6 +155,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
         ele["frame_count"] = frame_count
         ele["duration"] = duration
         ele["frame_rate"] = frame_rate
+        
     
     with open(f"datas/{folder}/{index_local}.json", 'w') as f:
        json.dump(array_em_result, f, indent=4)
@@ -180,6 +183,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                             duration_exist = []
             list_result_ele.append({
                 'face':em['speaker'],
+                'age':em['age'],
+                'gender':em['gender'],
                 'duration_exist':list_time_exist
             })
 
@@ -192,7 +197,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
     print("End video")
 
 def groupJson(folder,video_file,count_thread):
-    final_result = []
+    final_result = {
+        "time":[]
+    }
     duration = getduration(video_file)
     time_per_segment = duration / count_thread
     print("duration",time_per_segment, duration)
@@ -206,11 +213,12 @@ def groupJson(folder,video_file,count_thread):
     for stt in list_stt:
         with open(f"results/{folder}/{stt}.json", 'r') as file:
            data = json.load(file)
-           print(data)
+           final_result["age"] = data['age']
+           final_result['gender'] = data['gender']
            if(len(data) > 0):
                 data = data[0]
                 for duration in data["duration_exist"]:
-                    final_result.append([duration[0] + stt * time_per_segment,duration[1] + stt * time_per_segment])
+                    final_result["time"].append([duration[0] + stt * time_per_segment,duration[1] + stt * time_per_segment])
            print(f"Result after file {stt}",final_result )
     with open(f"final_result/{folder}/final_result.json", 'w') as f:
         json.dump(final_result, f, indent=4)
