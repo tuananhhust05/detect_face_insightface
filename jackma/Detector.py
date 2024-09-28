@@ -8,8 +8,8 @@ class Detector:
             caffeModel="res10_300x300_ssd_iter_140000.caffemodel")
         self.result = False
 
-    def processImage(self, imgName):
-        self.img = cv2.imread(imgName)
+    def processImage(self, img):
+        self.img = img
         (self.height, self.width) = self.img.shape[:2]
         self.processFrame()
         
