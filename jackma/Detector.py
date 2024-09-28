@@ -26,5 +26,6 @@ class Detector:
                 # bbox = predictions[0,0,i,3:7]   * np.array([self.width, self.height,self.width, self.height] )
                 # (xmin, ymin, xmax, ymax) = bbox.astype("int")
                 return True
+        return False
           
             
