@@ -26,5 +26,13 @@ class Detector:
                 (xmin, ymin, xmax, ymax) = bbox.astype("int")
                 print(xmin, ymin, xmax, ymax)
                 cv2.rectangle(self.img, (xmin, ymin), (xmax,ymax), (0,0,255), 2 )
-                cv2.imwrite("face.png", self.img[xmax:xmin, ymax:ymin])
+                cv2.imwrite("face.png", self.img[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
+
+                # top_left = (bbox[0], bbox[1])
+                # bottom_right = (bbox[2], bbox[3])
+                # color = (255, 0, 0)
+                # thickness = 2
+                # cv2.rectangle(frame, top_left, bottom_right, color, thickness)
+                # cv2.rectangle(self.img, (xmin, ymin), (xmax,ymax), (0,0,255), 2 )
+                # cv2.imwrite("face.png", self.img[xmax:x, bbox[0]:bbox[2]])
                 print("done rectangle")
