@@ -1,6 +1,8 @@
 [
     {
         "face": 0,
+        "age": 45,
+        "gender": 1,
         "duration_exist": [
             [
                 4.195804195804196,

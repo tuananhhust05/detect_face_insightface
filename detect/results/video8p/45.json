@@ -1,6 +1,8 @@
 [
     {
         "face": 0,
+        "age": 20,
+        "gender": 0,
         "duration_exist": [
             [
                 0.0,
