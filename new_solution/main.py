@@ -1,4 +1,4 @@
-from jackma.Detector import * 
+from Detector import * 
 
 detector = Detector()
 
