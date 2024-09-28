@@ -221,13 +221,17 @@ def groupJson(folder,video_file,count_thread):
             list_stt.append(stt)
            
     list_stt=sorted(list_stt)
+    sum_age = 0 
+    sum_gender = 0 
+    count_face = 0 
     for stt in list_stt:
         with open(f"results/{folder}/{stt}.json", 'r') as file:
            data = json.load(file)
-        #    final_result["age"] = data['age']
-        #    final_result['gender'] = data['gender']
            if(len(data) > 0):
                 data = data[0]
+                sum_age = sum_age + int(data['age'])
+                sum_gender = sum_gender + int(data['gender'])
+                count_face = count_face + 1 
                 for duration in data["duration_exist"]:
                     final_result["time"].append([duration[0] + stt * time_per_segment,duration[1] + stt * time_per_segment])
            print(f"Result after file {stt}",final_result )
