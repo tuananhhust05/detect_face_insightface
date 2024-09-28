@@ -9,6 +9,7 @@ import time
 from pinecone import Pinecone
 import subprocess
 import threading
+from insightface.model_zoo import model_zoo
 
 # Check if CUDA is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -68,13 +69,9 @@ class FaceAnalyzer:
     def __init__(self):
         self.app = insightface.app.FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
         self.app.prepare(ctx_id=0 if device.type == 'cuda' else -1, det_size=(640, 640))
-        self.model = insightface.model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
-        self.model.prepare(ctx_id=0, det_size=(640, 640))
     def analyze(self, frame):
         return self.app.get(frame)
     
-    def detect(self, frame, input_size):
-        return self.model.detect(frame,input_size)
     
 class FrameExtractor:
     def __init__(self, video_file, index_local, folder, index, weight_point):
