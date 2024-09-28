@@ -308,7 +308,7 @@ f.write(str(start_time))
 # handle_multiplefile(list_file[6:],50)
 # handle_multiplefile(list_file,50)
 # ch02_20240904040117.mp4
-handle_multiplefile("/home/poc4a5000/facesx/ch02_20240904040117.mp4",50)
+handle_multiplefile(["/home/poc4a5000/facesx/ch02_20240904040117.mp4"],50)
 end_time = time.time()
 f = open("end.txt", "a")
 f.write(str(end_time))
