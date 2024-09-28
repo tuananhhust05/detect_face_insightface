@@ -41,8 +41,8 @@ class Detector:
 
         fps = FPS().start()
         while sucess:
-            if(count % 60 == 0):
-                self.processFrame()
+            # if(count % 60 == 0):
+                # self.processFrame()
             key = cv2.waitKey(1) & 0xFF
             if key == ord("q"):
               break
