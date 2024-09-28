@@ -24,4 +24,6 @@ class Detector:
             if predictions[0, 0, i, 2] > 0.5 :
                 bbox = predictions[0,0,i,3:7]   * np.array([self.width, self.height,self.width, self.height] )
                 (xmin, ymin, xmax, ymax) = bbox.astype("int")
+                print(xmin, ymin, xmax, ymax)
                 cv2.rectangle(self.img, (xmin, ymin), (xmax,ymax), (0,0,255), 2 )
+                print("done rectangle")
