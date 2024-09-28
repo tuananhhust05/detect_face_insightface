@@ -122,6 +122,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                                     "age":face['age'],
                                     "frames": [frame_count],
                                 })
+                                print(array_em_result)
                             else:
                                 array_em_result[0]["frames"].append(frame_count)
 
@@ -310,7 +311,7 @@ f.write(str(start_time))
 # handle_multiplefile(list_file[6:],50)
 # handle_multiplefile(list_file,50)
 # ch02_20240904040117.mp4
-handle_multiplefile(["input/video8p.mp4"],50)
+handle_multiplefile(["input/video8p.mp4"],1)
 end_time = time.time()
 f = open("end.txt", "a")
 f.write(str(end_time))
