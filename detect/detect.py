@@ -114,11 +114,12 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
 
                         if len(matches) > 0 and matches[0]['score'] > weight_point:
                         # if True:
+                            print("Age, gender ....", face['gender'], face['age'])
                             if len(array_em_result) == 0:
                                 array_em_result.append({
                                     "speaker": 0,
-                                    "gender":face["gender"],
-                                    "age":face["age"],
+                                    "gender":face['gender'],
+                                    "age":face['age'],
                                     "frames": [frame_count],
                                 })
                             else:
@@ -182,8 +183,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                             list_time_exist.append([duration_exist[0]*time_per_frame,duration_exist[len(duration_exist) - 1] * time_per_frame])
                             duration_exist = []
             list_result_ele.append({
-                'face':em['speaker'],
-                'age':em['age'],
+                # 'face':em['speaker'],
+                # 'age':em['age'],
                 'gender':em['gender'],
                 'duration_exist':list_time_exist
             })
@@ -213,8 +214,8 @@ def groupJson(folder,video_file,count_thread):
     for stt in list_stt:
         with open(f"results/{folder}/{stt}.json", 'r') as file:
            data = json.load(file)
-           final_result["age"] = data['age']
-           final_result['gender'] = data['gender']
+        #    final_result["age"] = data['age']
+        #    final_result['gender'] = data['gender']
            if(len(data) > 0):
                 data = data[0]
                 for duration in data["duration_exist"]:
