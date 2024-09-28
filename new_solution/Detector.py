@@ -6,16 +6,18 @@ class Detector:
     def __init__(self):
         self.faceModel = cv2.dnn.readNetFromCaffe("res10_300x300_ssd_iter_140000.prototxt",
             caffeModel="res10_300x300_ssd_iter_140000.caffemodel")
-    
+        self.result = False
+
     def processImage(self, imgName):
         self.img = cv2.imread(imgName)
         (self.height, self.width) = self.img.shape[:2]
-
-        result = self.processFrame()
-        return result
+        self.processFrame()
+        return True
+        
 
         
     def processFrame(self):
+        self.result = False
         blob = cv2.dnn.blobFromImage(self.img, 1.0, (300,300), (104.0, 177.0, 123.0), swapRB = False, crop = False)
 
         self.faceModel.setInput(blob)
@@ -25,6 +27,7 @@ class Detector:
             if predictions[0, 0, i, 2] > 0.5 :
                 # bbox = predictions[0,0,i,3:7]   * np.array([self.width, self.height,self.width, self.height] )
                 # (xmin, ymin, xmax, ymax) = bbox.astype("int")
-                return True
+                self.result =  True
+                return
           
             
