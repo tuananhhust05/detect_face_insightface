@@ -14,6 +14,8 @@ import threading
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
+model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
+model.prepare(ctx_id=0, det_size=(640, 640))
 
 def get_duration(file):
         data = cv2.VideoCapture(file)
@@ -98,7 +100,7 @@ class FrameExtractor:
 
             frame_count += 1
             if frame_count % frame_rate == 0:
-                facechecks = self.face_analyzer.detect(frame,input_size=(640, 640))
+                facechecks = model.detect(frame,input_size=(640, 640))
                 flagDetect = False
                 if(len(facechecks) > 0):
                     if(len(facechecks[0]) > 0):
