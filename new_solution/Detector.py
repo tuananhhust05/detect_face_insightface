@@ -10,6 +10,9 @@ class Detector:
     def processImage(self, imgName):
         self.img = cv2.imread(imgName)
         (self.height, self.width) = self.img.shape[:2]
+
+        self.processFrame()
+        
         
     def processFrame(self):
         blob = cv2.dnn.blobFromImage(self.img, 1.0, (300,300), (104.0, 177.0, 123.0), swapRB = False, crop = False)
