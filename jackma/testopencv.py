@@ -2,19 +2,29 @@ import av
 import cv2
 import matplotlib.pyplot as plt
 
-def read_video_with_ffmpeg_cuda(video_path, frame_skip=2):
-    container = av.open(video_path)
-    for i, frame in enumerate(container.decode(video=0)):
-        if i % frame_skip == 0:  # Skip frames based on frame_skip value
-            img = frame.to_ndarray(format='bgr24')
-            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            print(i) 
-    #            plt.imshow(img_rgb)
-    #       plt.axis('off')
-    #        plt.pause(0.001)
+def read_video_with_cuda(video_path):
+    # Create a VideoReader with CUDA support
+    video_reader = cv2.cudacodec.createVideoReader(video_path)
+    count = 0 
+    while True:
+        # Read a frame from the video
+        ret, gpu_frame = video_reader.nextFrame()
+        if not ret:
+            break
+        count = count + 1 
+        print(count)
+        # Download the frame to CPU for processing or display
+        frame = gpu_frame.download()
 
-    plt.close()
+        # # Display the frame
+        # cv2.imshow('Video', frame)
 
-video_path = '2.mp4'
-read_video_with_ffmpeg_cuda(video_path)
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     break
+
+    cv2.destroyAllWindows()
+
+# Example use
+video_path = '2.mp4'  # Replace with your actual video file path
+read_video_with_cuda(video_path)
 

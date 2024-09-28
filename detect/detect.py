@@ -185,10 +185,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
 
     with open(f"results/{folder}/{index_local}.json", 'w') as f:
         json.dump(list_result_ele, f, indent=4)
-        print("End video")       
+    
 
     cap.release()
-    print("End video")
 
 
 def groupJson(folder,video_file,count_thread):
@@ -242,7 +241,7 @@ def process_videos(folder,video_file_origin,count_thread):
     time_per_segment = duration / count_thread
 
     trimvideo(folder,video_file_origin,count_thread)
-    video_files = [f"videos/{folder}/{i}.mp4" for i in range(count_thread)]  # Example video file list
+    video_files = [f"videos/{folder}/{i}.mp4" for i in range(count_thread)]  
     threads = []
     for i, video_file in enumerate(video_files):
         t = threading.Thread(target=extract_frames, args=(folder,video_file,i,time_per_segment))
