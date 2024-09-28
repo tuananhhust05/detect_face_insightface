@@ -10,6 +10,7 @@ from pinecone import Pinecone
 import subprocess
 import threading
 from insightface.model_zoo import model_zoo
+from insightface.app import FaceAnalysis
 
 # Check if CUDA is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -17,6 +18,10 @@ print(f"Using device: {device}")
 
 model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
 model.prepare(ctx_id=0, det_size=(640, 640))
+
+# Initialize FaceAnalysis
+app = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
+app.prepare(ctx_id=0 if device.type == 'cuda' else -1, det_size=(640, 640))
 
 def get_duration(file):
         data = cv2.VideoCapture(file)
@@ -65,12 +70,6 @@ class VideoProcessor:
         for t in threads:
             t.join()
 
-class FaceAnalyzer:
-    def __init__(self):
-        self.app = insightface.app.FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
-        self.app.prepare(ctx_id=0 if device.type == 'cuda' else -1, det_size=(640, 640))
-    def analyze(self, frame):
-        return self.app.get(frame)
     
     
 class FrameExtractor:
@@ -80,7 +79,6 @@ class FrameExtractor:
         self.folder = folder
         self.index = index
         self.weight_point = weight_point
-        self.face_analyzer = FaceAnalyzer()
 
     def extract_frames(self):
         array_em_result = []
@@ -108,7 +106,7 @@ class FrameExtractor:
         self.save_results(array_em_result, duration, frame_count)
 
     def process_faces(self, frame,  frame_count, duration, total_frames, array_em_result):
-        faces = self.face_analyzer.analyze(frame)
+        faces = app.get(frame)
         sum_age = 0 
         sum_gender = 0 
         count_face = 0 
