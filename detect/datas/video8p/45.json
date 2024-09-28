@@ -1,8 +1,8 @@
 [
     {
         "speaker": 0,
-        "gender": 1,
-        "age": 40,
+        "gender": 0,
+        "age": 20,
         "frames": [
             60,
             120,
