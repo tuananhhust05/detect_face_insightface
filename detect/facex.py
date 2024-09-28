@@ -92,7 +92,7 @@ class FrameExtractor:
             ret, frame = cap.read()
             if not ret:
                 break
-
+            print(frame_count)
             frame_count += 1
             if frame_count % frame_rate == 0:
                 facechecks = model.detect(frame,input_size=(640, 640))
