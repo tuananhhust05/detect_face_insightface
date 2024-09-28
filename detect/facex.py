@@ -66,10 +66,14 @@ class FaceAnalyzer:
     def __init__(self):
         self.app = insightface.app.FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
         self.app.prepare(ctx_id=0 if device.type == 'cuda' else -1, det_size=(640, 640))
-
+        self.model = insightface.model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
+        self.model.prepare(ctx_id=0, det_size=(640, 640))
     def analyze(self, frame):
         return self.app.get(frame)
-
+    
+    def detect(self, frame, input_size):
+        return self.model.detect(frame,input_size)
+    
 class FrameExtractor:
     def __init__(self, video_file, index_local, folder, index, weight_point):
         self.video_file = video_file
@@ -94,10 +98,12 @@ class FrameExtractor:
 
             frame_count += 1
             if frame_count % frame_rate == 0:
-                gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-                faces = face_cascade.detectMultiScale(gray_frame, scaleFactor=1.1, minNeighbors=5)
-                if len(faces) > 0:
+                facechecks = self.face_analyzer.detect(frame,input_size=(640, 640))
+                flagDetect = False
+                if(len(facechecks) > 0):
+                    if(len(facechecks[0]) > 0):
+                        flagDetect = True
+                if flagDetect == True:
                     self.process_faces(frame, frame_count, duration, total_frames, array_em_result)
 
         self.save_results(array_em_result, duration, frame_count)

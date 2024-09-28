@@ -303,7 +303,6 @@ def handle_multiplefile(listfile,thread):
         if not os.path.exists(f"./results/{file_name}"):
             os.makedirs(f"./results/{file_name}")
        
-
         if not os.path.exists(f"./final_result/{file_name}"):
             os.makedirs(f"./final_result/{file_name}")
     
