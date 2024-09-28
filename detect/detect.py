@@ -115,6 +115,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                         if len(matches) > 0 and matches[0]['score'] > weight_point:
                         # if True:
                             print("Age, gender ....", face['gender'], face['age'])
+                            print(array_em_result)
                             if len(array_em_result) == 0:
                                 array_em_result.append({
                                     "speaker": 0,
@@ -122,7 +123,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                                     "age":face['age'],
                                     "frames": [frame_count],
                                 })
-                                print(array_em_result)
+                                
                             else:
                                 array_em_result[0]["frames"].append(frame_count)
 
