@@ -2,8 +2,7 @@
     {
         "speaker": 0,
         "frames": [
-            60,
-            180
+            60
         ],
         "frame_count": 245,
         "duration": 8,
