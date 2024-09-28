@@ -89,12 +89,15 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
 
         if frame_count % frame_rate == 0:
  
-            facechecks = model.detect(frame,input_size=(640, 640))
-            flagDetect = False
-            if(len(facechecks) > 0):
-                if(len(facechecks[0]) > 0):
-                    flagDetect = True
-            if(flagDetect == True):
+            # facechecks = model.detect(frame,input_size=(640, 640))
+            # flagDetect = False
+            # if(len(facechecks) > 0):
+            #     if(len(facechecks[0]) > 0):
+            #         flagDetect = True
+            check = detector.processImage(frame)
+
+
+            if(check.result == True):
                 # Sharpen and denoise the image
                 sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
                 sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
@@ -303,7 +306,9 @@ f = open("start.txt", "a")
 f.write(str(start_time))
 
 # handle_multiplefile(list_file[6:],50)
-handle_multiplefile(list_file,50)
+# handle_multiplefile(list_file,50)
+# ch02_20240904040117.mp4
+handle_multiplefile("/home/poc4a5000/facesx/ch02_20240904040117.mp4",50)
 end_time = time.time()
 f = open("end.txt", "a")
 f.write(str(end_time))

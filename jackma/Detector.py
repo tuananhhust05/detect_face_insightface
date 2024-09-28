@@ -12,7 +12,6 @@ class Detector:
         self.img = cv2.imread(imgName)
         (self.height, self.width) = self.img.shape[:2]
         self.processFrame()
-        return True
         
 
         
@@ -22,11 +21,8 @@ class Detector:
 
         self.faceModel.setInput(blob)
         predictions = self.faceModel.forward()
-        # print("predictions", predictions)
         for i in range(0, predictions.shape[2]):
             if predictions[0, 0, i, 2] > 0.5 :
-                # bbox = predictions[0,0,i,3:7]   * np.array([self.width, self.height,self.width, self.height] )
-                # (xmin, ymin, xmax, ymax) = bbox.astype("int")
                 self.result =  True
                 return
           
