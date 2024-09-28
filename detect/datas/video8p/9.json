@@ -5,6 +5,7 @@
         "age": 27,
         "frames": [
             60,
+            120,
             180
         ],
         "frame_count": 200,
