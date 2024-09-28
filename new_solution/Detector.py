@@ -12,7 +12,7 @@ class Detector:
         self.img = cv2.imread(imgName)
         (self.height, self.width) = self.img.shape[:2]
         self.processFrame()
-        return True
+        return
         
 
         
