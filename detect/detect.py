@@ -17,66 +17,48 @@ import subprocess
 import threading
 import matplotlib.pyplot as plt 
 from imutils.video import FPS 
-# from Detector import  * 
 
 
-# import mxnet as mx
-# Check if CUDA is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
+
 
 pc = Pinecone(api_key="6bebb6ba-195f-471e-bb60-e0209bd5c697")
 index = pc.Index("detectcamera")
 
 weight_point = 0.4
 
+ctx_id = 0 if device.type == 'cuda' else -1
+app = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
+app.prepare(ctx_id=ctx_id, det_size=(640, 640))
+model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
+model.prepare(ctx_id=ctx_id, det_size=(640, 640))
+
 def getduration(file):
     data = cv2.VideoCapture(file) 
-    # count the number of frames 
     frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 
     fps = data.get(cv2.CAP_PROP_FPS) 
     data.release()
-    # calculate duration of the video 
     seconds = round(frames / fps) 
     return seconds
 
-# torch for handling vector 
+
 def cosin(question, answer):
     question = torch.tensor(question).to(device)
     answer = torch.tensor(answer).to(device)
     cosine = torch.dot(question, answer) / (torch.norm(question) * torch.norm(answer))
     return cosine.item()  
 
-def check_model(model):
-    return next(model.parameters()).is_cuda
-
-# Set ctx_id based on device
-ctx_id = 0 if device.type == 'cuda' else -1
-
-array_em = []
-
-# Initialize FaceAnalysis
-app = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
-app.prepare(ctx_id=ctx_id, det_size=(640, 640))
-
-model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
-model.prepare(ctx_id=0, det_size=(640, 640))
-
-
-print(f"FaceAnalysis is using {'GPU' if ctx_id >=0 else 'CPU'}")
-list_result = []
 
 
 def extract_frames(folder,video_file,index_local,time_per_segment):
     array_em_result = []
     list_result_ele = []
     frame_count = 0
-    frame_rate = 60  #  default 1s with 30 frames
+    frame_rate = 60  
     duration = getduration(video_file)
-    print("duration", duration)
     cap = cv2.VideoCapture(video_file)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
 
     while True:
         ret, frame = cap.read()
@@ -98,7 +80,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
             # face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
             # faces = face_cascade.detectMultiScale(gray_frame, scaleFactor=1.1, minNeighbors=5)
             if(flagDetect == True):
-                # Sharpen and denoise the image
                 sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
                 sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
                 frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
@@ -170,7 +151,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
         ele["duration"] = duration
         ele["frame_rate"] = frame_rate
         
-    print(array_em_result)
     with open(f"datas/{folder}/{index_local}.json", 'w') as f:
        json.dump(array_em_result, f, indent=4)
     
@@ -251,12 +231,8 @@ def trimvideo(folder,videofile,count_thread):
     duration = getduration(videofile)
     time_per_segment = duration / count_thread
     for i in range(count_thread):
-        # if(i == count_thread - 1):
-        #     command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -c:v copy -c:a copy  videos/{folder}/{i}.mp4 -y"
-        #     subprocess.run(command, shell=True, check=True)
-        # else:
-            command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  videos/{folder}/{i}.mp4 -y"
-            subprocess.run(command, shell=True, check=True)
+        command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  videos/{folder}/{i}.mp4 -y"
+        subprocess.run(command, shell=True, check=True)
 
 
     
@@ -277,7 +253,6 @@ def process_videos(folder,video_file_origin,count_thread):
         t.join()
 
     groupJson(folder,video_file_origin,count_thread)
-    print("Processing complete")
 
 def handle_multiplefile(listfile,thread):
     for file in listfile:
