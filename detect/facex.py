@@ -15,7 +15,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 
-def get_duration(self, file):
+def get_duration(file):
         data = cv2.VideoCapture(file)
         frames = data.get(cv2.CAP_PROP_FRAME_COUNT)
         fps = data.get(cv2.CAP_PROP_FPS)
@@ -154,7 +154,7 @@ class JsonHandler:
     @staticmethod
     def group_json(folder, video_file, count_thread):
         final_result = []
-        duration = VideoProcessor().get_duration(video_file)
+        duration = get_duration(video_file)
         time_per_segment = duration / count_thread
 
         list_stt = sorted(int(path.split(".")[0]) for path in os.listdir(f"results/{folder}") if os.path.isfile(os.path.join(f"results/{folder}", path)))
