@@ -39,7 +39,7 @@ class Detector:
         (sucess, self.img) = cap.read()
         (self.height, self.width)  = self.img.shape[:2]
 
-        fps = FPS.start()
+        fps = FPS().start()
         while sucess:
             if(count % 60 == 0):
                 self.processFrame()
@@ -49,7 +49,7 @@ class Detector:
             (sucess,self.img) = cap.read()
             count = count + 1 
             print(count)
-            
+
         fps.stop()
 
         cap.release()
