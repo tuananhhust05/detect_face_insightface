@@ -17,7 +17,7 @@ import subprocess
 import threading
 import matplotlib.pyplot as plt 
 from imutils.video import FPS 
-# from Detector import * 
+# from Detector import  * 
 
 
 # import mxnet as mx
