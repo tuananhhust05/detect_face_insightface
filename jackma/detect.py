@@ -16,6 +16,11 @@ from numba import jit, cuda
 import subprocess
 import threading
 import matplotlib.pyplot as plt 
+from imutils.video import FPS 
+from Detector import * 
+
+detector = Detector()
+
 # import mxnet as mx
 # Check if CUDA is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

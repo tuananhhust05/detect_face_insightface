@@ -1,5 +1,7 @@
-from Detector import * 
+from jackma.Detector import * 
 
 detector = Detector()
 
-detector.processImage("tempt.jpg")
+checkface = detector.processImage("tempt.jpg")
+
+print(checkface)
