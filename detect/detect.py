@@ -210,6 +210,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
     cap.release()
     print("End video")
 
+
 def groupJson(folder,video_file,count_thread):
     final_result = {
         "time":[]
