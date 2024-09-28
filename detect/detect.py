@@ -25,8 +25,8 @@ from imutils.video import FPS
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
-index = pc.Index("facejackma")
+pc = Pinecone(api_key="6bebb6ba-195f-471e-bb60-e0209bd5c697")
+index = pc.Index("detectcamera")
 
 weight_point = 0.4
 
@@ -193,8 +193,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
 
 def groupJson(folder,video_file,count_thread):
     final_result = []
-    # audio = MP4(video_file)
-    # duration = audio.info.length
     duration = getduration(video_file)
     time_per_segment = duration / count_thread
     print("duration",time_per_segment, duration)
@@ -219,8 +217,6 @@ def groupJson(folder,video_file,count_thread):
         print("End video") 
 
 def trimvideo(folder,videofile,count_thread):
-    # audio = MP4(videofile)
-    # duration = audio.info.length
     duration = getduration(videofile)
     time_per_segment = duration / count_thread
     for i in range(count_thread):
