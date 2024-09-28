@@ -14,6 +14,17 @@ import threading
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
+
+def get_duration(self, file):
+        data = cv2.VideoCapture(file)
+        frames = data.get(cv2.CAP_PROP_FRAME_COUNT)
+        fps = data.get(cv2.CAP_PROP_FPS)
+        data.release()
+        if fps > 0 :
+            return round(frames / fps)
+        else:
+            return 0 
+
 class VideoProcessor:
     def __init__(self, api_key, index_name, weight_point=0.4):
         self.pc = Pinecone(api_key=api_key)
@@ -25,7 +36,10 @@ class VideoProcessor:
         frames = data.get(cv2.CAP_PROP_FRAME_COUNT)
         fps = data.get(cv2.CAP_PROP_FPS)
         data.release()
-        return round(frames / fps)
+        if fps > 0 :
+            return round(frames / fps)
+        else:
+            return 0 
 
     def trim_video(self, folder, videofile, count_thread):
         duration = self.get_duration(videofile)
@@ -69,7 +83,7 @@ class FrameExtractor:
         array_em_result = []
         frame_count = 0
         frame_rate = 60
-        duration = VideoProcessor().get_duration(self.video_file)
+        duration = get_duration(self.video_file)
         cap = cv2.VideoCapture(self.video_file)
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
@@ -125,6 +139,7 @@ class FrameExtractor:
         cv2.imwrite(f'{folder_path}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
         cv2.imwrite(f'./outputs/{self.folder}/{self.index_local}/{filename}', frame)
 
+
     def save_results(self, array_em_result, duration, frame_count):
         for ele in array_em_result:
             ele["frame_count"] = frame_count
@@ -133,6 +148,7 @@ class FrameExtractor:
         
         with open(f"datas/{self.folder}/{self.index_local}.json", 'w') as f:
             json.dump(array_em_result, f, indent=4)
+
 
 class JsonHandler:
     @staticmethod
