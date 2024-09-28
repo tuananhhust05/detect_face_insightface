@@ -119,8 +119,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                             if len(array_em_result) == 0:
                                 array_em_result.append({
                                     "speaker": 0,
-                                    "gender":face['gender'],
-                                    "age":face['age'],
+                                    "gender":int(face['gender']),
+                                    "age":int(face['age']),
                                     "frames": [frame_count],
                                 })
                                 
