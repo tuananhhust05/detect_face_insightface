@@ -20,7 +20,12 @@ from imutils.video import FPS
 import uuid 
 import json
 from flask import Flask, jsonify, request
+import pymongo
 
+myclient = pymongo.MongoClient("mongodb://root:facex@192.168.50.10:27018")
+
+mydb = myclient["faceX"]
+facematches = mydb["facematches"]
 
 
 
@@ -56,7 +61,11 @@ def cosin(question, answer):
     cosine = torch.dot(question, answer) / (torch.norm(question) * torch.norm(answer))
     return cosine.item()  
 
-
+def current_date():
+  format_date = "%Y-%m-%d %H:%M:%S"
+  now = datetime.datetime.now()
+  date_string = now.strftime(format_date)
+  return datetime.datetime.strptime(date_string, format_date)
 
 def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
     array_em_result = []
@@ -152,7 +161,21 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                                 cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
                             except Exception as e:
                                 print(f"Error saving frame: {e}")
-        
+                            
+
+                            mydict = { 
+                                       "id":  str(uuid.uuid4()), 
+                                       "case_id": case_id,
+                                       "similarity":int(matches[0]['score']),
+                                       "gender":int(face['gender']),
+                                       "age":int(face['age']),
+                                       "time_invideo":text,
+                                       "url":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                       "createdAt":current_date(),
+                                       "updatedAt":current_date(),
+                                    }
+                            facematches.insert_one(mydict)
+                            
     for ele in array_em_result:
         ele["frame_count"] = frame_count
         ele["duration"] = duration
@@ -228,6 +251,18 @@ def groupJson(folder,video_file,count_thread,case_id):
 
     final_result['age'] = max_age
     final_result['gender'] = sum_gender/ count_face
+    
+    facematches.update_many(
+        {
+            "case_id":case_id
+        },
+        {
+            "$set":{
+                "gender":max_age,
+                "age":sum_gender/ count_face,
+            }
+        }
+    )
 
     with open(f"final_result/{case_id}/{folder}/final_result.json", 'w') as f:
         json.dump(final_result, f, indent=4)
@@ -354,6 +389,10 @@ def get_employees():
     case_id = request.json['case_id']
     tracking_folder = request.json['tracking_folder']
     target_folder = request.json['target_folder']
+    
+    myquery = { "case_id": case_id }
+    facematches.delete_many(myquery)
+   
     handle_main(case_id,tracking_folder,target_folder)
     return jsonify({
         "data":"ok"
