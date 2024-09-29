@@ -18,6 +18,10 @@ import threading
 import matplotlib.pyplot as plt 
 from imutils.video import FPS 
 import uuid 
+import json
+from flask import Flask, jsonify, request
+
+
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -341,6 +345,23 @@ def handle_main(case_id, tracking_folder, target_folder):
             full_path = f"{tracking_folder}/{path}"
             list_file.append(full_path)
             handle_multiplefile(list_file,50,case_id)
+
+
+
+api = Flask(__name__)
+@api.route('/analyst', methods=['GET'])
+def get_employees():
+    case_id = request.args.get('case_id')
+    tracking_folder = request.args.get('tracking_folder')
+    target_folder = request.args.get('target_folder')
+    # def handle_main(case_id, tracking_folder, target_folder)
+    print("target_folder",target_folder,tracking_folder,case_id)
+    return jsonify({
+        "data":"ok"
+    })
+
+if __name__ == '__main__':
+    api.run(debug=True, port=5234, host='0.0.0.0')
 
 # Run with  GPU
 # dir_path = r'/home/poc4a5000/facesx'
