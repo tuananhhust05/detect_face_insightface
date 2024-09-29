@@ -369,7 +369,7 @@ if __name__ == '__main__':
 
 
 # Run with  GPU
-# dir_path = r'/home/poc4a5000/facesx'
+# dir_path = r'/home/poc4a5000/facesx '
 # list_file = []
 # for path in os.listdir(dir_path):
 #     # check if current path is a file
