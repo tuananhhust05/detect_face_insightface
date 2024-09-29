@@ -27,6 +27,7 @@ myclient = pymongo.MongoClient("mongodb://root:facex@192.168.50.10:27018")
 mydb = myclient["faceX"]
 facematches = mydb["facematches"]
 appearances = mydb["appearances"]
+targets = mydb["targets"]
 
 
 
@@ -167,7 +168,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                             mydict = { 
                                        "id":  str(uuid.uuid4()), 
                                        "case_id": case_id,
-                                       "similarity":int(matches[0]['score']),
+                                       "similarity":str(matches[0]['score']),
                                        "gender":int(face['gender']),
                                        "age":int(face['age']),
                                        "time_invideo":text,
@@ -260,8 +261,8 @@ def groupJson(folder,video_file,count_thread,case_id):
         },
         {
             "$set":{
-                "gender":max_age,
-                "age":sum_gender/ count_face,
+                "gender":sum_gender/ count_face,
+                "age": max_age,
             }
         }
     )
@@ -401,6 +402,13 @@ def get_employees():
     myquery = { "case_id": case_id }
     facematches.delete_many(myquery)
     appearances.delete_many(myquery)
+    targets.delete_many(myquery)
+
+    targets.insert_one({
+        "id":str(uuid.uuid4()),
+        "folder":target_folder,
+        "case_id":case_id
+    })
     
     handle_main(case_id,tracking_folder,target_folder)
     return jsonify({
