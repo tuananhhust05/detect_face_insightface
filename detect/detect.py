@@ -280,7 +280,8 @@ def groupJson(folder,video_file,count_thread,case_id):
 
     with open(f"final_result/{case_id}/{folder}/final_result.json", 'w') as f:
         json.dump(final_result, f, indent=4)
-
+    
+    final_result["file"] = folder 
     final_result["id"] = str(uuid.uuid4())
     final_result["case_id"] = case_id
     final_result["createdAt"] = current_date()
@@ -455,7 +456,7 @@ def analyst():
     appearances.delete_many(myquery)
     targets.delete_many(myquery)
     videos.delete_many(myquery)
-    
+
     targets.insert_one({
         "id":str(uuid.uuid4()),
         "folder":target_folder,
