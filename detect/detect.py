@@ -323,7 +323,7 @@ print("Start ......",str(start_time))
 f = open("start.txt", "a")
 f.write(str(start_time))
 
-# handle_multiplefile(list_file[6:],50)
+# handle_multiplefile(list_file[6:],50 )
 # handle_multiplefile(list_file,50)
 # ch02_20240904040117.mp4
 # handle_multiplefile(["input/video8p.mp4"],50)
