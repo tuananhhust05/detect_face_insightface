@@ -348,6 +348,8 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
         t.join()
 
     groupJson(folder,video_file_origin,count_thread,case_id)
+    create_video_apperance(case_id,count_thread)
+
 
 def handle_multiplefile(listfile,thread,case_id):
     for file in listfile:
@@ -452,7 +454,8 @@ def analyst():
     facematches.delete_many(myquery)
     appearances.delete_many(myquery)
     targets.delete_many(myquery)
-
+    videos.delete_many(myquery)
+    
     targets.insert_one({
         "id":str(uuid.uuid4()),
         "folder":target_folder,
