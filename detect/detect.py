@@ -128,7 +128,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                                 if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
                                     os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
                                 if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
-                                    os.makedirs(f"./outputs/{case_id}{folder}/{index_local}")
+                                    os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
 
                                 cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
 
