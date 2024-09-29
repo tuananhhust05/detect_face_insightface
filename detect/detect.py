@@ -367,4 +367,4 @@ def handle_main(case_id, tracking_folder, target_folder):
 # f = open("end.txt", "a")
 # f.write(str(end_time))
 
-print(f"Total execution time: {end_time - start_time}")
+# print(f"Total execution time: {end_time - start_time}")
