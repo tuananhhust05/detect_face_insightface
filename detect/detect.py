@@ -353,18 +353,18 @@ def handle_main(case_id, tracking_folder, target_folder):
 # # print(list_file)
 
 
-start_time = time.time()
-print("Start ......",str(start_time))
-f = open("start.txt", "a")
-f.write(str(start_time))
+# start_time = time.time()
+# print("Start ......",str(start_time))
+# f = open("start.txt", "a")
+# f.write(str(start_time))
 
 # handle_multiplefile(list_file[6:],50 )
 # handle_multiplefile(list_file,50)
 # ch02_20240904040117.mp4
 # handle_multiplefile(["input/video8p.mp4"],50)
-handle_main("123456-12", "/home/poc4a5000/detect/detect/example/tracking_folder", "/home/poc4a5000/detect/detect/example/target_folder")
-end_time = time.time()
-f = open("end.txt", "a")
-f.write(str(end_time))
+# handle_main("123456-12", "/home/poc4a5000/detect/detect/example/tracking_folder", "/home/poc4a5000/detect/detect/example/target_folder")
+# end_time = time.time()
+# f = open("end.txt", "a")
+# f.write(str(end_time))
 
 print(f"Total execution time: {end_time - start_time}")

@@ -2,13 +2,14 @@ import json
 from flask import Flask, jsonify, request
 app = Flask(__name__,static_url_path='', 
             static_folder='')
-
+from detect.detect import handle_main
 
 @app.route('/analyst', methods=['GET'])
 def get_employees():
     case_id = request.args.get('case_id')
     tracking_folder = request.args.get('tracking_folder')
     target_folder = request.args.get('target_folder')
+    # def handle_main(case_id, tracking_folder, target_folder)
     print("target_folder",target_folder,tracking_folder,case_id)
     return jsonify({
         "data":"ok"
