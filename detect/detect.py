@@ -26,6 +26,7 @@ myclient = pymongo.MongoClient("mongodb://root:facex@192.168.50.10:27018")
 
 mydb = myclient["faceX"]
 facematches = mydb["facematches"]
+appearances = mydb["appearances"]
 
 
 
@@ -267,7 +268,13 @@ def groupJson(folder,video_file,count_thread,case_id):
 
     with open(f"final_result/{case_id}/{folder}/final_result.json", 'w') as f:
         json.dump(final_result, f, indent=4)
-        print("End video") 
+
+    final_result["id"] = str(uuid.uuid4())
+    final_result["case_id"] = case_id
+    final_result["createdAt"] = current_date()
+    final_result["updatedAt"] = current_date()
+    appearances.insert_one(final_result)
+
 
 def trimvideo(folder,videofile,count_thread,case_id):
     duration = getduration(videofile)
@@ -393,7 +400,8 @@ def get_employees():
     
     myquery = { "case_id": case_id }
     facematches.delete_many(myquery)
-   
+    appearances.delete_many(myquery)
+    
     handle_main(case_id,tracking_folder,target_folder)
     return jsonify({
         "data":"ok"
