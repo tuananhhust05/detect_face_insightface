@@ -9,7 +9,7 @@ def get_employees():
     case_id = request.args.get('case_id')
     tracking_folder = request.args.get('tracking_folder')
     target_folder = request.args.get('target_folder')
-    print(target_folder)
+    print("target_folder",target_folder)
     return jsonify({
         "data":"ok"
     })
