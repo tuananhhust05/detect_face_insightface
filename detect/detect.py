@@ -28,8 +28,9 @@ mydb = myclient["faceX"]
 facematches = mydb["facematches"]
 appearances = mydb["appearances"]
 targets = mydb["targets"]
+videos = mydb["videos"]
 
-
+dir_project = "/home/poc4a5000/detect/detect"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
@@ -168,7 +169,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                             mydict = { 
                                        "id":  str(uuid.uuid4()), 
                                        "case_id": case_id,
-                                       "similarity2":str(matches[0]['score']),
+                                       "similarity_face":str(matches[0]['score']),
                                        "gender":int(face['gender']),
                                        "age":int(face['age']),
                                        "time_invideo":text,
@@ -222,6 +223,16 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
 
     cap.release()
 
+def create_video_apperance(case_id):
+    list_img = []
+    list_dir_file = os.listdir(f"{dir_project}/outputs/{case_id}")
+    for dir in list_dir_file:
+        dir_full = f"{dir_project}/outputs/{dir}"
+        for path in os.listdir(dir_full):
+            if os.path.isfile(os.path.join(dir_full, path)):
+                full_path = f"{dir_full}/{path}"
+                list_img.append(full_path)
+    print(list_img)
 
 def groupJson(folder,video_file,count_thread,case_id):
     final_result = {
@@ -276,6 +287,39 @@ def groupJson(folder,video_file,count_thread,case_id):
     final_result["updatedAt"] = current_date()
     appearances.insert_one(final_result)
 
+def create_video_apperance(case_id,thread_count):
+    list_img = []
+    list_dir_file = os.listdir(f"{dir_project}/outputs/{case_id}")
+    for dir in list_dir_file:
+        dir_full = f"{dir_project}/outputs/{case_id}/{dir}"
+        for i in range(thread_count):
+            folder_count = i 
+            dir_full_new = f"{dir_full}/{folder_count}"
+            print(dir_full)
+            if  os.path.exists(dir_full_new):
+                for path in os.listdir(dir_full_new):
+                    if os.path.isfile(os.path.join(dir_full_new, path)):
+                        full_path = f"{dir_full_new}/{path}"
+                        list_img.append(full_path)
+    img_array = []
+    for filename in list_img:
+        img = cv2.imread(filename)
+        height, width, layers = img.shape
+        size = (width,height)
+        img_array.append(img)
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
+    print(size)
+    out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/video.mp4", fourcc, 5.0, size)
+
+    for i in range(len(img_array)):
+        out.write(img_array[i])
+    out.release()
+    videos.insert_one({
+        "id":str(uuid.uuid4()),
+        "case_id":case_id,
+        "path":f"{dir_project}/video_apperance/{case_id}/video.mp4"
+    })
 
 def trimvideo(folder,videofile,count_thread,case_id):
     duration = getduration(videofile)
@@ -390,11 +434,16 @@ def handle_main(case_id, tracking_folder, target_folder):
             list_file.append(full_path)
             handle_multiplefile(list_file,50,case_id)
 
+    if not os.path.exists(f"./video_apperance"):
+        os.makedirs(f"./video_apperance")
+    if not os.path.exists(f"./video_apperance/{case_id}"):
+        os.makedirs(f"./video_apperance/{case_id}")
+
 
 
 api = Flask(__name__)
 @api.route('/analyst', methods=["POST"])
-def get_employees():
+def analyst():
     case_id = request.json['case_id']
     tracking_folder = request.json['tracking_folder']
     target_folder = request.json['target_folder']
