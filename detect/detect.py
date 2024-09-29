@@ -354,8 +354,7 @@ def get_employees():
     case_id = request.json['case_id']
     tracking_folder = request.json['tracking_folder']
     target_folder = request.json['target_folder']
-    
-    print("case_id",case_id,tracking_folder,target_folder)
+    handle_main(case_id,tracking_folder,target_folder)
     return jsonify({
         "data":"ok"
     })
