@@ -177,6 +177,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                                        "url":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
                                        "createdAt":current_date(),
                                        "updatedAt":current_date(),
+                                       "file":folder
                                     }
                             facematches.insert_one(mydict)
 
