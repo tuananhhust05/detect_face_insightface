@@ -336,10 +336,12 @@ def handle_main(case_id, tracking_folder, target_folder):
                                 ]
                         )
     list_file = []
+    print(tracking_folder)
     for path in os.listdir(tracking_folder):
         if os.path.isfile(os.path.join(target_folder, path)):
             full_path = f"{target_folder}/{path}"
             list_file.append(full_path)
+            print(list_file)
             handle_multiplefile(list_file,50,case_id)
 
 # Run with  GPU
