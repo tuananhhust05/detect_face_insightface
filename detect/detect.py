@@ -99,7 +99,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                             top_k=1,
                             include_metadata=True,
                             include_values=True,
-                            filter={"face": 0},
+                            filter={"face": case_id},
                         )
                         matches = search_result["matches"]
 
@@ -221,7 +221,7 @@ def groupJson(folder,video_file,count_thread,case_id):
                 count_face = count_face + 1 
                 for duration in data["duration_exist"]:
                     final_result["time"].append([duration[0] + stt * time_per_segment,duration[1] + stt * time_per_segment])
-                    
+
     final_result['age'] = max_age
     final_result['gender'] = sum_gender/ count_face
 
