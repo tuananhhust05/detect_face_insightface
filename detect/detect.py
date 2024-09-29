@@ -307,17 +307,21 @@ def handle_main(case_id, tracking_folder, target_folder):
                         include_values=True,
                         filter={"face": case_id},
                     )
-                    print("check_insert_target", check_insert_target)
-                    flag_target_folder = False
-                    # index.upsert(
-                    #     vectors=[
-                    #             {
-                    #                 "id": str(uuid.uuid4()),
-                    #                 "values": embedding_vector,
-                    #                 "metadata": {"face":case_id }
-                    #             },
-                    #         ]
-                    # )
+                    matches = check_insert_target["matches"]
+                    if(len(matches) > 0):
+                        if(matches[0]["metadata"]["face"] == case_id):
+                           flag_target_folder = False
+                           print("Stop take target")
+                    if(flag_target_folder == True):
+                        index.upsert(
+                            vectors=[
+                                    {
+                                        "id": str(uuid.uuid4()),
+                                        "values": embedding_vector,
+                                        "metadata": {"face":case_id }
+                                    },
+                                ]
+                        )
     
 # Run with  GPU
 # dir_path = r'/home/poc4a5000/facesx'
