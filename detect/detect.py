@@ -289,31 +289,35 @@ def handle_multiplefile(listfile,thread):
 
 
 def handle_main(case_id, tracking_folder, target_folder):
-    check_insert_target = index.query(
-        vector=[],
-        top_k=1,
-        include_metadata=True,
-        include_values=True,
-        filter={"face": case_id},
-    )
-    print("check_insert_target", check_insert_target)
+    
+    flag_target_folder = True
     for path in os.listdir(target_folder):
-        if os.path.isfile(os.path.join(target_folder, path)):
-            full_path = f"{target_folder}/{path}"
-            img = cv2.imread(full_path)
-            faces = app_recognize.get(img)
-            print(full_path)
-            for face in faces:
-                embedding_vector = face['embedding']
-                # index.upsert(
-                #     vectors=[
-                #             {
-                #                 "id": str(uuid.uuid4()),
-                #                 "values": embedding_vector,
-                #                 "metadata": {"face":case_id }
-                #             },
-                #         ]
-                # )
+        if(flag_target_folder == True):
+            if os.path.isfile(os.path.join(target_folder, path)):
+                full_path = f"{target_folder}/{path}"
+                img = cv2.imread(full_path)
+                faces = app_recognize.get(img)
+                print(full_path)
+                for face in faces:
+                    embedding_vector = face['embedding']
+                    check_insert_target = index.query(
+                        vector=embedding_vector,
+                        top_k=1,
+                        include_metadata=True,
+                        include_values=True,
+                        filter={"face": case_id},
+                    )
+                    print("check_insert_target", check_insert_target)
+                    flag_target_folder = False
+                    # index.upsert(
+                    #     vectors=[
+                    #             {
+                    #                 "id": str(uuid.uuid4()),
+                    #                 "values": embedding_vector,
+                    #                 "metadata": {"face":case_id }
+                    #             },
+                    #         ]
+                    # )
     
 # Run with  GPU
 # dir_path = r'/home/poc4a5000/facesx'
