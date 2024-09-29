@@ -289,6 +289,14 @@ def handle_multiplefile(listfile,thread):
 
 
 def handle_main(case_id, tracking_folder, target_folder):
+    check_insert_target = index.query(
+        vector=[],
+        top_k=1,
+        include_metadata=True,
+        include_values=True,
+        filter={"face": case_id},
+    )
+    print("check_insert_target", check_insert_target)
     for path in os.listdir(target_folder):
         if os.path.isfile(os.path.join(target_folder, path)):
             full_path = f"{target_folder}/{path}"
@@ -297,15 +305,15 @@ def handle_main(case_id, tracking_folder, target_folder):
             print(full_path)
             for face in faces:
                 embedding_vector = face['embedding']
-                index.upsert(
-                    vectors=[
-                            {
-                                "id": str(uuid.uuid4()),
-                                "values": embedding_vector,
-                                "metadata": {"face":case_id }
-                            },
-                        ]
-                )
+                # index.upsert(
+                #     vectors=[
+                #             {
+                #                 "id": str(uuid.uuid4()),
+                #                 "values": embedding_vector,
+                #                 "metadata": {"face":case_id }
+                #             },
+                #         ]
+                # )
     
 # Run with  GPU
 # dir_path = r'/home/poc4a5000/facesx'
