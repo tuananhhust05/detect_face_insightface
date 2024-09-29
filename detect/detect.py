@@ -54,7 +54,7 @@ def cosin(question, answer):
 
 
 
-def extract_frames(folder,video_file,index_local,time_per_segment):
+def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
     array_em_result = []
     list_result_ele = []
     frame_count = 0
@@ -125,12 +125,12 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                             try:
                                 bbox = [int(b) for b in face['bbox']]
                                 filename = f"{frame_count}_0_face.jpg"
-                                if not os.path.exists(f"./faces/{folder}/{index_local}"):
-                                    os.makedirs(f"./faces/{folder}/{index_local}")
-                                if not os.path.exists(f"./outputs/{folder}/{index_local}"):
-                                    os.makedirs(f"./outputs/{folder}/{index_local}")
+                                if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
+                                    os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
+                                if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
+                                    os.makedirs(f"./outputs/{case_id}{folder}/{index_local}")
 
-                                cv2.imwrite(f'./faces/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
+                                cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
 
                                 top_left = (bbox[0], bbox[1])
                                 bottom_right = (bbox[2], bbox[3])
@@ -145,7 +145,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                                 font_scale = 1
 
                                 cv2.putText(frame, text, position, font, font_scale, color, thickness)
-                                cv2.imwrite(f'./outputs/{folder}/{index_local}/{filename}', frame)
+                                cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
                             except Exception as e:
                                 print(f"Error saving frame: {e}")
         
@@ -154,10 +154,10 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
         ele["duration"] = duration
         ele["frame_rate"] = frame_rate
         
-    with open(f"datas/{folder}/{index_local}.json", 'w') as f:
+    with open(f"datas/{case_id}/{folder}/{index_local}.json", 'w') as f:
        json.dump(array_em_result, f, indent=4)
     
-    with open(f"datas/{folder}/{index_local}.json", 'r') as file:
+    with open(f"datas/{case_id}/{folder}/{index_local}.json", 'r') as file:
         data = json.load(file)
         for em in data:
             frame_rate = em["frame_rate"] 
@@ -186,23 +186,23 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
             })
 
 
-    with open(f"results/{folder}/{index_local}.json", 'w') as f:
+    with open(f"results/{case_id}/{folder}/{index_local}.json", 'w') as f:
         json.dump(list_result_ele, f, indent=4)
     
 
     cap.release()
 
 
-def groupJson(folder,video_file,count_thread):
+def groupJson(folder,video_file,count_thread,case_id):
     final_result = {
         "time":[]
     }
     duration = getduration(video_file)
     time_per_segment = duration / count_thread
-    print("duration",time_per_segment, duration)
+
     list_stt = []
-    for path in os.listdir(f"results/{folder}"):
-        if os.path.isfile(os.path.join(f"results/{folder}", path)):
+    for path in os.listdir(f"results/{case_id}/{folder}"):
+        if os.path.isfile(os.path.join(f"results/{case_id}/{folder}", path)):
             stt = int(path.split(".")[0])
             list_stt.append(stt)
            
@@ -211,7 +211,7 @@ def groupJson(folder,video_file,count_thread):
     sum_gender = 0 
     count_face = 0 
     for stt in list_stt:
-        with open(f"results/{folder}/{stt}.json", 'r') as file:
+        with open(f"results/{case_id}/{folder}/{stt}.json", 'r') as file:
            data = json.load(file)
            if(len(data) > 0):
                 data = data[0]
@@ -221,75 +221,90 @@ def groupJson(folder,video_file,count_thread):
                 count_face = count_face + 1 
                 for duration in data["duration_exist"]:
                     final_result["time"].append([duration[0] + stt * time_per_segment,duration[1] + stt * time_per_segment])
-           print(f"Result after file {stt}",final_result )
+                    
     final_result['age'] = max_age
     final_result['gender'] = sum_gender/ count_face
 
-    with open(f"final_result/{folder}/final_result.json", 'w') as f:
+    with open(f"final_result/{case_id}/{folder}/final_result.json", 'w') as f:
         json.dump(final_result, f, indent=4)
         print("End video") 
 
-def trimvideo(folder,videofile,count_thread):
+def trimvideo(folder,videofile,count_thread,case_id):
     duration = getduration(videofile)
     time_per_segment = duration / count_thread
     for i in range(count_thread):
-        command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  videos/{folder}/{i}.mp4 -y"
+        command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  videos/{case_id}/{folder}/{i}.mp4 -y"
         subprocess.run(command, shell=True, check=True)
 
 
     
-def process_videos(folder,video_file_origin,count_thread):
+def process_videos(folder,video_file_origin,count_thread,case_id):
     print("process_videos", folder,video_file_origin,count_thread)
     duration = getduration(video_file_origin)
     time_per_segment = duration / count_thread
 
-    trimvideo(folder,video_file_origin,count_thread)
-    video_files = [f"videos/{folder}/{i}.mp4" for i in range(count_thread)]  
+    trimvideo(folder,video_file_origin,count_thread,case_id)
+
+    video_files = [f"videos/{case_id}/{folder}/{i}.mp4" for i in range(count_thread)]  
     threads = []
     for i, video_file in enumerate(video_files):
-        t = threading.Thread(target=extract_frames, args=(folder,video_file,i,time_per_segment))
+        t = threading.Thread(target=extract_frames, args=(folder,video_file,i,time_per_segment,case_id))
         threads.append(t)
         t.start()
 
     for t in threads:
         t.join()
 
-    groupJson(folder,video_file_origin,count_thread)
+    groupJson(folder,video_file_origin,count_thread,case_id)
 
-def handle_multiplefile(listfile,thread):
+def handle_multiplefile(listfile,thread,case_id):
     for file in listfile:
         file_name = file.split(".")[0]
         if "/" in file_name: 
             file_name = file_name.split("/")[len(file_name.split("/")) - 1]
-        if not os.path.exists(f"./faces/{file_name}"):
-            os.makedirs(f"./faces/{file_name}")
         
+        if not os.path.exists(f"./faces/{case_id}"):
+            os.makedirs(f"./faces/{case_id}")
 
-        if not os.path.exists(f"./outputs/{file_name}"):
-            os.makedirs(f"./outputs/{file_name}")
+        if not os.path.exists(f"./faces/{case_id}/{file_name}"):
+            os.makedirs(f"./faces/{case_id}/{file_name}")
         
+        if not os.path.exists(f"./outputs/{case_id}"):
+            os.makedirs(f"./outputs/{case_id}")
 
-        if not os.path.exists(f"./videos/{file_name}"):
-            os.makedirs(f"./videos/{file_name}")
+        if not os.path.exists(f"./outputs/{case_id}/{file_name}"):
+            os.makedirs(f"./outputs/{case_id}/{file_name}")
         
+        if not os.path.exists(f"./videos/{case_id}"):
+            os.makedirs(f"./videos/{case_id}")
 
-        if not os.path.exists(f"./datas/{file_name}"):
-            os.makedirs(f"./datas/{file_name}")
+        if not os.path.exists(f"./videos/{case_id}/{file_name}"):
+            os.makedirs(f"./videos/{case_id}/{file_name}")
+        
+        if not os.path.exists(f"./datas/{case_id}"):
+            os.makedirs(f"./datas/{case_id}")
+
+        if not os.path.exists(f"./datas/{case_id}/{file_name}"):
+            os.makedirs(f"./datas/{case_id}/{file_name}")
        
+        if not os.path.exists(f"./results/{case_id}"):
+            os.makedirs(f"./results/{case_id}")
 
-        if not os.path.exists(f"./results/{file_name}"):
-            os.makedirs(f"./results/{file_name}")
-       
-        if not os.path.exists(f"./final_result/{file_name}"):
-            os.makedirs(f"./final_result/{file_name}")
+        if not os.path.exists(f"./results/{case_id}/{file_name}"):
+            os.makedirs(f"./results/{case_id}/{file_name}")
+        
+        if not os.path.exists(f"./final_result/{case_id}"):
+            os.makedirs(f"./final_result/{case_id}")
+
+        if not os.path.exists(f"./final_result/{case_id}/{file_name}"):
+            os.makedirs(f"./final_result/{case_id}/{file_name}")
     
         folder = file_name
-        process_videos(folder,file,thread)
+        process_videos(folder,file,thread,case_id)
         subprocess.run("rm -rf videos/{file_name}", shell=True, check=True)
 
 
 def handle_main(case_id, tracking_folder, target_folder):
-    
     flag_target_folder = True
     for path in os.listdir(target_folder):
         if(flag_target_folder == True):
@@ -311,7 +326,6 @@ def handle_main(case_id, tracking_folder, target_folder):
                     if(len(matches) > 0):
                         if(matches[0]["metadata"]["face"] == case_id):
                            flag_target_folder = False
-                           print("Stop take target")
                     if(flag_target_folder == True):
                         index.upsert(
                             vectors=[
@@ -322,7 +336,13 @@ def handle_main(case_id, tracking_folder, target_folder):
                                     },
                                 ]
                         )
-    
+    list_file = []
+    for path in os.listdir(tracking_folder):
+        if os.path.isfile(os.path.join(target_folder, path)):
+            full_path = f"{target_folder}/{path}"
+            list_file.append(full_path)
+            handle_multiplefile(list_file,50,case_id)
+
 # Run with  GPU
 # dir_path = r'/home/poc4a5000/facesx'
 # list_file = []
