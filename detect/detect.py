@@ -223,16 +223,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
 
     cap.release()
 
-def create_video_apperance(case_id):
-    list_img = []
-    list_dir_file = os.listdir(f"{dir_project}/outputs/{case_id}")
-    for dir in list_dir_file:
-        dir_full = f"{dir_project}/outputs/{dir}"
-        for path in os.listdir(dir_full):
-            if os.path.isfile(os.path.join(dir_full, path)):
-                full_path = f"{dir_full}/{path}"
-                list_img.append(full_path)
-    print(list_img)
+
 
 def groupJson(folder,video_file,count_thread,case_id):
     final_result = {
@@ -288,7 +279,7 @@ def groupJson(folder,video_file,count_thread,case_id):
     final_result["updatedAt"] = current_date()
     appearances.insert_one(final_result)
 
-def create_video_apperance(case_id,thread_count):
+def create_video_apperance(case_id,thread_count,folder):
     list_img = []
     list_dir_file = os.listdir(f"{dir_project}/outputs/{case_id}")
     for dir in list_dir_file:
@@ -319,7 +310,8 @@ def create_video_apperance(case_id,thread_count):
     videos.insert_one({
         "id":str(uuid.uuid4()),
         "case_id":case_id,
-        "path":f"{dir_project}/video_apperance/{case_id}/video.mp4"
+        "path":f"{dir_project}/video_apperance/{case_id}/video.mp4",
+        "file":folder
     })
 
 def trimvideo(folder,videofile,count_thread,case_id):
@@ -349,7 +341,7 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
         t.join()
 
     groupJson(folder,video_file_origin,count_thread,case_id)
-    create_video_apperance(case_id,count_thread)
+    create_video_apperance(case_id,count_thread,folder)
 
 
 def handle_multiplefile(listfile,thread,case_id):
