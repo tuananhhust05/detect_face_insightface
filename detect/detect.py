@@ -170,12 +170,13 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                                        "gender":int(face['gender']),
                                        "age":int(face['age']),
                                        "time_invideo":text,
+                                       "proofImage":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
                                        "url":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
                                        "createdAt":current_date(),
                                        "updatedAt":current_date(),
                                     }
                             facematches.insert_one(mydict)
-                            
+
     for ele in array_em_result:
         ele["frame_count"] = frame_count
         ele["duration"] = duration
