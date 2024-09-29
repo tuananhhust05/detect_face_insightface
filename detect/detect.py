@@ -301,7 +301,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                 for face in faces:
                     embedding_vector = face['embedding']
                     check_insert_target = index.query(
-                        vector=embedding_vector,
+                        vector=embedding_vector.tolist(),
                         top_k=1,
                         include_metadata=True,
                         include_values=True,
