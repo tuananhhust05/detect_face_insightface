@@ -352,12 +352,10 @@ api = Flask(__name__)
 @api.route('/analyst', methods=["POST"])
 def get_employees():
     case_id = request.json['case_id']
-    # case_id = request.args.get('case_id')
-    # tracking_folder = request.args.get('tracking_folder')
-    # target_folder = request.args.get('target_folder')
-    # # def handle_main(case_id, tracking_folder, target_folder)
-    # print("target_folder",target_folder, tracking_folder,case_id)
-    print("case_id",case_id)
+    tracking_folder = request.json['tracking_folder']
+    target_folder = request.json['target_folder']
+    
+    print("case_id",case_id,tracking_folder,target_folder)
     return jsonify({
         "data":"ok"
     })
