@@ -312,7 +312,6 @@ def handle_main(case_id, tracking_folder, target_folder):
                 full_path = f"{target_folder}/{path}"
                 img = cv2.imread(full_path)
                 faces = app_recognize.get(img)
-                print(full_path)
                 for face in faces:
                     embedding_vector = face['embedding']
                     check_insert_target = index.query(
