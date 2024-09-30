@@ -278,6 +278,16 @@ def groupJson(folder,video_file,count_thread,case_id):
     final_result["case_id"] = case_id
     final_result["createdAt"] = current_date()
     final_result["updatedAt"] = current_date()
+    new_arr = []
+    for time in final_result["time"]:
+       new_arr.append(
+           {
+               "start":time[0],
+               "end":time[1],
+               "frame":0
+           }
+       )
+    final_result["time"] = final_result
     appearances.insert_one(final_result)
 
 def create_video_apperance(case_id,thread_count):
