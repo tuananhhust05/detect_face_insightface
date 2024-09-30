@@ -102,8 +102,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
             if(flagDetect == True):
                 print("Có mặt......")
                 sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-                sharpen = cv2.cuda.filter2D(frame, 0, sharpen_kernel)
-                frame = cv2.cuda.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
+                sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
+                frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
                 faces = app.get(frame)
 
                 sum_age = 0 
