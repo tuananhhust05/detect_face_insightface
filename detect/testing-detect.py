@@ -48,10 +48,6 @@ if not api_key:
 pc = Pinecone(api_key=api_key)
 index_name = "detectcamera"
 
-# Kiểm tra xem index đã tồn tại chưa, nếu chưa thì tạo mới
-# if index_name not in pc.list_indexes():
-#     pc.create_index(name=index_name, dimension=128, metric="cosine")  # Thay đổi dimension phù hợp
-# logging.info(f"Connecting to Pinecone index: {index_name}")
 index = pc.Index(index_name)
 
 weight_point = 0.4
@@ -335,6 +331,19 @@ def trimvideo(folder, videofile, count_thread, case_id):
 # Hàm xử lý trong từng tiến trình
 def worker_process(gpu_id, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames):
     logging.info(f"Process {current_process().name} started with GPU ID: {gpu_id}")
+    # Set the environment variable for CUDA device
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
+    # Initialize models inside the worker process
+    if gpu_id >= 0:
+        device_str = f'cuda:{gpu_id}'
+        providers = ['CUDAExecutionProvider']
+    else:
+        device_str = 'cpu'
+        providers = []
+    face_analysis = FaceAnalysis('buffalo_l', providers=providers)
+    face_analysis.prepare(ctx_id=0, det_size=(640, 640))  # ctx_id should be 0 since CUDA_VISIBLE_DEVICES is set
+    model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
+    model.prepare(ctx_id=0, det_size=(640, 640))
     process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
 
 # Hàm xử lý nhiều tệp sử dụng multiprocessing
@@ -343,7 +352,6 @@ def handle_multiplefile(listfile, thread, case_id):
     
     for idx, file in enumerate(listfile):
         folder_name = os.path.splitext(os.path.basename(file))[0]
-        gpu_id = video_gpu_ids[idx % len(video_gpu_ids)]  # Phân bổ GPU theo vòng quay
         duration = getduration(file)
         time_per_segment = duration / thread
         total_frames = int(cv2.VideoCapture(file).get(cv2.CAP_PROP_FRAME_COUNT))
@@ -354,6 +362,7 @@ def handle_multiplefile(listfile, thread, case_id):
         video_files = [f"videos/{case_id}/{folder_name}/{i}.mp4" for i in range(thread)]
         
         for i, vf in enumerate(video_files):
+            gpu_id = video_gpu_ids[(idx * thread + i) % len(video_gpu_ids)]  # Phân bổ GPU theo vòng quay
             p = Process(target=worker_process, args=(gpu_id, folder_name, vf, i, time_per_segment, case_id, duration, total_frames))
             p.start()
             processes.append(p)
@@ -412,14 +421,9 @@ def handle_main(case_id, tracking_folder, target_folder):
         if os.path.isfile(os.path.join(tracking_folder, f))
     ]
     handle_multiplefile(list_file, 50, case_id)
-
+    
     # Tạo thư mục video xuất hiện
     os.makedirs(f"./video_apperance/{case_id}", exist_ok=True)
-
-# Khởi tạo app_recognize trên GPU 0 để sử dụng GPU
-app_recognize = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
-app_recognize.prepare(ctx_id=app_gpu_id, det_thresh=0.3, det_size=(640, 640))
-logging.info("app_recognize initialized on GPU 0")
 
 # Thiết lập Flask API
 api = Flask(__name__)
@@ -451,4 +455,10 @@ def analyst():
     return jsonify({"data": "ok"})
 
 if __name__ == '__main__':
+    import multiprocessing
+    multiprocessing.set_start_method('spawn', force=True)
+    # Khởi tạo app_recognize trên GPU 0 để sử dụng GPU
+    app_recognize = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
+    app_recognize.prepare(ctx_id=app_gpu_id, det_thresh=0.3, det_size=(640, 640))
+    logging.info("app_recognize initialized on GPU 0")
     api.run(debug=True, port=5235, host='0.0.0.0')
