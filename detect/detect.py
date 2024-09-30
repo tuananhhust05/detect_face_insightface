@@ -280,6 +280,7 @@ def groupJson(folder,video_file,count_thread,case_id):
     final_result["createdAt"] = current_date()
     final_result["updatedAt"] = current_date()
     new_arr = []
+
     for time in final_result["time"]:
        new_arr.append(
            {
@@ -334,7 +335,7 @@ def trimvideo(folder,videofile,count_thread,case_id):
 
     
 def process_videos(folder,video_file_origin,count_thread,case_id):
-    print("process_videos", folder,video_file_origin,count_thread)
+    # print("process_videos", folder,video_file_origin,count_thread)
     duration = getduration(video_file_origin)
     time_per_segment = duration / count_thread
 
