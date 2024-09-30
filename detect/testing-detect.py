@@ -42,9 +42,6 @@ num_gpus = torch.cuda.device_count()
 print(f"Number of GPUs available: {num_gpus}")
 gpu_ids = list(range(num_gpus))
 
-# Set CUDA_VISIBLE_DEVICES
-os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(i) for i in gpu_ids)
-
 def getduration(file):
     data = cv2.VideoCapture(file) 
     frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 
@@ -67,14 +64,29 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
         # Set the device
         torch.cuda.set_device(gpu_id)
         device = torch.device(f'cuda:{gpu_id}')
-        
-        # Initialize FaceAnalysis and models within the process
-        app = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
+
+        # Define providers with device_id
+        providers = [
+            ('CUDAExecutionProvider', {
+                'device_id': gpu_id,
+            })
+        ]
+
+        # Initialize FaceAnalysis with providers
+        app = FaceAnalysis(
+            name='buffalo_l',
+            providers=providers,
+            allowed_modules=['detection', 'recognition']
+        )
         app.prepare(ctx_id=gpu_id, det_size=(640, 640))
-        model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
-                                    providers=['CUDAExecutionProvider'])
+
+        # Load the model with providers
+        model = model_zoo.get_model(
+            '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
+            providers=providers
+        )
         model.prepare(ctx_id=gpu_id, det_size=(640, 640))
-        
+
         array_em_result = []
         list_result_ele = []
         frame_count = 0 
@@ -193,9 +205,20 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
 def process_targets(case_id, target_folder, gpu_id):
     torch.cuda.set_device(gpu_id)
     device = torch.device(f'cuda:{gpu_id}')
-    app_recognize = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
+
+    providers = [
+        ('CUDAExecutionProvider', {
+            'device_id': gpu_id,
+        })
+    ]
+
+    app_recognize = FaceAnalysis(
+        name='buffalo_l',
+        providers=providers,
+        allowed_modules=['detection', 'recognition']
+    )
     app_recognize.prepare(ctx_id=gpu_id, det_thresh=0.3, det_size=(640, 640))
-    
+
     flag_target_folder = True
     for path in os.listdir(target_folder):
         if flag_target_folder and os.path.isfile(os.path.join(target_folder, path)):
@@ -248,6 +271,9 @@ def trimvideo(folder, videofile, count_thread, case_id):
 
 def process_videos(folder, video_file_origin, count_thread, case_id):
     duration = getduration(video_file_origin)
+    if duration == 0:
+        print(f"Video duration is zero for file {video_file_origin}")
+        return
     time_per_segment = duration / count_thread
 
     trimvideo(folder, video_file_origin, count_thread, case_id)
@@ -260,6 +286,13 @@ def process_videos(folder, video_file_origin, count_thread, case_id):
         processes.append(p)
         p.start()
 
+        # Limit to one process per GPU to avoid out-of-memory errors
+        if (i + 1) % num_gpus == 0:
+            for p in processes:
+                p.join()
+            processes = []
+
+    # Join any remaining processes
     for p in processes:
         p.join()
 
