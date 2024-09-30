@@ -77,6 +77,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
     duration = getduration(video_file)
     cap = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
     fps = cap.get(cv2.CAP_PROP_FPS)
+    print("fps.....",fps)
+    return 
     frame_rate = 60 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
@@ -344,7 +346,6 @@ def trimvideo(folder,videofile,count_thread,case_id):
 
     
 def process_videos(folder,video_file_origin,count_thread,case_id):
-    # print("process_videos", folder,video_file_origin,count_thread)
     duration = getduration(video_file_origin)
     time_per_segment = duration / count_thread
 
