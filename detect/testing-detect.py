@@ -202,6 +202,42 @@ def worker_process(gpu_id, folder, video_file, index_local, time_per_segment, ca
     logging.info(f"Process {current_process().name} started with GPU ID: {gpu_id}")
     process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames)
 
+# Function to process target images
+def target_processing(case_id, target_folder):
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(app_gpu_id)
+    app_recognize = FaceAnalysis('buffalo_l')
+    app_recognize.prepare(ctx_id=0, det_thresh=0.3, det_size=(640, 640))
+    logging.info("app_recognize initialized on GPU 0")
+
+    flag_target_folder = True
+    for path in os.listdir(target_folder):
+        if flag_target_folder and os.path.isfile(os.path.join(target_folder, path)):
+            full_path = os.path.join(target_folder, path)
+            img = cv2.imread(full_path)
+            faces = app_recognize.get(img)
+            for face in faces:
+                embedding_vector = face['embedding']
+                search_result = index.query(
+                    vector=embedding_vector.tolist(),
+                    top_k=1,
+                    include_metadata=True,
+                    include_values=True,
+                    filter={"face": case_id},
+                )
+                matches = search_result["matches"]
+                if matches and matches[0]["metadata"]["face"] == case_id:
+                    flag_target_folder = False
+                if flag_target_folder:
+                    index.upsert(
+                        vectors=[
+                            {
+                                "id": str(uuid.uuid4()),
+                                "values": embedding_vector,
+                                "metadata": {"face": case_id}
+                            },
+                        ]
+                    )
+
 # Function to handle multiple files using multiprocessing
 def handle_multiplefile(listfile, thread, case_id):
     processes = []
@@ -233,45 +269,8 @@ def handle_multiplefile(listfile, thread, case_id):
 
 # Main processing function
 def handle_main(case_id, tracking_folder, target_folder):
-    # Process initial target images (without initializing CUDA in the main process)
-    # Use a separate process for app_recognize
-    def target_processing():
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(app_gpu_id)
-        app_recognize = FaceAnalysis('buffalo_l')
-        app_recognize.prepare(ctx_id=0, det_thresh=0.3, det_size=(640, 640))
-        logging.info("app_recognize initialized on GPU 0")
-
-        flag_target_folder = True
-        for path in os.listdir(target_folder):
-            if flag_target_folder and os.path.isfile(os.path.join(target_folder, path)):
-                full_path = os.path.join(target_folder, path)
-                img = cv2.imread(full_path)
-                faces = app_recognize.get(img)
-                for face in faces:
-                    embedding_vector = face['embedding']
-                    search_result = index.query(
-                        vector=embedding_vector.tolist(),
-                        top_k=1,
-                        include_metadata=True,
-                        include_values=True,
-                        filter={"face": case_id},
-                    )
-                    matches = search_result["matches"]
-                    if matches and matches[0]["metadata"]["face"] == case_id:
-                        flag_target_folder = False
-                    if flag_target_folder:
-                        index.upsert(
-                            vectors=[
-                                {
-                                    "id": str(uuid.uuid4()),
-                                    "values": embedding_vector,
-                                    "metadata": {"face": case_id}
-                                },
-                            ]
-                        )
-
     # Start target processing in a separate process
-    target_process = Process(target=target_processing)
+    target_process = Process(target=target_processing, args=(case_id, target_folder))
     target_process.start()
     target_process.join()
 
