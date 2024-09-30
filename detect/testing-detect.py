@@ -75,6 +75,9 @@ def current_date():
 # Batch processing function
 def process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id):
     try:
+        gpu_id = 0
+        logging.info(f"Process {current_process().name} processing batch on GPU {gpu_id}")
+
         # Set the device
         torch.cuda.set_device(gpu_id)
         device_str = f'cuda:{gpu_id}'
@@ -85,7 +88,6 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
         model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
         model.prepare(ctx_id=gpu_id, det_size=(640, 640))
 
-        logging.info(f"Process {current_process().name} processing batch on GPU {gpu_id}")
 
         for frame, frame_count in zip(frames_batch, frame_indices):
             detections, _ = model.detect(frame, input_size=(640, 640))
