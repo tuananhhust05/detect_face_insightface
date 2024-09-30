@@ -106,7 +106,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                 sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
                 sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
                 frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
-                gpu_frame = denoiser.denoise(gpu_frame)
+                # gpu_frame = denoiser.denoise(gpu_frame)
                 # frame = gpu_frame.download()
                 faces = app.get(frame)
 
