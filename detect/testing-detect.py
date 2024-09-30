@@ -4,10 +4,8 @@ import os
 import cv2
 import insightface
 import torch
-from mutagen.mp4 import MP4
 import json
 import time
-from numpy.linalg import norm
 from insightface.app import FaceAnalysis
 from insightface.model_zoo import model_zoo
 from pinecone import Pinecone
@@ -43,6 +41,9 @@ time_per_frame_global = 2
 num_gpus = torch.cuda.device_count()
 print(f"Number of GPUs available: {num_gpus}")
 gpu_ids = list(range(num_gpus))
+
+# Set CUDA_VISIBLE_DEVICES
+os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(i) for i in gpu_ids)
 
 def getduration(file):
     data = cv2.VideoCapture(file) 
@@ -188,6 +189,43 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
     except Exception as e:
         print(f"Error in process: {e}")
 
+# Move process_targets to global scope
+def process_targets(case_id, target_folder, gpu_id):
+    torch.cuda.set_device(gpu_id)
+    device = torch.device(f'cuda:{gpu_id}')
+    app_recognize = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
+    app_recognize.prepare(ctx_id=gpu_id, det_thresh=0.3, det_size=(640, 640))
+    
+    flag_target_folder = True
+    for path in os.listdir(target_folder):
+        if flag_target_folder and os.path.isfile(os.path.join(target_folder, path)):
+            full_path = os.path.join(target_folder, path)
+            img = cv2.imread(full_path)
+            print("Processing target image:", full_path)
+            faces = app_recognize.get(img)
+            for face in faces:
+                embedding_vector = face['embedding']
+                search_result = index.query(
+                    vector=embedding_vector.tolist(),
+                    top_k=1,
+                    include_metadata=True,
+                    include_values=True,
+                    filter={"face": case_id},
+                )
+                matches = search_result["matches"]
+                if matches and matches[0]["metadata"]["face"] == case_id:
+                    flag_target_folder = False
+                if flag_target_folder:
+                    index.upsert(
+                        vectors=[
+                            {
+                                "id": str(uuid.uuid4()),
+                                "values": embedding_vector.tolist(),
+                                "metadata": {"face": case_id}
+                            },
+                        ]
+                    )
+
 def groupJson(folder, video_file, count_thread, case_id):
     # Your existing code for groupJson...
     pass  # For brevity
@@ -239,42 +277,6 @@ def handle_multiplefile(listfile, thread, case_id):
         subprocess.run(f"rm -rf videos/{file_name}", shell=True, check=True)
 
 def handle_main(case_id, tracking_folder, target_folder):
-    def process_targets(case_id, target_folder, gpu_id):
-        torch.cuda.set_device(gpu_id)
-        device = torch.device(f'cuda:{gpu_id}')
-        app_recognize = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
-        app_recognize.prepare(ctx_id=gpu_id, det_thresh=0.3, det_size=(640, 640))
-        
-        flag_target_folder = True
-        for path in os.listdir(target_folder):
-            if flag_target_folder and os.path.isfile(os.path.join(target_folder, path)):
-                full_path = os.path.join(target_folder, path)
-                img = cv2.imread(full_path)
-                print("Processing target image:", full_path)
-                faces = app_recognize.get(img)
-                for face in faces:
-                    embedding_vector = face['embedding']
-                    search_result = index.query(
-                        vector=embedding_vector.tolist(),
-                        top_k=1,
-                        include_metadata=True,
-                        include_values=True,
-                        filter={"face": case_id},
-                    )
-                    matches = search_result["matches"]
-                    if matches and matches[0]["metadata"]["face"] == case_id:
-                        flag_target_folder = False
-                    if flag_target_folder:
-                        index.upsert(
-                            vectors=[
-                                {
-                                    "id": str(uuid.uuid4()),
-                                    "values": embedding_vector.tolist(),
-                                    "metadata": {"face": case_id}
-                                },
-                            ]
-                        )
-
     # Start target processing
     p_target = multiprocessing.Process(target=process_targets, args=(case_id, target_folder, gpu_ids[0]))
     p_target.start()
