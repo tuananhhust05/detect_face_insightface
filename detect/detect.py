@@ -518,7 +518,7 @@ def analyst():
     if(len(listId) > 0):
         index.delete(ids=listId)
     
-    subprocess.run("cd /home/poc4a5000/detect/detect && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && cd /home/poc4a5000/facesx/db696a35-0043-4aba-a844-295e3432a118 && rm -rf videos && mkdir videos", shell=True, check=True)
+    subprocess.run("cd /home/poc4a5000/detect/detect && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && cd /home/poc4a5000/facesx/db696a35-0043-4aba-a844-295e3432a118 && sudo rm -rf videos && sudo mkdir videos", shell=True, check=True)
     
     handle_main(case_id,tracking_folder,target_folder)
     return jsonify({
