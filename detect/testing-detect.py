@@ -13,7 +13,6 @@ from insightface.app import FaceAnalysis
 from insightface.model_zoo import model_zoo
 from pinecone import Pinecone
 import subprocess
-import onnxruntime
 
 # Configure logging
 logging.basicConfig(
@@ -58,9 +57,6 @@ else:
     logging.warning("No GPUs detected. Exiting.")
     exit(1)
 
-# Set CUDA_VISIBLE_DEVICES
-os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(i) for i in range(num_gpus))
-
 # Utility functions
 def getduration(file):
     data = cv2.VideoCapture(file)
@@ -84,33 +80,13 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
     try:
         # Set the device
         torch.cuda.set_device(gpu_id)
-        cuda_available = torch.cuda.is_available()
-        logging.info(f"{current_process().name}: torch.cuda.is_available() = {cuda_available}")
+        device_str = f'cuda:{gpu_id}'
 
-        device = torch.device(f'cuda:{gpu_id}' if cuda_available else 'cpu')
-
-        # Check available providers in onnxruntime
-        available_providers = onnxruntime.get_available_providers()
-        logging.info(f"{current_process().name}: onnxruntime available providers: {available_providers}")
-
-        # Ensure that the providers include CUDAExecutionProvider
-        providers = ['CUDAExecutionProvider'] if 'CUDAExecutionProvider' in available_providers else ['CPUExecutionProvider']
-        logging.info(f"{current_process().name}: Using providers: {providers}")
-
-        # Initialize FaceAnalysis and model in this process with GPU providers
-        face_analysis = FaceAnalysis(
-            name='buffalo_l',
-            providers=providers,
-            allowed_modules=['detection', 'recognition', 'genderage']  # Include 'genderage' if needed
-        )
+        # Initialize FaceAnalysis and model in this process
+        face_analysis = FaceAnalysis('buffalo_l')
         face_analysis.prepare(ctx_id=gpu_id, det_size=(640, 640))
-        model = model_zoo.get_model(
-            '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
-            providers=providers
-        )
+        model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
         model.prepare(ctx_id=gpu_id, det_size=(640, 640))
-
-        logging.info(f"{current_process().name}: Model and face analysis initialized.")
 
         frame_count = 0
         duration = getduration(video_file)
@@ -133,20 +109,17 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
             if frame_count % frame_rate == 0:
                 logging.info(f"{current_process().name}: Processing frame {frame_count}")
 
-                # Convert frame to RGB
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-                detections, _ = model.detect(frame_rgb, input_size=(640, 640))
+                detections, _ = model.detect(frame, input_size=(640, 640))
                 if detections is not None and len(detections) > 0:
                     # Preprocessing
                     sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-                    sharpen = cv2.filter2D(frame_rgb, -1, sharpen_kernel)
+                    sharpen = cv2.filter2D(frame, -1, sharpen_kernel)
                     denoised = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
 
                     faces = face_analysis.get(denoised)
                     for face in faces:
-                        if face.get("det_score", 0) > 0.5:
-                            embedding = torch.tensor(face['embedding']).to(device)
+                        if face["det_score"] > 0.5:
+                            embedding = torch.tensor(face['embedding']).to(device_str)
                             search_result = index.query(
                                 vector=embedding.cpu().numpy().tolist(),
                                 top_k=1,
@@ -166,40 +139,33 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
                                 os.makedirs(face_dir, exist_ok=True)
                                 os.makedirs(output_dir, exist_ok=True)
 
-                                # Save the face image
-                                face_image = frame_rgb[bbox[1]:bbox[3], bbox[0]:bbox[2]]
-                                cv2.imwrite(f'{face_dir}/{filename}', cv2.cvtColor(face_image, cv2.COLOR_RGB2BGR))
+                                cv2.imwrite(f'{face_dir}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2], ::-1])
 
-                                # Draw rectangle and text on the frame
                                 top_left = (bbox[0], bbox[1])
                                 bottom_right = (bbox[2], bbox[3])
                                 color = (255, 0, 0)
                                 thickness = 2
-                                cv2.rectangle(frame_rgb, top_left, bottom_right, color, thickness)
+                                cv2.rectangle(frame, top_left, bottom_right, color, thickness)
 
                                 text = str(time_in_video)
                                 position = (bbox[0], bbox[1])
                                 font = cv2.FONT_HERSHEY_SIMPLEX
                                 font_scale = 1
-                                cv2.putText(frame_rgb, text, position, font, font_scale, color, thickness)
-                                cv2.imwrite(f'{output_dir}/{filename}', cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR))
+                                cv2.putText(frame, text, position, font, font_scale, color, thickness)
+                                cv2.imwrite(f'{output_dir}/{filename}', frame)
 
-                                # Safely access 'gender' and 'age'
-                                gender = int(face.get('gender', -1))  # Use -1 or any default value if 'gender' is missing
-                                age = int(face.get('age', -1))        # Use -1 or any default value if 'age' is missing
-
-                                mydict = {
-                                    "id":  str(uuid.uuid4()),
+                                mydict = { 
+                                    "id":  str(uuid.uuid4()), 
                                     "case_id": case_id,
-                                    "similarity_face": str(matches[0]['score']),
-                                    "gender": gender,
-                                    "age": age,
-                                    "time_invideo": text,
-                                    "proofImage": os.path.abspath(f'{face_dir}/{filename}'),
-                                    "url": os.path.abspath(f'{face_dir}/{filename}'),
-                                    "createdAt": current_date(),
-                                    "updatedAt": current_date(),
-                                    "file": folder
+                                    "similarity_face":str(matches[0]['score']),
+                                    "gender":int(face['gender']),
+                                    "age":int(face['age']),
+                                    "time_invideo":text,
+                                    "proofImage":os.path.abspath(f'{face_dir}/{filename}'),
+                                    "url":os.path.abspath(f'{face_dir}/{filename}'),
+                                    "createdAt":current_date(),
+                                    "updatedAt":current_date(),
+                                    "file":folder
                                 }
                                 facematches.insert_one(mydict)
 
@@ -207,6 +173,7 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
         logging.info(f"{current_process().name}: Finished processing video {video_file}")
     except Exception as e:
         logging.error(f"Error in {current_process().name}: {e}")
+
 # Function to trim video into segments
 def trimvideo(folder, videofile, count_thread, case_id):
     duration = getduration(videofile)
@@ -228,24 +195,8 @@ def worker_process(gpu_id, folder, video_file, index_local, time_per_segment, ca
 # Function to process target images
 def target_processing(case_id, target_folder, gpu_id):
     torch.cuda.set_device(gpu_id)
-    cuda_available = torch.cuda.is_available()
-    logging.info(f"{current_process().name}: torch.cuda.is_available() = {cuda_available}")
-
-    device = torch.device(f'cuda:{gpu_id}' if cuda_available else 'cpu')
-
-    # Check available providers in onnxruntime
-    import onnxruntime
-    available_providers = onnxruntime.get_available_providers()
-    logging.info(f"{current_process().name}: onnxruntime available providers: {available_providers}")
-
-    providers = ['CUDAExecutionProvider'] if 'CUDAExecutionProvider' in available_providers else ['CPUExecutionProvider']
-    logging.info(f"{current_process().name}: Using providers: {providers}")
-
-    app_recognize = FaceAnalysis(
-        name='buffalo_l',
-        providers=providers,
-        allowed_modules=['detection', 'recognition']
-    )
+    device_str = f'cuda:{gpu_id}'
+    app_recognize = FaceAnalysis('buffalo_l')
     app_recognize.prepare(ctx_id=gpu_id, det_thresh=0.3, det_size=(640, 640))
     logging.info(f"app_recognize initialized on GPU {gpu_id}")
 
@@ -318,8 +269,8 @@ def handle_main(case_id, tracking_folder, target_folder):
 
     # List of files to process
     list_file = [
-        os.path.join(tracking_folder, f)
-        for f in os.listdir(tracking_folder)
+        os.path.join(tracking_folder, f) 
+        for f in os.listdir(tracking_folder) 
         if os.path.isfile(os.path.join(tracking_folder, f))
     ]
     handle_multiplefile(list_file, 8, case_id)
@@ -335,7 +286,7 @@ def analyst():
     case_id = request.json.get('case_id')
     tracking_folder = request.json.get('tracking_folder')
     target_folder = request.json.get('target_folder')
-
+    
     if not all([case_id, tracking_folder, target_folder]):
         return jsonify({"error": "Missing parameters."}), 400
 
