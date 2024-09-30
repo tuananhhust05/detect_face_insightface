@@ -50,9 +50,9 @@ pc = Pinecone(api_key=api_key)
 index_name = "detectcamera"
 
 # Kiểm tra xem index đã tồn tại chưa, nếu chưa thì tạo mới
-if index_name not in pc.list_indexes():
-    pc.create_index(name=index_name, dimension=128, metric="cosine")  # Thay đổi dimension phù hợp
-logging.info(f"Connecting to Pinecone index: {index_name}")
+# if index_name not in pc.list_indexes():
+#     pc.create_index(name=index_name, dimension=128, metric="cosine")  # Thay đổi dimension phù hợp
+# logging.info(f"Connecting to Pinecone index: {index_name}")
 index = pc.Index(index_name)
 
 weight_point = 0.4
