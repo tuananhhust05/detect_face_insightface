@@ -11,26 +11,11 @@ from insightface.app import FaceAnalysis
 from insightface.model_zoo import model_zoo
 from pinecone import Pinecone
 import subprocess
-import logging
 import uuid
 from flask import Flask, jsonify, request
 import pymongo
 from multiprocessing import Process, Queue, current_process
 from torch.cuda.amp import autocast
-import sys
-# Function to set up logging
-def setup_logging():
-    logger = logging.getLogger()
-    if not logger.handlers:
-        handler = logging.StreamHandler(sys.stdout)
-        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(processName)s - %(message)s')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
-    return logger
-
-# Cấu hình logging in the main process
-setup_logging()
 
 # Kết nối MongoDB
 myclient = pymongo.MongoClient("mongodb://root:facex@192.168.50.10:27018")
@@ -45,12 +30,12 @@ dir_project = "/home/poc4a5000/detect/detect"
 
 # Thiết lập thiết bị
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-logging.info(f"Using device: {device}")
+print(f"[{datetime.datetime.now()}] INFO - Using device: {device}", flush=True)
 
 # Khởi tạo Pinecone với API Key từ biến môi trường
 api_key = "6bebb6ba-195f-471e-bb60-e0209bd5c697"
 if not api_key:
-    logging.error("Pinecone API key not found in environment variables.")
+    print(f"[{datetime.datetime.now()}] ERROR - Pinecone API key not found in environment variables.", flush=True)
     raise ValueError("Pinecone API key not found in environment variables.")
 
 pc = Pinecone(api_key=api_key)
@@ -64,9 +49,9 @@ time_per_frame_global = 2
 # Phát hiện số lượng GPU có sẵn
 num_gpus = torch.cuda.device_count()
 if num_gpus >= 1:
-    logging.info(f"Number of GPUs available: {num_gpus}")
+    print(f"[{datetime.datetime.now()}] INFO - Number of GPUs available: {num_gpus}", flush=True)
 else:
-    logging.warning("No GPUs detected. Exiting.")
+    print(f"[{datetime.datetime.now()}] WARNING - No GPUs detected. Exiting.", flush=True)
     exit(1)
 
 # Phân bổ GPU:
@@ -107,15 +92,15 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
         else:
             device_str = 'cpu'
             providers = []
-
+        
         # Khởi tạo FaceAnalysis và model trong tiến trình này
-        logging.info(f"Initializing models on GPU {gpu_id}")
+        print(f"[{datetime.datetime.now()}] INFO - Process {current_process().name} initializing models on GPU {gpu_id}", flush=True)
         face_analysis = FaceAnalysis('buffalo_l', providers=providers)
         face_analysis.prepare(ctx_id=0, det_size=(640, 640))  # ctx_id should be 0 since CUDA_VISIBLE_DEVICES is set
         model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
         model.prepare(ctx_id=0, det_size=(640, 640))
 
-        logging.info(f"Process {current_process().name} using device {device_str}")
+        print(f"[{datetime.datetime.now()}] INFO - Process {current_process().name} using device {device_str}", flush=True)
 
         with torch.cuda.amp.autocast(enabled=(gpu_id >=0)):
             # Giả định rằng model.detect có thể xử lý batch, nếu không cần xử lý từng frame một
@@ -190,14 +175,14 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
                             cv2.imwrite(f'{output_dir}/{filename}', frame)
 
     except Exception as e:
-        logging.error(f"Error processing batch on GPU {gpu_id}: {e}")
+        print(f"[{datetime.datetime.now()}] ERROR - Error processing batch on GPU {gpu_id}: {e}", flush=True)
     finally:
         torch.cuda.empty_cache()
-        logging.info(f"Process {current_process().name} on GPU {gpu_id} finished processing batch.")
+        print(f"[{datetime.datetime.now()}] INFO - Process {current_process().name} on GPU {gpu_id} finished processing batch.", flush=True)
 
 # Hàm xử lý từng video
 def process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id):
-    logging.info(f"Process {current_process().name} started processing video segment {index_local} on GPU {gpu_id}")
+    print(f"[{datetime.datetime.now()}] INFO - Process {current_process().name} started processing video segment {index_local} on GPU {gpu_id}", flush=True)
     frame_count = 0
     cap = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -222,7 +207,7 @@ def process_video(folder, video_file, index_local, time_per_segment, case_id, du
     if frames_batch:
         process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
     cap.release()
-    logging.info(f"Process {current_process().name} finished processing video segment {index_local} on GPU {gpu_id}")
+    print(f"[{datetime.datetime.now()}] INFO - Process {current_process().name} finished processing video segment {index_local} on GPU {gpu_id}", flush=True)
 
 # Hàm nhóm kết quả JSON
 def groupJson(folder, video_file, count_thread, case_id):
@@ -317,7 +302,7 @@ def create_video_apperance(case_id, thread_count):
             img_array.append(img)
 
     if not img_array:
-        logging.warning("Không có hình ảnh để tạo video.")
+        print(f"[{datetime.datetime.now()}] WARNING - Không có hình ảnh để tạo video.", flush=True)
         return
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
@@ -345,13 +330,12 @@ def trimvideo(folder, videofile, count_thread, case_id):
 
 # Hàm xử lý trong từng tiến trình
 def worker_process(gpu_id, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames):
-    # Initialize logging in the child process
-    setup_logging()
-    logging.info(f"Process {current_process().name} started with GPU ID: {gpu_id}")
+    # Print statements for logging
+    print(f"[{datetime.datetime.now()}] INFO - Process {current_process().name} started with GPU ID: {gpu_id}", flush=True)
     
     # Set the environment variable for CUDA device
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
-    logging.info(f"Process {current_process().name} setting CUDA_VISIBLE_DEVICES to {gpu_id}")
+    print(f"[{datetime.datetime.now()}] INFO - Process {current_process().name} setting CUDA_VISIBLE_DEVICES to {gpu_id}", flush=True)
     
     # Initialize models inside the worker process
     if gpu_id >= 0:
@@ -361,17 +345,17 @@ def worker_process(gpu_id, folder, video_file, index_local, time_per_segment, ca
         device_str = 'cpu'
         providers = []
     
-    logging.info(f"Process {current_process().name} initializing FaceAnalysis on device {device_str}")
+    print(f"[{datetime.datetime.now()}] INFO - Process {current_process().name} initializing FaceAnalysis on device {device_str}", flush=True)
     face_analysis = FaceAnalysis('buffalo_l', providers=providers)
     face_analysis.prepare(ctx_id=0, det_size=(640, 640))  # ctx_id=0 because CUDA_VISIBLE_DEVICES is set
     model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
     model.prepare(ctx_id=0, det_size=(640, 640))
-    logging.info(f"Process {current_process().name} initialized models on GPU {gpu_id}")
+    print(f"[{datetime.datetime.now()}] INFO - Process {current_process().name} initialized models on GPU {gpu_id}", flush=True)
     
     # Start processing the video
     process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
     
-    logging.info(f"Process {current_process().name} on GPU {gpu_id} finished processing.")
+    print(f"[{datetime.datetime.now()}] INFO - Process {current_process().name} on GPU {gpu_id} finished processing.", flush=True)
 
 # Hàm xử lý nhiều tệp sử dụng multiprocessing
 def handle_multiplefile(listfile, thread, case_id):
@@ -390,22 +374,22 @@ def handle_multiplefile(listfile, thread, case_id):
         
         for i, vf in enumerate(video_files):
             gpu_id = video_gpu_ids[(idx * thread + i) % len(video_gpu_ids)]  # Distribute GPUs in a round-robin fashion
-            logging.info(f"Assigning GPU {gpu_id} to process video segment {i} of file {folder_name}")
+            print(f"[{datetime.datetime.now()}] INFO - Assigning GPU {gpu_id} to process video segment {i} of file {folder_name}", flush=True)
             p = Process(target=worker_process, args=(gpu_id, folder_name, vf, i, time_per_segment, case_id, duration, total_frames))
             p.start()
             processes.append(p)
     
-    # Wait for all processes to complete
+    # Chờ tất cả các tiến trình hoàn thành
     for p in processes:
         p.join()
     
-    # Group JSON results and create appearance videos
+    # Nhóm kết quả JSON và tạo video xuất hiện
     for file in listfile:
         folder_name = os.path.splitext(os.path.basename(file))[0]
         groupJson(folder_name, file, thread, case_id)
         create_video_apperance(case_id, thread)
-    
-    # Delete the videos directory after processing
+
+    # Xóa thư mục videos sau khi xử lý
     for file in listfile:
         file_name = os.path.splitext(os.path.basename(file))[0]
         subprocess.run(f"rm -rf videos/{case_id}/{file_name}", shell=True, check=True)
@@ -486,14 +470,12 @@ if __name__ == '__main__':
     import multiprocessing
     multiprocessing.set_start_method('spawn', force=True)
     
-    # Initialize logging in the main process
-    setup_logging()
-    logging.info("Main process started.")
-    
-    # Initialize app_recognize on GPU 0
+    # Khởi tạo app_recognize trên GPU 0 để sử dụng GPU
+    print(f"[{datetime.datetime.now()}] INFO - Initializing app_recognize on GPU {app_gpu_id}", flush=True)
     app_recognize = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
     app_recognize.prepare(ctx_id=app_gpu_id, det_thresh=0.3, det_size=(640, 640))
-    logging.info("app_recognize initialized on GPU 0")
+    print(f"[{datetime.datetime.now()}] INFO - app_recognize initialized on GPU {app_gpu_id}", flush=True)
     
     # Start the Flask app
+    print(f"[{datetime.datetime.now()}] INFO - Starting Flask API on port 5235", flush=True)
     api.run(debug=True, port=5235, host='0.0.0.0')
