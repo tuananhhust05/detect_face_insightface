@@ -83,7 +83,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment):
                 for face in faces:
                     if face["det_score"] > 0.5:
                         # embedding = torch.tensor(face['embedding']).to(device)  # Move embedding to GPU
-                        # search_result = index.query(
+                        # search_result 
+                        # = index.query(
                         #     vector=embedding.tolist(),
                         #     top_k=1,
                         #     include_metadata=True,
