@@ -314,7 +314,8 @@ def create_video_apperance(case_id,thread_count):
     for filename in list_img:
         img = cv2.imread(filename)
         height, width, layers = img.shape
-        size = (width,height)
+        size_inter = (width,height)
+        size = size_inter
         img_array.append(img)
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
