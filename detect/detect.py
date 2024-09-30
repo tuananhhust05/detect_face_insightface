@@ -123,7 +123,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                             top_k=1,
                             include_metadata=True,
                             include_values=True,
-                            filter={"face": case_id},
+                            filter={"case_id": case_id},
                         )
                         matches = search_result["matches"]
 
@@ -429,24 +429,24 @@ def handle_main(case_id, tracking_folder, target_folder):
                 faces = app_recognize.get(img)
                 for face in faces:
                     embedding_vector = face['embedding']
-                    check_insert_target = index.query(
-                        vector=embedding_vector.tolist(),
-                        top_k=1,
-                        include_metadata=True,
-                        include_values=True,
-                        filter={"face": case_id},
-                    )
-                    matches = check_insert_target["matches"]
-                    if(len(matches) > 0):
-                        if(matches[0]["metadata"]["face"] == case_id):
-                           flag_target_folder = False
+                    # check_insert_target = index.query(
+                    #     vector=embedding_vector.tolist(),
+                    #     top_k=1,
+                    #     include_metadata=True,
+                    #     include_values=True,
+                    #     filter={"case_id": case_id},
+                    # )
+                    # matches = check_insert_target["matches"]
+                    # if(len(matches) > 0):
+                    #     if(matches[0]["metadata"]["case_id"] == case_id):
+                    #        flag_target_folder = False
                     if(flag_target_folder == True):
                         index.upsert(
                             vectors=[
                                     {
                                         "id": str(uuid.uuid4()),
                                         "values": embedding_vector,
-                                        "metadata": {"face":case_id }
+                                        "metadata": {"case_id":case_id }
                                     },
                                 ]
                         )
@@ -482,7 +482,16 @@ def analyst():
         "folder":target_folder,
         "case_id":case_id
     })
-
+    index.delete(
+        filter={
+            "case_id": {"$eq": case_id}
+        }
+    )
+    index.delete(
+        filter={
+            "face": {"$eq": case_id}
+        }
+    )
     handle_main(case_id,tracking_folder,target_folder)
     return jsonify({
         "data":"ok"
