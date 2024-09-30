@@ -32,7 +32,7 @@ videos = mydb["videos"]
 dir_project = "/home/poc4a5000/detect/detect"
 
 # Pinecone initialization
-api_key = "YOUR_PINECONE_API_KEY"  # Replace with your Pinecone API key
+api_key = "6bebb6ba-195f-471e-bb60-e0209bd5c697"
 if not api_key:
     logging.error("Pinecone API key not found.")
     raise ValueError("Pinecone API key not found.")
