@@ -100,6 +100,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                     flagDetect = True
             
             if(flagDetect == True):
+                print("Có mặt......")
                 sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
                 sharpen = cv2.cuda.filter2D(gpu_frame, 0, sharpen_kernel)
                 gpu_frame = cv2.cuda.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
