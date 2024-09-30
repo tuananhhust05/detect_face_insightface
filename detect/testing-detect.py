@@ -328,45 +328,41 @@ def trimvideo(folder, videofile, count_thread, case_id):
         command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy videos/{case_id}/{folder}/{i}.mp4 -y"
         subprocess.run(command, shell=True, check=True)
 
-# Hàm xử lý video trong mỗi tiến trình
-def worker_process(queue, folder, video_file, count_thread, case_id):
-    gpu_id = queue.get()
-    duration = getduration(video_file)
-    time_per_segment = duration / count_thread
-    total_frames = int(cv2.VideoCapture(video_file).get(cv2.CAP_PROP_FRAME_COUNT))
-    
-    # Cắt video thành các phân đoạn
-    trimvideo(folder, video_file, count_thread, case_id)
-    
-    video_files = [f"videos/{case_id}/{folder}/{i}.mp4" for i in range(count_thread)]
-    
-    for i, vf in enumerate(video_files):
-        process_video(folder, vf, i, time_per_segment, case_id, duration, total_frames, gpu_id)
-    
-    # Nhóm kết quả JSON
-    groupJson(folder, video_file, count_thread, case_id)
-    
-    # Tạo video xuất hiện
-    create_video_apperance(case_id, count_thread)
+# Hàm xử lý trong từng tiến trình
+def worker_process(gpu_id, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames):
+    logging.info(f"Process {current_process().name} started with GPU ID: {gpu_id}")
+    process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
 
 # Hàm xử lý nhiều tệp sử dụng multiprocessing
 def handle_multiplefile(listfile, thread, case_id):
     processes = []
-    queue = Queue()
     
-    # Đưa GPU IDs vào queue
-    for gpu_id in gpu_ids:
-        queue.put(gpu_id)
-    
-    for file in listfile:
+    for idx, file in enumerate(listfile):
         folder_name = os.path.splitext(os.path.basename(file))[0]
-        p = Process(target=worker_process, args=(queue, folder_name, file, thread, case_id))
-        p.start()
-        processes.append(p)
+        gpu_id = gpu_ids[idx % len(gpu_ids)]  # Phân bổ GPU theo vòng quay
+        duration = getduration(file)
+        time_per_segment = duration / thread
+        total_frames = int(cv2.VideoCapture(file).get(cv2.CAP_PROP_FRAME_COUNT))
+        
+        # Cắt video thành các phân đoạn
+        trimvideo(folder_name, file, thread, case_id)
+        
+        video_files = [f"videos/{case_id}/{folder_name}/{i}.mp4" for i in range(thread)]
+        
+        for i, vf in enumerate(video_files):
+            p = Process(target=worker_process, args=(gpu_id, folder_name, vf, i, time_per_segment, case_id, duration, total_frames))
+            p.start()
+            processes.append(p)
     
     # Chờ tất cả các tiến trình hoàn thành
     for p in processes:
         p.join()
+    
+    # Nhóm kết quả JSON và tạo video xuất hiện
+    for file in listfile:
+        folder_name = os.path.splitext(os.path.basename(file))[0]
+        groupJson(folder_name, file, thread, case_id)
+        create_video_apperance(case_id, thread)
     
     # Xóa thư mục videos sau khi xử lý
     for file in listfile:
@@ -415,6 +411,11 @@ def handle_main(case_id, tracking_folder, target_folder):
 
     # Tạo thư mục video xuất hiện
     os.makedirs(f"./video_apperance/{case_id}", exist_ok=True)
+
+# Khởi tạo app_recognize trên CPU để tránh chiếm GPU 0
+app_recognize = FaceAnalysis('buffalo_l', providers=[])  # Empty providers để sử dụng CPU
+app_recognize.prepare(ctx_id=-1, det_thresh=0.3, det_size=(640, 640))
+logging.info("app_recognize initialized on CPU")
 
 # Thiết lập Flask API
 api = Flask(__name__)
