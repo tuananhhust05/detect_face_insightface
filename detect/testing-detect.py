@@ -19,6 +19,7 @@ from flask import Flask, jsonify, request
 import pymongo
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from torch.cuda.amp import autocast
+from itertools import cycle
 
 # Cấu hình logging
 logging.basicConfig(
@@ -58,15 +59,18 @@ index = pc.Index(index_name)
 
 weight_point = 0.4
 time_per_frame_global = 2 
-ctx_id = 0 if device.type == 'cuda' else -1
 
-# Khởi tạo ứng dụng phân tích khuôn mặt với Mixed Precision
-app = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
-app.prepare(ctx_id=ctx_id, det_size=(640, 640))
-app_recognize = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
-app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
-model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
-model.prepare(ctx_id=ctx_id, det_size=(640, 640))
+# Phát hiện số lượng GPU có sẵn
+num_gpus = torch.cuda.device_count()
+gpu_ids = list(range(num_gpus))
+if num_gpus > 0:
+    logging.info(f"Number of GPUs available: {num_gpus}")
+else:
+    logging.warning("No GPUs detected. Using CPU.")
+    gpu_ids = [-1]  # CPU
+
+# Tạo một vòng lặp tuần tự các GPU IDs
+gpu_cycle = cycle(gpu_ids)
 
 # Các hàm tiện ích
 def getduration(file):
@@ -90,7 +94,7 @@ def current_date():
     return datetime.datetime.strptime(date_string, format_date)
 
 # Hàm xử lý trích xuất khung hình với Batch Processing và Mixed Precision
-def extract_frames_batch(folder, video_file, index_local, time_per_segment, case_id, batch_size=16):
+def extract_frames_batch(folder, video_file, index_local, time_per_segment, case_id, ctx_id, batch_size=16):
     array_em_result = []
     list_result_ele = []
     frame_count = 0 
@@ -111,27 +115,31 @@ def extract_frames_batch(folder, video_file, index_local, time_per_segment, case
             frames_batch.append(frame)
             frame_indices.append(frame_count)
             if len(frames_batch) == batch_size:
-                process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, array_em_result, list_result_ele, duration, total_frames)
+                process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, array_em_result, list_result_ele, duration, total_frames, ctx_id)
                 frames_batch = []
                 frame_indices = []
     if frames_batch:
-        process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, array_em_result, list_result_ele, duration, total_frames)
+        process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, array_em_result, list_result_ele, duration, total_frames, ctx_id)
     cap.release()
 
-def process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, array_em_result, list_result_ele, duration, total_frames):
+def process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, array_em_result, list_result_ele, duration, total_frames, ctx_id):
     try:
-        with torch.cuda.amp.autocast():
-            gpu_frames = [torch.tensor(frame).permute(2, 0, 1).float().to(device) for frame in frames_batch]
-            # Batch upload
-            # Lưu ý: Cần kiểm tra xem model.detect có hỗ trợ batch processing hay không
-            # Nếu không, bạn cần xử lý từng frame một
+        # Khởi tạo FaceAnalysis và model trong hàm xử lý để gán cho GPU cụ thể
+        app = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'] if ctx_id >=0 else [])
+        app.prepare(ctx_id=ctx_id, det_size=(640, 640))
+        app_recognize = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'] if ctx_id >=0 else [])
+        app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
+        model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
+        model.prepare(ctx_id=ctx_id, det_size=(640, 640))
+        
+        with torch.cuda.amp.autocast(enabled=(ctx_id >=0)):
+            gpu_frames = [torch.tensor(frame).permute(2, 0, 1).float().to(ctx_id) if ctx_id >=0 else torch.tensor(frame).permute(2, 0, 1).float() for frame in frames_batch]
+            # Giả định rằng model.detect có thể xử lý batch, nếu không cần xử lý từng frame một
             detections = [model.detect(frame, input_size=(640, 640)) for frame in gpu_frames]
         
         for frame, frame_count, detection in zip(frames_batch, frame_indices, detections):
             if detection and len(detection) > 0:
                 # Xử lý tiếp theo tương tự như trong hàm gốc
-                # Bạn cần bổ sung phần xử lý này dựa trên logic ban đầu của bạn
-                # Dưới đây là một ví dụ cơ bản
                 sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
                 sharpen = cv2.filter2D(frame, -1, sharpen_kernel)
                 denoised = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
@@ -143,7 +151,7 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
 
                 for face in faces:
                     if face["det_score"] > 0.5:
-                        embedding = torch.tensor(face['embedding']).to(device)
+                        embedding = torch.tensor(face['embedding']).to(ctx_id)
                         search_result = index.query(
                             vector=embedding.tolist(),
                             top_k=1,
@@ -211,10 +219,10 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
 
     except Exception as e:
         logging.error(f"Error processing batch at frame {frame_count}: {e}")
-
-    # Sau khi xử lý batch, có thể giải phóng bộ nhớ GPU nếu cần
-    del gpu_frames
-    torch.cuda.empty_cache()
+    finally:
+        # Sau khi xử lý batch, có thể giải phóng bộ nhớ GPU nếu cần
+        del gpu_frames
+        torch.cuda.empty_cache()
 
 # Hàm nhóm kết quả JSON
 def groupJson(folder, video_file, count_thread, case_id):
@@ -245,10 +253,10 @@ def groupJson(folder, video_file, count_thread, case_id):
                     max_age = int(data['age'])
                 sum_gender += int(data['gender'])
                 count_face += 1 
-                for duration in data["duration_exist"]:
+                for duration_range in data["duration_exist"]:
                     final_result["time"].append([
-                        duration[0] + stt * time_per_segment,
-                        duration[1] + stt * time_per_segment
+                        duration_range[0] + stt * time_per_segment,
+                        duration_range[1] + stt * time_per_segment
                     ])
 
     final_result['age'] = max_age
@@ -335,16 +343,16 @@ def trimvideo(folder, videofile, count_thread, case_id):
         subprocess.run(command, shell=True, check=True)
 
 # Hàm xử lý video với giới hạn số luồng
-def process_videos(folder, video_file_origin, count_thread, case_id):
+def process_videos(folder, video_file_origin, count_thread, case_id, ctx_ids):
     duration = getduration(video_file_origin)
     time_per_segment = duration / count_thread
 
     trimvideo(folder, video_file_origin, count_thread, case_id)
 
     video_files = [f"videos/{case_id}/{folder}/{i}.mp4" for i in range(count_thread)]  
-    with ThreadPoolExecutor(max_workers=8) as executor:
+    with ThreadPoolExecutor(max_workers=num_gpus) as executor:
         futures = [
-            executor.submit(extract_frames_batch, folder, vf, i, time_per_segment, case_id) 
+            executor.submit(extract_frames_batch, folder, vf, i, time_per_segment, case_id, next(ctx_ids))
             for i, vf in enumerate(video_files)
         ]
         for future in as_completed(futures):
@@ -358,9 +366,10 @@ def process_videos(folder, video_file_origin, count_thread, case_id):
 
 # Hàm xử lý nhiều tệp
 def handle_multiplefile(listfile, thread, case_id):
-    with ThreadPoolExecutor(max_workers=8) as executor:
+    ctx_ids = cycle(gpu_ids) if num_gpus >0 else cycle([-1])
+    with ThreadPoolExecutor(max_workers=num_gpus) as executor:
         futures = [
-            executor.submit(process_videos, os.path.splitext(os.path.basename(file))[0], file, 50, case_id)
+            executor.submit(process_videos, os.path.splitext(os.path.basename(file))[0], file, 50, case_id, ctx_ids)
             for file in listfile
         ]
         for future in as_completed(futures):
