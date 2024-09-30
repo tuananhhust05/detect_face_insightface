@@ -305,7 +305,7 @@ def groupJson(folder,video_file,count_thread,case_id):
     final_result["time"] = new_arr
     appearances.insert_one(final_result)
 
-def create_video_apperance(case_id,thread_count):
+def create_video_apperance(case_id,thread_count,folder):
     list_img = []
     list_dir_file = os.listdir(f"{dir_project}/outputs/{case_id}")
     for dir in list_dir_file:
@@ -329,19 +329,15 @@ def create_video_apperance(case_id,thread_count):
         img_array.append(img)
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
-    out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/video.mp4", fourcc, 5.0, size)
-    
-    out2 = cv2.VideoWriter(f"/home/poc4a5000/facesx/db696a35-0043-4aba-a844-295e3432a118/videos/video.mp4", fourcc, 5.0, size)
+    out = cv2.VideoWriter(f"/home/poc4a5000/facesx/db696a35-0043-4aba-a844-295e3432a118/videos/{folder}.mp4", fourcc, 5.0, size)
 
     for i in range(len(img_array)):
         out.write(img_array[i])
-        out2.write(img_array[i])
     out.release()
-    out2.release()
     videos.insert_one({
         "id":str(uuid.uuid4()),
         "case_id":case_id,
-        "path":"/home/poc4a5000/facesx/db696a35-0043-4aba-a844-295e3432a118/videos/video.mp4",
+        "path":f"/home/poc4a5000/facesx/db696a35-0043-4aba-a844-295e3432a118/videos/{folder}.mp4",
     })
 
 def trimvideo(folder,videofile,count_thread,case_id):
@@ -376,7 +372,7 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
         t.join()
 
     groupJson(folder,video_file_origin,count_thread,case_id)
-    create_video_apperance(case_id,count_thread)
+    create_video_apperance(case_id,count_thread,folder)
 
 
 def handle_multiplefile(listfile,thread,case_id):
