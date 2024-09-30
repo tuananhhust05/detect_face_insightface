@@ -481,6 +481,8 @@ def handle_main(case_id, tracking_folder, target_folder):
 api = Flask(__name__)
 @api.route('/analyst', methods=["POST"])
 def analyst():
+    print(f"START ANALYST: {current_date()}")
+
     case_id = request.json['case_id']
     tracking_folder = request.json['tracking_folder']
     target_folder = request.json['target_folder']
@@ -498,6 +500,8 @@ def analyst():
     })
 
     handle_main(case_id,tracking_folder,target_folder)
+    print(f"END ANALYST: {current_date()}")
+
     return jsonify({
         "data":"ok"
     })
@@ -505,34 +509,3 @@ def analyst():
 if __name__ == '__main__':
     api.run(debug=True, port=5235, host='0.0.0.0')
 
-
-
-
-
-
-# Run with  GPU
-# dir_path = r'/home/poc4a5000/facesx '
-# list_file = []
-# for path in os.listdir(dir_path):
-#     # check if current path is a file
-#     if os.path.isfile(os.path.join(dir_path, path)):
-#         full_path = f"{dir_path}/{path}"
-#         list_file.append(full_path)
-# # print(list_file)
-
-
-# start_time = time.time()
-# print("Start ......",str(start_time))
-# f = open("start.txt", "a")
-# f.write(str(start_time))
-
-# handle_multiplefile(list_file[6:],50 )
-# handle_multiplefile(list_file,50)
-# ch02_20240904040117.mp4
-# handle_multiplefile(["input/video8p.mp4"],50)
-# handle_main("123456-12", "/home/poc4a5000/detect/detect/example/tracking_folder", "/home/poc4a5000/detect/detect/example/target_folder")
-# end_time = time.time()
-# f = open("end.txt", "a")
-# f.write(str(end_time))
-
-# print(f"Total execution time: {end_time - start_time}")
