@@ -270,15 +270,15 @@ def handle_multiplefile(listfile,thread):
 
       
 # Run with  GPU
-dir_path = r''
-list_file = []
-for path in os.listdir(dir_path):
-    # check if current path is a file
-    if os.path.isfile(os.path.join(dir_path, path)):
-        full_path = f"{dir_path}{path}"
-        list_file.append(full_path)
-print(list_file)
+# dir_path = r''
+# list_file = []
+# for path in os.listdir(dir_path):
+#     # check if current path is a file
+#     if os.path.isfile(os.path.join(dir_path, path)):
+#         full_path = f"{dir_path}{path}"
+#         list_file.append(full_path)
+# print(list_file)
 start_time = time.time()
-handle_multiplefile(list_file,40)
+handle_multiplefile(["/home/poc4a5000/facesx/ch02_20240901000000.mp4"],50)
 end_time = time.time()
 print(f"Total execution time: {end_time - start_time}")
