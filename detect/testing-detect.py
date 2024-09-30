@@ -25,22 +25,9 @@ videos = mydb["videos"]
 dir_project = "/home/poc4a5000/detect/detect"
 
 # Initialize Pinecone client
+
 pc = Pinecone(api_key="6bebb6ba-195f-471e-bb60-e0209bd5c697")
-
-# Check if the index exists; if not, create it
-if 'detectcamera' not in pc.list_indexes().names():
-    pc.create_index(
-        name='detectcamera', 
-        dimension=512,  # Adjust to match your embedding dimension
-        metric='cosine',  # Use 'cosine' or 'euclidean' as needed
-        spec=ServerlessSpec(
-            cloud='gcp',  # Adjust cloud provider if necessary
-            region='us-west1'  # Adjust region as needed
-        )
-    )
-
-# Access the index
-index = pc.index('detectcamera')
+index = pc.Index("detectcamera")
 
 weight_point = 0.4
 time_per_frame_global = 2  # seconds per frame to process
