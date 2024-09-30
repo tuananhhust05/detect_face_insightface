@@ -18,10 +18,6 @@ import uuid
 from flask import Flask, jsonify, request
 import pymongo
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dotenv import load_dotenv
-
-# Tải các biến môi trường từ tệp .env
-load_dotenv()
 
 # Cấu hình logging
 logging.basicConfig(
