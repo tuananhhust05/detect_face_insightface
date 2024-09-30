@@ -59,12 +59,17 @@ time_per_frame_global = 2
 
 # Phát hiện số lượng GPU có sẵn
 num_gpus = torch.cuda.device_count()
-gpu_ids = list(range(num_gpus))
-if num_gpus > 0:
+if num_gpus >= 1:
     logging.info(f"Number of GPUs available: {num_gpus}")
 else:
-    logging.warning("No GPUs detected. Using CPU.")
-    gpu_ids = [-1]  # CPU
+    logging.warning("No GPUs detected. Exiting.")
+    exit(1)
+
+# Phân bổ GPU:
+# GPU 0: Dành cho app_recognize
+# GPU 1, 2, 3: Dành cho video processing
+app_gpu_id = 0
+video_gpu_ids = list(range(1, num_gpus))  # [1, 2, 3]
 
 # Hàm tiện ích
 def getduration(file):
@@ -138,21 +143,20 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
                             sum_gender += int(face['gender'])
 
                             # Ghi lại kết quả
-                            if not facematches.find_one({"frame_count": frame_count}):
-                                mydict = { 
-                                    "id":  str(uuid.uuid4()), 
-                                    "case_id": case_id,
-                                    "similarity_face":str(matches[0]['score']),
-                                    "gender":int(face['gender']),
-                                    "age":int(face['age']),
-                                    "time_invideo":str(frame_count * time_per_frame_global + time_per_segment * index_local),
-                                    "proofImage":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{frame_count}_0_face.jpg',
-                                    "url":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{frame_count}_0_face.jpg',
-                                    "createdAt":current_date(),
-                                    "updatedAt":current_date(),
-                                    "file":folder
-                                }
-                                facematches.insert_one(mydict)
+                            mydict = { 
+                                "id":  str(uuid.uuid4()), 
+                                "case_id": case_id,
+                                "similarity_face":str(matches[0]['score']),
+                                "gender":int(face['gender']),
+                                "age":int(face['age']),
+                                "time_invideo":str(frame_count * time_per_frame_global + time_per_segment * index_local),
+                                "proofImage":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{frame_count}_0_face.jpg',
+                                "url":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{frame_count}_0_face.jpg',
+                                "createdAt":current_date(),
+                                "updatedAt":current_date(),
+                                "file":folder
+                            }
+                            facematches.insert_one(mydict)
 
                             # Vẽ hình chữ nhật quanh khuôn mặt
                             bbox = [int(b) for b in face['bbox']]
@@ -339,7 +343,7 @@ def handle_multiplefile(listfile, thread, case_id):
     
     for idx, file in enumerate(listfile):
         folder_name = os.path.splitext(os.path.basename(file))[0]
-        gpu_id = gpu_ids[idx % len(gpu_ids)]  # Phân bổ GPU theo vòng quay
+        gpu_id = video_gpu_ids[idx % len(video_gpu_ids)]  # Phân bổ GPU theo vòng quay
         duration = getduration(file)
         time_per_segment = duration / thread
         total_frames = int(cv2.VideoCapture(file).get(cv2.CAP_PROP_FRAME_COUNT))
@@ -371,7 +375,7 @@ def handle_multiplefile(listfile, thread, case_id):
 
 # Hàm chính xử lý
 def handle_main(case_id, tracking_folder, target_folder):
-    # Xử lý mục tiêu ban đầu trên CPU
+    # Xử lý mục tiêu ban đầu trên GPU 0
     flag_target_folder = True
     for path in os.listdir(target_folder):
         if flag_target_folder and os.path.isfile(os.path.join(target_folder, path)):
@@ -412,10 +416,10 @@ def handle_main(case_id, tracking_folder, target_folder):
     # Tạo thư mục video xuất hiện
     os.makedirs(f"./video_apperance/{case_id}", exist_ok=True)
 
-# Khởi tạo app_recognize trên CPU để tránh chiếm GPU 0
-app_recognize = FaceAnalysis('buffalo_l', providers=[])  # Empty providers để sử dụng CPU
-app_recognize.prepare(ctx_id=-1, det_thresh=0.3, det_size=(640, 640))
-logging.info("app_recognize initialized on CPU")
+# Khởi tạo app_recognize trên GPU 0 để sử dụng GPU
+app_recognize = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
+app_recognize.prepare(ctx_id=app_gpu_id, det_thresh=0.3, det_size=(640, 640))
+logging.info("app_recognize initialized on GPU 0")
 
 # Thiết lập Flask API
 api = Flask(__name__)
