@@ -503,7 +503,7 @@ def analyst():
     })
 
 if __name__ == '__main__':
-    api.run(debug=True, port=5234, host='0.0.0.0')
+    api.run(debug=True, port=5235, host='0.0.0.0')
 
 
 
