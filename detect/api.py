@@ -2,7 +2,7 @@ import json
 from flask import Flask, jsonify, request
 app = Flask(__name__,static_url_path='', 
             static_folder='')
-from detect.detect import handle_main
+# from detect.detect import handle_main
 
 @app.route('/analyst', methods=['GET'])
 def get_employees():
