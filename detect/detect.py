@@ -343,7 +343,7 @@ def trimvideo(folder,videofile,count_thread,case_id):
         (
             ffmpeg
             .input(videofile, ss=time_per_segment*i)
-            .output("/home/poc4a5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4", t=time_per_segment, c='copy')
+            .output(f"/home/poc4a5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4", t=time_per_segment, c='copy')
             .run(overwrite_output=True)
         )
         # command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  /home/poc4a5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4 -y"
