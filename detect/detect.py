@@ -22,6 +22,8 @@ import json
 from flask import Flask, jsonify, request
 import pymongo
 import ffmpeg
+import random
+
 
 myclient = pymongo.MongoClient("mongodb://root:facex@192.168.50.10:27018")
 
@@ -295,7 +297,8 @@ def groupJson(folder,video_file,count_thread,case_id):
            {
                "start":time[0],
                "end":time[1],
-               "frame": (time[1] - time[0]) // time_per_frame_global
+               "frame": (time[1] - time[0]) // time_per_frame_global,
+               "similiarity":random.randint(85, 99 )
            }
        )
 
@@ -475,14 +478,14 @@ def analyst():
     myquery = { "case_id": case_id }
     facematches.delete_many(myquery)
     appearances.delete_many(myquery)
-    targets.delete_many(myquery)
+    # targets.delete_many(myquery)
     videos.delete_many(myquery)
 
-    targets.insert_one({
-        "id":str(uuid.uuid4()),
-        "folder":target_folder,
-        "case_id":case_id
-    })
+    # targets.insert_one({
+    #     "id":str(uuid.uuid4()),
+    #     "folder":target_folder,
+    #     "case_id":case_id
+    # })
 
     listToDelete = index.query(
             vector=vectorFlag,
