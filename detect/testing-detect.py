@@ -21,6 +21,7 @@ import uuid
 import json
 from flask import Flask, jsonify, request
 import pymongo
+from queue import Queue
 
 myclient = pymongo.MongoClient("mongodb://root:facex@192.168.50.10:27018")
 
@@ -356,53 +357,45 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
     groupJson(folder,video_file_origin,count_thread,case_id)
     create_video_apperance(case_id,count_thread)
 
-
-def handle_multiplefile(listfile,thread,case_id):
+def handle_multiplefile(listfile, max_threads, case_id):
+    queue = Queue()
     for file in listfile:
-        file_name = file.split(".")[0]
-        if "/" in file_name: 
-            file_name = file_name.split("/")[len(file_name.split("/")) - 1]
-        
-        if not os.path.exists(f"./faces/{case_id}"):
-            os.makedirs(f"./faces/{case_id}")
-
-        if not os.path.exists(f"./faces/{case_id}/{file_name}"):
-            os.makedirs(f"./faces/{case_id}/{file_name}")
-        
-        if not os.path.exists(f"./outputs/{case_id}"):
-            os.makedirs(f"./outputs/{case_id}")
-
-        if not os.path.exists(f"./outputs/{case_id}/{file_name}"):
-            os.makedirs(f"./outputs/{case_id}/{file_name}")
-        
-        if not os.path.exists(f"./videos/{case_id}"):
-            os.makedirs(f"./videos/{case_id}")
-
-        if not os.path.exists(f"./videos/{case_id}/{file_name}"):
-            os.makedirs(f"./videos/{case_id}/{file_name}")
-        
-        if not os.path.exists(f"./datas/{case_id}"):
-            os.makedirs(f"./datas/{case_id}")
-
-        if not os.path.exists(f"./datas/{case_id}/{file_name}"):
-            os.makedirs(f"./datas/{case_id}/{file_name}")
-       
-        if not os.path.exists(f"./results/{case_id}"):
-            os.makedirs(f"./results/{case_id}")
-
-        if not os.path.exists(f"./results/{case_id}/{file_name}"):
-            os.makedirs(f"./results/{case_id}/{file_name}")
-        
-        if not os.path.exists(f"./final_result/{case_id}"):
-            os.makedirs(f"./final_result/{case_id}")
-
-        if not os.path.exists(f"./final_result/{case_id}/{file_name}"):
-            os.makedirs(f"./final_result/{case_id}/{file_name}")
+        queue.put(file)
     
-        folder = file_name
-        process_videos(folder,file,thread,case_id)
-        subprocess.run("rm -rf videos/{file_name}", shell=True, check=True)
-
+    def worker():
+        while not queue.empty():
+            file = queue.get()
+            file_name = file.split(".")[0]
+            if "/" in file_name: 
+                file_name = file_name.split("/")[-1]
+            
+            # Directory setup
+            directories = [
+                f"./faces/{case_id}/{file_name}",
+                f"./outputs/{case_id}/{file_name}",
+                f"./videos/{case_id}/{file_name}",
+                f"./datas/{case_id}/{file_name}",
+                f"./results/{case_id}/{file_name}",
+                f"./final_result/{case_id}/{file_name}"
+            ]
+            for directory in directories:
+                os.makedirs(directory, exist_ok=True)
+            
+            folder = file_name
+            process_videos(folder, file, max_threads, case_id)
+            subprocess.run(f"rm -rf videos/{file_name}", shell=True, check=True)
+            queue.task_done()
+    
+    threads = []
+    for _ in range(max_threads):
+        t = threading.Thread(target=worker)
+        t.start()
+        threads.append(t)
+    
+    queue.join()
+    
+    for t in threads:
+        t.join()
 
 def handle_main(case_id, tracking_folder, target_folder):
     flag_target_folder = True
