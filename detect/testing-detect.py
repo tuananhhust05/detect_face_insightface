@@ -16,7 +16,7 @@ import subprocess
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.INFO,  # Set to DEBUG for more detailed logs
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
@@ -48,11 +48,11 @@ time_per_frame_global = 2
 app_gpu_id = 0  # For app_recognize
 video_gpu_ids = []  # For video processing
 
-# Detect available GPUs (do not use torch.cuda here)
-num_gpus = int(os.environ.get("NUM_GPUS", 4))  # Assuming 4 GPUs
+# Detect available GPUs
+num_gpus = torch.cuda.device_count()
 if num_gpus >= 1:
     logging.info(f"Number of GPUs available: {num_gpus}")
-    video_gpu_ids = list(range(1, num_gpus))  # For video processing
+    video_gpu_ids = list(range(1, num_gpus))  # For video processing, assuming app_gpu_id = 0
 else:
     logging.warning("No GPUs detected. Exiting.")
     exit(1)
@@ -63,6 +63,8 @@ def getduration(file):
     frames = data.get(cv2.CAP_PROP_FRAME_COUNT)
     fps = data.get(cv2.CAP_PROP_FPS)
     data.release()
+    if fps == 0:
+        return 0
     seconds = round(frames / fps)
     return seconds
 
@@ -75,9 +77,8 @@ def current_date():
 # Batch processing function
 def process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id):
     try:
-        gpu_id = 0
         logging.info(f"Process {current_process().name} processing batch on GPU {gpu_id}")
-
+        
         # Set the device
         torch.cuda.set_device(gpu_id)
         device_str = f'cuda:{gpu_id}'
@@ -87,8 +88,7 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
         face_analysis.prepare(ctx_id=gpu_id, det_size=(640, 640))
         model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
         model.prepare(ctx_id=gpu_id, det_size=(640, 640))
-
-
+        
         for frame, frame_count in zip(frames_batch, frame_indices):
             detections, _ = model.detect(frame, input_size=(640, 640))
             if detections is not None and len(detections) > 0:
@@ -105,7 +105,7 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
                     if face["det_score"] > 0.5:
                         embedding = torch.tensor(face['embedding']).to(device_str)
                         search_result = index.query(
-                            vector=embedding.tolist(),
+                            vector=embedding.cpu().numpy().tolist(),
                             top_k=1,
                             include_metadata=True,
                             include_values=True,
@@ -159,41 +159,59 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
                             cv2.imwrite(f'{output_dir}/{filename}', frame)
 
     except Exception as e:
-        logging.error(f"Error processing batch: {e}")
+        logging.error(f"Error processing batch in {current_process().name}: {e}")
     finally:
         torch.cuda.empty_cache()
 
 # Video processing function
 def process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id):
-    frame_count = 0
-    cap = cv2.VideoCapture(video_file)
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    frame_rate = time_per_frame_global * fps 
+    try:
+        logging.info(f"{current_process().name}: Starting video processing on GPU {gpu_id}")
+        frame_count = 0
+        cap = cv2.VideoCapture(video_file)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        if fps == 0:
+            logging.error(f"{current_process().name}: FPS is zero for video {video_file}")
+            cap.release()
+            return
+        frame_rate = int(time_per_frame_global * fps) 
+        logging.info(f"{current_process().name}: Video FPS: {fps}, Frame rate for processing: {frame_rate}")
 
-    frames_batch = []
-    frame_indices = []
-    batch_size = 16  # Adjust batch size as needed
+        frames_batch = []
+        frame_indices = []
+        batch_size = 16  # Adjust batch size as needed
 
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        frame_count += 1
-        if frame_count % frame_rate == 0:
-            frames_batch.append(frame)
-            frame_indices.append(frame_count)
-            if len(frames_batch) == batch_size:
-                process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
-                frames_batch = []
-                frame_indices = []
-    if frames_batch:
-        process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
-    cap.release()
-
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                logging.info(f"{current_process().name}: No more frames to read, breaking the loop.")
+                break
+            frame_count += 1
+            if frame_count % frame_rate == 0:
+                logging.info(f"{current_process().name}: Adding frame {frame_count} to batch")
+                frames_batch.append(frame)
+                frame_indices.append(frame_count)
+                if len(frames_batch) == batch_size:
+                    logging.info(f"{current_process().name}: Batch size reached, calling process_batch")
+                    process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
+                    frames_batch = []
+                    frame_indices = []
+        if frames_batch:
+            logging.info(f"{current_process().name}: Processing remaining frames in batch")
+            process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
+        cap.release()
+        logging.info(f"{current_process().name}: Finished video processing")
+    except Exception as e:
+        logging.error(f"{current_process().name}: Exception in process_video: {e}")
+    finally:
+        cap.release()
 
 # Function to trim video into segments
 def trimvideo(folder, videofile, count_thread, case_id):
     duration = getduration(videofile)
+    if duration == 0:
+        logging.error(f"Video duration is zero for file {videofile}")
+        return
     time_per_segment = duration / count_thread
     os.makedirs(f"videos/{case_id}/{folder}", exist_ok=True)
     for i in range(count_thread):
@@ -203,17 +221,18 @@ def trimvideo(folder, videofile, count_thread, case_id):
 
 # Worker process function
 def worker_process(gpu_id, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames):
-    # Set CUDA_VISIBLE_DEVICES for this process before any CUDA code
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
     logging.info(f"Process {current_process().name} started with GPU ID: {gpu_id}")
+    # Set the device for this process
+    torch.cuda.set_device(gpu_id)
     process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
 
 # Function to process target images
-def target_processing(case_id, target_folder):
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(app_gpu_id)
+def target_processing(case_id, target_folder, gpu_id):
+    torch.cuda.set_device(gpu_id)
+    device_str = f'cuda:{gpu_id}'
     app_recognize = FaceAnalysis('buffalo_l')
-    app_recognize.prepare(ctx_id=0, det_thresh=0.3, det_size=(640, 640))
-    logging.info("app_recognize initialized on GPU 0")
+    app_recognize.prepare(ctx_id=gpu_id, det_thresh=0.3, det_size=(640, 640))
+    logging.info(f"app_recognize initialized on GPU {gpu_id}")
 
     flag_target_folder = True
     for path in os.listdir(target_folder):
@@ -238,7 +257,7 @@ def target_processing(case_id, target_folder):
                         vectors=[
                             {
                                 "id": str(uuid.uuid4()),
-                                "values": embedding_vector,
+                                "values": embedding_vector.tolist(),
                                 "metadata": {"face": case_id}
                             },
                         ]
@@ -252,6 +271,9 @@ def handle_multiplefile(listfile, thread, case_id):
     for idx, file in enumerate(listfile):
         folder_name = os.path.splitext(os.path.basename(file))[0]
         duration = getduration(file)
+        if duration == 0:
+            logging.error(f"Video duration is zero for file {file}")
+            continue
         time_per_segment = duration / thread
         total_frames = int(cv2.VideoCapture(file).get(cv2.CAP_PROP_FRAME_COUNT))
 
@@ -276,7 +298,7 @@ def handle_multiplefile(listfile, thread, case_id):
 # Main processing function
 def handle_main(case_id, tracking_folder, target_folder):
     # Start target processing in a separate process
-    target_process = Process(target=target_processing, args=(case_id, target_folder))
+    target_process = Process(target=target_processing, args=(case_id, target_folder, app_gpu_id))
     target_process.start()
     target_process.join()
 
