@@ -58,7 +58,7 @@ else:
 # GPU 0: Dành cho app_recognize
 # GPU 1, 2, 3: Dành cho video processing
 app_gpu_id = 0
-video_gpu_ids = list(range(1, num_gpus))  # [1, 2, 3]
+video_gpu_ids = [1, 2, 3]  # [1, 2, 3]
 # If you want to include GPU 0 in video processing, uncomment the following line:
 # video_gpu_ids = list(range(0, num_gpus))  # [0, 1, 2, 3]
 
