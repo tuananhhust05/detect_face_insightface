@@ -329,15 +329,18 @@ def create_video_apperance(case_id,thread_count,folder):
         img_array.append(img)
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
-    out = cv2.VideoWriter(f"/home/poc4a5000/facesx/db696a35-0043-4aba-a844-295e3432a118/videos/{folder}.mp4", fourcc, 5.0, size)
+    out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/{folder}.mp4", fourcc, 5.0, size)
+    
 
     for i in range(len(img_array)):
         out.write(img_array[i])
+    
     out.release()
+
     videos.insert_one({
         "id":str(uuid.uuid4()),
         "case_id":case_id,
-        "path":f"/home/poc4a5000/facesx/db696a35-0043-4aba-a844-295e3432a118/videos/{folder}.mp4",
+        "path":f"{dir_project}/video_apperance/{case_id}/{folder}.mp4",
     })
 
 def trimvideo(folder,videofile,count_thread,case_id):
@@ -518,7 +521,7 @@ def analyst():
     if(len(listId) > 0):
         index.delete(ids=listId)
     
-    subprocess.run("cd /home/poc4a5000/detect/detect && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && cd /home/poc4a5000/facesx/db696a35-0043-4aba-a844-295e3432a118 && sudo rm -rf videos && sudo mkdir videos", shell=True, check=True)
+    subprocess.run("cd /home/poc4a5000/detect/detect && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces", shell=True, check=True)
     
     handle_main(case_id,tracking_folder,target_folder)
     return jsonify({
