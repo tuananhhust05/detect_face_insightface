@@ -13,6 +13,7 @@ from insightface.app import FaceAnalysis
 from insightface.model_zoo import model_zoo
 from pinecone import Pinecone
 import subprocess
+import onnxruntime
 
 # Configure logging
 logging.basicConfig(
@@ -89,7 +90,6 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
         device = torch.device(f'cuda:{gpu_id}' if cuda_available else 'cpu')
 
         # Check available providers in onnxruntime
-        import onnxruntime
         available_providers = onnxruntime.get_available_providers()
         logging.info(f"{current_process().name}: onnxruntime available providers: {available_providers}")
 
@@ -101,7 +101,7 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
         face_analysis = FaceAnalysis(
             name='buffalo_l',
             providers=providers,
-            allowed_modules=['detection', 'recognition']
+            allowed_modules=['detection', 'recognition', 'genderage']  # Include 'genderage' if needed
         )
         face_analysis.prepare(ctx_id=gpu_id, det_size=(640, 640))
         model = model_zoo.get_model(
@@ -145,7 +145,7 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
 
                     faces = face_analysis.get(denoised)
                     for face in faces:
-                        if face["det_score"] > 0.5:
+                        if face.get("det_score", 0) > 0.5:
                             embedding = torch.tensor(face['embedding']).to(device)
                             search_result = index.query(
                                 vector=embedding.cpu().numpy().tolist(),
@@ -184,12 +184,16 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
                                 cv2.putText(frame_rgb, text, position, font, font_scale, color, thickness)
                                 cv2.imwrite(f'{output_dir}/{filename}', cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR))
 
+                                # Safely access 'gender' and 'age'
+                                gender = int(face.get('gender', -1))  # Use -1 or any default value if 'gender' is missing
+                                age = int(face.get('age', -1))        # Use -1 or any default value if 'age' is missing
+
                                 mydict = {
                                     "id":  str(uuid.uuid4()),
                                     "case_id": case_id,
                                     "similarity_face": str(matches[0]['score']),
-                                    "gender": int(face['gender']),
-                                    "age": int(face['age']),
+                                    "gender": gender,
+                                    "age": age,
                                     "time_invideo": text,
                                     "proofImage": os.path.abspath(f'{face_dir}/{filename}'),
                                     "url": os.path.abspath(f'{face_dir}/{filename}'),
@@ -203,7 +207,6 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
         logging.info(f"{current_process().name}: Finished processing video {video_file}")
     except Exception as e:
         logging.error(f"Error in {current_process().name}: {e}")
-
 # Function to trim video into segments
 def trimvideo(folder, videofile, count_thread, case_id):
     duration = getduration(videofile)
