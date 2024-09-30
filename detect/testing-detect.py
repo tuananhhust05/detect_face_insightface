@@ -8,7 +8,7 @@ import logging
 import uuid
 from flask import Flask, jsonify, request
 import pymongo
-from multiprocessing import Process, current_process
+from multiprocessing import Process, current_process, set_start_method
 from insightface.app import FaceAnalysis
 from insightface.model_zoo import model_zoo
 from pinecone import Pinecone
@@ -44,17 +44,18 @@ index = pc.Index(index_name)
 weight_point = 0.4
 time_per_frame_global = 2
 
-# Detect available GPUs
-num_gpus = torch.cuda.device_count()
+# GPU allocation
+app_gpu_id = 0  # For app_recognize
+video_gpu_ids = []  # For video processing
+
+# Detect available GPUs (do not use torch.cuda here)
+num_gpus = int(os.environ.get("NUM_GPUS", 4))  # Assuming 4 GPUs
 if num_gpus >= 1:
     logging.info(f"Number of GPUs available: {num_gpus}")
+    video_gpu_ids = list(range(1, num_gpus))  # For video processing
 else:
     logging.warning("No GPUs detected. Exiting.")
     exit(1)
-
-# GPU allocation
-app_gpu_id = 0  # For app_recognize
-video_gpu_ids = list(range(1, num_gpus))  # For video processing
 
 # Utility functions
 def getduration(file):
@@ -72,12 +73,8 @@ def current_date():
     return datetime.datetime.strptime(date_string, format_date)
 
 # Batch processing function
-def process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id):
+def process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames):
     try:
-        # Set CUDA_VISIBLE_DEVICES for this process
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
-        logging.info(f"Process {current_process().name} using GPU {gpu_id}")
-
         # Initialize FaceAnalysis and model in this process
         face_analysis = FaceAnalysis('buffalo_l')
         face_analysis.prepare(ctx_id=0, det_size=(640, 640))
@@ -162,7 +159,7 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
         torch.cuda.empty_cache()
 
 # Video processing function
-def process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id):
+def process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames):
     frame_count = 0
     cap = cv2.VideoCapture(video_file)
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -181,121 +178,12 @@ def process_video(folder, video_file, index_local, time_per_segment, case_id, du
             frames_batch.append(frame)
             frame_indices.append(frame_count)
             if len(frames_batch) == batch_size:
-                process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
+                process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames)
                 frames_batch = []
                 frame_indices = []
     if frames_batch:
-        process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
+        process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames)
     cap.release()
-
-# Function to group JSON results
-def groupJson(folder, video_file, count_thread, case_id):
-    final_result = {
-        "time": []
-    }
-    duration = getduration(video_file)
-    time_per_segment = duration / count_thread
-
-    list_stt = []
-    results_path = f"results/{case_id}/{folder}"
-    os.makedirs(results_path, exist_ok=True)
-    for path in os.listdir(results_path):
-        if os.path.isfile(os.path.join(results_path, path)):
-            stt = int(path.split(".")[0])
-            list_stt.append(stt)
-           
-    list_stt = sorted(list_stt)
-    max_age = 0 
-    sum_gender = 0 
-    count_face = 0 
-    for stt in list_stt:
-        with open(f"{results_path}/{stt}.json", 'r') as file:
-            data = json.load(file)
-            if len(data) > 0:
-                data = data[0]
-                if int(data['age']) > max_age:
-                    max_age = int(data['age'])
-                sum_gender += int(data['gender'])
-                count_face += 1 
-                for duration_range in data["duration_exist"]:
-                    final_result["time"].append([
-                        duration_range[0] + stt * time_per_segment,
-                        duration_range[1] + stt * time_per_segment
-                    ])
-
-    final_result['age'] = max_age
-    if count_face > 0 : 
-        final_result['gender'] = sum_gender / count_face
-        
-        facematches.update_many(
-            {"case_id": case_id},
-            {
-                "$set": {
-                    "gender": sum_gender / count_face,
-                    "age": max_age,
-                }
-            }
-        )
-
-    os.makedirs(f"final_result/{case_id}/{folder}", exist_ok=True)
-    with open(f"final_result/{case_id}/{folder}/final_result.json", 'w') as f:
-        json.dump(final_result, f, indent=4)
-    
-    final_result["file"] = folder 
-    final_result["id"] = str(uuid.uuid4())
-    final_result["case_id"] = case_id
-    final_result["createdAt"] = current_date()
-    final_result["updatedAt"] = current_date()
-    new_arr = []
-
-    for time_range in final_result["time"]:
-        new_arr.append({
-            "start": time_range[0],
-            "end": time_range[1],
-            "frame": int((time_range[1] - time_range[0]) // (duration / getduration(video_file)))
-        })
-    final_result["time"] = new_arr
-    appearances.insert_one(final_result)
-
-# Function to create appearance video
-def create_video_apperance(case_id, thread_count):
-    list_img = []
-    output_base_dir = f"{dir_project}/outputs/{case_id}"
-    for dir in os.listdir(output_base_dir):
-        dir_full = os.path.join(output_base_dir, dir)
-        for i in range(thread_count):
-            folder_count = i 
-            dir_full_new = os.path.join(dir_full, str(folder_count))
-            if os.path.exists(dir_full_new):
-                for path in os.listdir(dir_full_new):
-                    full_path = os.path.join(dir_full_new, path)
-                    if os.path.isfile(full_path):
-                        list_img.append(full_path)
-    img_array = []
-    for filename in list_img:
-        img = cv2.imread(filename)
-        if img is not None:
-            height, width, layers = img.shape
-            size = (width, height)
-            img_array.append(img)
-
-    if not img_array:
-        logging.warning("No images to create video.")
-        return
-
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
-    video_output_dir = f"{dir_project}/video_apperance/{case_id}"
-    os.makedirs(video_output_dir, exist_ok=True)
-    out = cv2.VideoWriter(f"{video_output_dir}/video.mp4", fourcc, 5.0, size)
-
-    for img in img_array:
-        out.write(img)
-    out.release()
-    videos.insert_one({
-        "id": str(uuid.uuid4()),
-        "case_id": case_id,
-        "path": f"{video_output_dir}/video.mp4",
-    })
 
 # Function to trim video into segments
 def trimvideo(folder, videofile, count_thread, case_id):
@@ -309,10 +197,10 @@ def trimvideo(folder, videofile, count_thread, case_id):
 
 # Worker process function
 def worker_process(gpu_id, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames):
-    logging.info(f"Process {current_process().name} started with GPU ID: {gpu_id}")
-    # Set CUDA_VISIBLE_DEVICES for this process
+    # Set CUDA_VISIBLE_DEVICES for this process before any CUDA code
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
-    process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
+    logging.info(f"Process {current_process().name} started with GPU ID: {gpu_id}")
+    process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames)
 
 # Function to handle multiple files using multiprocessing
 def handle_multiplefile(listfile, thread, case_id):
@@ -341,56 +229,51 @@ def handle_multiplefile(listfile, thread, case_id):
     for p in processes:
         p.join()
 
-    # Group JSON results and create appearance video
-    for file in listfile:
-        folder_name = os.path.splitext(os.path.basename(file))[0]
-        groupJson(folder_name, file, thread, case_id)
-    create_video_apperance(case_id, thread)
-
-    # Remove videos directory after processing
-    for file in listfile:
-        file_name = os.path.splitext(os.path.basename(file))[0]
-        subprocess.run(f"rm -rf videos/{case_id}/{file_name}", shell=True, check=True)
+    # Additional processing (e.g., groupJson, create_video_apperance) if needed
 
 # Main processing function
 def handle_main(case_id, tracking_folder, target_folder):
-    # Set CUDA_VISIBLE_DEVICES for initial target processing
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(app_gpu_id)
+    # Process initial target images (without initializing CUDA in the main process)
+    # Use a separate process for app_recognize
+    def target_processing():
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(app_gpu_id)
+        app_recognize = FaceAnalysis('buffalo_l')
+        app_recognize.prepare(ctx_id=0, det_thresh=0.3, det_size=(640, 640))
+        logging.info("app_recognize initialized on GPU 0")
 
-    # Initialize app_recognize on GPU 0
-    app_recognize = FaceAnalysis('buffalo_l')
-    app_recognize.prepare(ctx_id=0, det_thresh=0.3, det_size=(640, 640))
-    logging.info("app_recognize initialized on GPU 0")
-
-    # Process initial target images
-    flag_target_folder = True
-    for path in os.listdir(target_folder):
-        if flag_target_folder and os.path.isfile(os.path.join(target_folder, path)):
-            full_path = os.path.join(target_folder, path)
-            img = cv2.imread(full_path)
-            faces = app_recognize.get(img)
-            for face in faces:
-                embedding_vector = face['embedding']
-                search_result = index.query(
-                    vector=embedding_vector.tolist(),
-                    top_k=1,
-                    include_metadata=True,
-                    include_values=True,
-                    filter={"face": case_id},
-                )
-                matches = search_result["matches"]
-                if matches and matches[0]["metadata"]["face"] == case_id:
-                    flag_target_folder = False
-                if flag_target_folder:
-                    index.upsert(
-                        vectors=[
-                            {
-                                "id": str(uuid.uuid4()),
-                                "values": embedding_vector,
-                                "metadata": {"face": case_id}
-                            },
-                        ]
+        flag_target_folder = True
+        for path in os.listdir(target_folder):
+            if flag_target_folder and os.path.isfile(os.path.join(target_folder, path)):
+                full_path = os.path.join(target_folder, path)
+                img = cv2.imread(full_path)
+                faces = app_recognize.get(img)
+                for face in faces:
+                    embedding_vector = face['embedding']
+                    search_result = index.query(
+                        vector=embedding_vector.tolist(),
+                        top_k=1,
+                        include_metadata=True,
+                        include_values=True,
+                        filter={"face": case_id},
                     )
+                    matches = search_result["matches"]
+                    if matches and matches[0]["metadata"]["face"] == case_id:
+                        flag_target_folder = False
+                    if flag_target_folder:
+                        index.upsert(
+                            vectors=[
+                                {
+                                    "id": str(uuid.uuid4()),
+                                    "values": embedding_vector,
+                                    "metadata": {"face": case_id}
+                                },
+                            ]
+                        )
+
+    # Start target processing in a separate process
+    target_process = Process(target=target_processing)
+    target_process.start()
+    target_process.join()
 
     # List of files to process
     list_file = [
@@ -433,4 +316,6 @@ def analyst():
     return jsonify({"data": "ok"})
 
 if __name__ == '__main__':
+    import multiprocessing
+    multiprocessing.set_start_method('spawn')  # Use 'spawn' instead of 'fork'
     api.run(debug=True, port=5235, host='0.0.0.0')
