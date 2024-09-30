@@ -104,9 +104,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
             # faces = face_cascade.detectMultiScale(gray_frame, scaleFactor=1.1, minNeighbors=5)
             if(flagDetect == True):
                 sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-                sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
-                frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
-                faces = app.get(frame)
+                sharpen = cv2.cuda.filter2D(gpu_frame, 0, sharpen_kernel)
+                gpu_frame = cv2.cuda.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
+                faces = app.get(gpu_frame)
 
                 sum_age = 0 
                 sum_gender = 0 
