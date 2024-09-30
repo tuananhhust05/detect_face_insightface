@@ -78,8 +78,10 @@ model_instances = {}
 for gpu_id in gpu_ids:
     if gpu_id >= 0:
         providers = ['CUDAExecutionProvider']
+        device_str = f'cuda:{gpu_id}'
     else:
         providers = []
+        device_str = 'cpu'
     face_analysis = FaceAnalysis('buffalo_l', providers=providers)
     face_analysis.prepare(ctx_id=gpu_id, det_size=(640, 640))
     face_recognize = FaceAnalysis('buffalo_l', providers=providers)
@@ -90,13 +92,10 @@ for gpu_id in gpu_ids:
     face_analysis_instances[gpu_id] = face_analysis
     model_instances[gpu_id] = model
 
-# Khởi tạo app_recognize cho handle_main, sử dụng GPU 0 nếu có
-if num_gpus > 0:
-    app_recognize = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
-    app_recognize.prepare(ctx_id=0, det_thresh=0.3, det_size=(640, 640))
-else:
-    app_recognize = FaceAnalysis('buffalo_l')
-    app_recognize.prepare(det_thresh=0.3, det_size=(640, 640))
+# Khởi tạo app_recognize trên CPU để tránh chiếm GPU 0
+app_recognize = FaceAnalysis('buffalo_l', providers=[])  # Empty providers để sử dụng CPU
+app_recognize.prepare(det_thresh=0.3, det_size=(640, 640))
+logging.info("app_recognize initialized on CPU")
 
 # Các hàm tiện ích
 def getduration(file):
@@ -152,6 +151,12 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
     try:
         face_analysis = face_analysis_instances.get(ctx_id)
         model = model_instances.get(ctx_id)
+        if ctx_id >= 0:
+            device_str = f'cuda:{ctx_id}'
+        else:
+            device_str = 'cpu'
+        
+        logging.info(f"Processing batch on GPU ID: {ctx_id} (Device: {device_str})")
         
         with torch.cuda.amp.autocast(enabled=(ctx_id >=0)):
             # Giả định rằng model.detect có thể xử lý batch, nếu không cần xử lý từng frame một
@@ -170,7 +175,7 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
 
                 for face in faces:
                     if face["det_score"] > 0.5:
-                        embedding = torch.tensor(face['embedding']).to(ctx_id)
+                        embedding = torch.tensor(face['embedding']).to(device_str)
                         search_result = index.query(
                             vector=embedding.tolist(),
                             top_k=1,
