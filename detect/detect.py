@@ -86,11 +86,11 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
             break
 
         frame_count += 1
-        print("frame_count", frame_count)
      
         
 
         if frame_count % frame_rate == 0:
+            print("frame_count", frame_count)
             # gpu_frame = cv2.cuda_GpuMat()
             # gpu_frame.upload(frame)
             facechecks = model.detect(frame,input_size=(640, 640))
