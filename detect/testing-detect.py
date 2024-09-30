@@ -411,7 +411,7 @@ def handle_main(case_id, tracking_folder, target_folder):
         for f in os.listdir(tracking_folder) 
         if os.path.isfile(os.path.join(tracking_folder, f))
     ]
-    handle_multiplefile(list_file, 8, case_id)
+    handle_multiplefile(list_file, 50, case_id)
 
     # Tạo thư mục video xuất hiện
     os.makedirs(f"./video_apperance/{case_id}", exist_ok=True)
