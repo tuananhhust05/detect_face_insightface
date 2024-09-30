@@ -298,6 +298,7 @@ def groupJson(folder,video_file,count_thread,case_id):
                "frame": (time[1] - time[0]) // time_per_frame_global
            }
        )
+
     final_result["time"] = new_arr
     appearances.insert_one(final_result)
 
@@ -482,6 +483,7 @@ def analyst():
         "folder":target_folder,
         "case_id":case_id
     })
+
     listToDelete = index.query(
             vector=vectorFlag,
             top_k=1000,
@@ -505,13 +507,16 @@ def analyst():
         },
         include_metadata=True
     )
+
     listToDelete=listToDelete["matches"]
     listId = []
     for ele in listToDelete:
         listId.append(ele['id'])
     if(len(listId) > 0):
         index.delete(ids=listId)
-
+    
+    subprocess.run("cd /home/poc4a5000/detect/detect && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces", shell=True, check=True)
+    
     handle_main(case_id,tracking_folder,target_folder)
     return jsonify({
         "data":"ok"
