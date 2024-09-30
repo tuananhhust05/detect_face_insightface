@@ -77,7 +77,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
     duration = getduration(video_file)
     cap = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
     fps = cap.get(cv2.CAP_PROP_FPS)
-    frame_rate = time_per_frame_global * fps 
+    frame_rate = 60 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     while True:
@@ -86,14 +86,14 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
             break
 
         frame_count += 1
-        print("frame_count", frame_count)
      
         
 
         if frame_count % frame_rate == 0:
-            gpu_frame = cv2.cuda_GpuMat()
-            gpu_frame.upload(frame)
-            facechecks = model.detect(gpu_frame,input_size=(640, 640))
+            print("frame_count", frame_count)
+            # gpu_frame = cv2.cuda_GpuMat()
+            # gpu_frame.upload(frame)
+            facechecks = model.detect(frame,input_size=(640, 640))
             flagDetect = False
             if(len(facechecks) > 0):
                 if(len(facechecks[0]) > 0):
@@ -102,9 +102,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
             if(flagDetect == True):
                 print("Có mặt......")
                 sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-                sharpen = cv2.cuda.filter2D(gpu_frame, 0, sharpen_kernel)
-                gpu_frame = cv2.cuda.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
-                faces = app.get(gpu_frame)
+                sharpen = cv2.cuda.filter2D(frame, 0, sharpen_kernel)
+                frame = cv2.cuda.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
+                faces = app.get(frame)
 
                 sum_age = 0 
                 sum_gender = 0 
@@ -289,7 +289,7 @@ def groupJson(folder,video_file,count_thread,case_id):
            {
                "start":time[0],
                "end":time[1],
-               "frame": (time[1] - time[0]) // time_per_frame
+               "frame": (time[1] - time[0]) // time_per_frame_global
            }
        )
     final_result["time"] = new_arr
@@ -310,10 +310,12 @@ def create_video_apperance(case_id,thread_count):
                         full_path = f"{dir_full_new}/{path}"
                         list_img.append(full_path)
     img_array = []
+    size=(120,120)
     for filename in list_img:
         img = cv2.imread(filename)
         height, width, layers = img.shape
-        size = (width,height)
+        size_inter = (width,height)
+        size = size_inter
         img_array.append(img)
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
@@ -332,7 +334,7 @@ def trimvideo(folder,videofile,count_thread,case_id):
     duration = getduration(videofile)
     time_per_segment = duration / count_thread
     for i in range(count_thread):
-        command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  videos/{case_id}/{folder}/{i}.mp4 -y"
+        command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  /home/poc4a5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4 -y"
         subprocess.run(command, shell=True, check=True)
 
 
