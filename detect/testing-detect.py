@@ -97,7 +97,9 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
             print(f"FPS is zero for video {video_file}")
             cap.release()
             return
-        frame_rate = int(fps)
+        # frame_rate = int(fps)
+        frame_rate = 60 
+
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         while True:
