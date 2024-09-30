@@ -94,7 +94,7 @@ for gpu_id in gpu_ids:
 
 # Khởi tạo app_recognize trên CPU để tránh chiếm GPU 0
 app_recognize = FaceAnalysis('buffalo_l', providers=[])  # Empty providers để sử dụng CPU
-app_recognize.prepare(det_thresh=0.3, det_size=(640, 640))
+app_recognize.prepare(ctx_id=-1, det_thresh=0.3, det_size=(640, 640))
 logging.info("app_recognize initialized on CPU")
 
 # Các hàm tiện ích
