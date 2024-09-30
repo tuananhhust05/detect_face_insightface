@@ -31,6 +31,7 @@ dir_project = "/home/poc4a5000/detect/detect"
 
 # Initialize Pinecone
 pc = Pinecone(api_key="6bebb6ba-195f-471e-bb60-e0209bd5c697")
+
 index = pc.Index("detectcamera")
 
 weight_point = 0.4
@@ -57,7 +58,7 @@ def current_date():
     date_string = now.strftime(format_date)
     return datetime.datetime.strptime(date_string, format_date)
 
-def extract_frames(folder, video_file, index_local, time_per_segment, case_id, gpu_id):
+def extract_frames(folder, video_file, index_local, time_per_segment, case_id, gpu_id, start_frame, duration_total, total_frames_total):
     print(f"Process started with GPU ID: {gpu_id}")
     try:
         # Set the device
@@ -106,20 +107,21 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
                 break
 
             frame_count += 1
+            global_frame_count = int(start_frame + frame_count)
 
             if frame_count % process_interval == 0:
-                print(f"Processing frame {frame_count}")
+                print("Processing frame", global_frame_count)
                 start_time = time.time()
                 facechecks = model.detect(frame, input_size=(640, 640))
                 detection_time = time.time() - start_time
-                print(f"Face detection took {detection_time:.2f} seconds")
+                # print(f"Face detection took {detection_time:.2f} seconds")
 
                 flagDetect = False
                 if len(facechecks) > 0 and len(facechecks[0]) > 0:
                     flagDetect = True
 
                 if flagDetect:
-                    print("Face detected...")
+                    # print("Face detected...")
                     # Preprocessing
                     sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
                     sharpen = cv2.filter2D(frame, -1, sharpen_kernel)
@@ -128,7 +130,7 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
                     start_time = time.time()
                     faces = app.get(frame_denoised)
                     recognition_time = time.time() - start_time
-                    print(f"Face recognition took {recognition_time:.2f} seconds")
+                    # print(f"Face recognition took {recognition_time:.2f} seconds")
 
                     sum_age = 0 
                     sum_gender = 0 
@@ -149,24 +151,24 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
                                 count_face += 1 
                                 sum_age += int(face.get('age', 0))
                                 sum_gender += int(face.get('gender', 0))
-
+ 
                                 if len(array_em_result) == 0:
                                     array_em_result.append({
                                         "speaker": 0,
                                         "gender": int(face.get('gender', -1)),
                                         "age": int(face.get('age', -1)),
-                                        "frames": [frame_count],
+                                        "frames": [global_frame_count],
                                     })
                                     
                                 else:
                                     if count_face > 0:
                                         array_em_result[0]["age"] = sum_age // count_face 
                                         array_em_result[0]["gender"] = sum_gender // count_face 
-                                        array_em_result[0]["frames"].append(frame_count)
+                                        array_em_result[0]["frames"].append(global_frame_count)
 
                                 try:
                                     bbox = [int(b) for b in face['bbox']]
-                                    filename = f"{frame_count}_0_face.jpg"
+                                    filename = f"{global_frame_count}_0_face.jpg"
                                     face_dir = f"./faces/{case_id}/{folder}/{index_local}"
                                     output_dir = f"./outputs/{case_id}/{folder}/{index_local}"
                                     os.makedirs(face_dir, exist_ok=True)
@@ -179,8 +181,8 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
                                     color = (255, 0, 0)
                                     thickness = 2
                                     cv2.rectangle(frame, top_left, bottom_right, color, thickness)
-                                    time_per_frame = duration / total_frames
-                                    text = frame_count * time_per_frame + time_per_segment * index_local
+                                    time_per_frame = duration_total / total_frames_total
+                                    text = global_frame_count * time_per_frame
                                     text = str(text)
                                     position = (bbox[0], bbox[1])
                                     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -205,10 +207,10 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
                                     "file": folder
                                 }
                                 facematches.insert_one(mydict)
-
         cap.release()
         torch.cuda.empty_cache()
-        print(f"Process with GPU {gpu_id} completed for video {video_file}")
+    except Exception as e:
+        print(f"Error in process: {e}")
 
     def process_targets(case_id, target_folder, gpu_id):
         torch.cuda.set_device(gpu_id)
@@ -283,24 +285,19 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
                         max_age = int(data['age'])
                     sum_gender += int(data['gender'])
                     count_face += 1 
-                    for duration_exist in data["duration_exist"]:
-                        final_result["time"].append([
-                            duration_exist[0] + stt * time_per_segment,
-                            duration_exist[1] + stt * time_per_segment
-                        ])
+                    for duration in data["duration_exist"]:
+                        final_result["time"].append([duration[0] + stt * time_per_segment, duration[1] + stt * time_per_segment])
 
         final_result['age'] = max_age
         if count_face > 0:
             final_result['gender'] = sum_gender / count_face
-        
+
             facematches.update_many(
-                { "case_id": case_id },
-                {
-                    "$set": {
-                        "gender": sum_gender / count_face,
-                        "age": max_age,
-                    }
-                }
+                {"case_id": case_id},
+                {"$set": {
+                    "gender": sum_gender / count_face,
+                    "age": max_age,
+                }}
             )
 
         with open(f"final_result/{case_id}/{folder}/final_result.json", 'w') as f:
@@ -313,12 +310,12 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
         final_result["updatedAt"] = current_date()
         new_arr = []
 
-        for time_pair in final_result["time"]:
+        for time_entry in final_result["time"]:
            new_arr.append(
                {
-                   "start": time_pair[0],
-                   "end": time_pair[1],
-                   "frame": (time_pair[1] - time_pair[0]) // time_per_frame_global
+                   "start": time_entry[0],
+                   "end": time_entry[1],
+                   "frame": (time_entry[1] - time_entry[0]) // time_per_frame_global
                }
            )
         final_result["time"] = new_arr
@@ -348,7 +345,7 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
                 img_array.append(img)
 
         if not img_array:
-            print(f"No images found for video appearance in case {case_id}")
+            print("No images found for video appearance.")
             return
 
         fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
@@ -417,10 +414,10 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
             os.makedirs(f"./datas/{case_id}/{file_name}", exist_ok=True)
             os.makedirs(f"./results/{case_id}/{file_name}", exist_ok=True)
             os.makedirs(f"./final_result/{case_id}/{file_name}", exist_ok=True)
-        
+
             folder = file_name
             process_videos(folder, file, thread, case_id)
-            subprocess.run(f"rm -rf videos/{case_id}/{folder}", shell=True, check=True)
+            subprocess.run(f"rm -rf videos/{case_name}", shell=True, check=True)
 
     def handle_main(case_id, tracking_folder, target_folder):
         # Start target processing
