@@ -21,6 +21,7 @@ import uuid
 import json
 from flask import Flask, jsonify, request
 import pymongo
+import ffmpeg
 
 myclient = pymongo.MongoClient("mongodb://root:facex@192.168.50.10:27018")
 
@@ -339,8 +340,14 @@ def trimvideo(folder,videofile,count_thread,case_id):
     duration = getduration(videofile)
     time_per_segment = duration / count_thread
     for i in range(count_thread):
-        command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  /home/poc4a5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4 -y"
-        subprocess.run(command, shell=True, check=True)
+        (
+            ffmpeg
+            .input(videofile, ss=time_per_segment*i)
+            .output("/home/poc4a5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4", t=time_per_segment, c='copy')
+            .run(overwrite_output=True)
+        )
+        # command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  /home/poc4a5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4 -y"
+        # subprocess.run(command, shell=True, check=True)
 
 
     
