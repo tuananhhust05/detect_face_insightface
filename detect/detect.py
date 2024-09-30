@@ -87,7 +87,10 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
 
         frame_count += 1
         print("frame_count", frame_count)
-
+        gpu_frame = cv2.cuda_GpuMat()
+        gpu_frame.upload(frame)
+        frame = gpu_frame.download()
+        
         if frame_count % frame_rate == 0:
  
             facechecks = model.detect(frame,input_size=(640, 640))
@@ -95,7 +98,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
             if(len(facechecks) > 0):
                 if(len(facechecks[0]) > 0):
                     flagDetect = True
-
+            
             # gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             # face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
             # faces = face_cascade.detectMultiScale(gray_frame, scaleFactor=1.1, minNeighbors=5)
