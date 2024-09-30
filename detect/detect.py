@@ -310,6 +310,7 @@ def create_video_apperance(case_id,thread_count):
                         full_path = f"{dir_full_new}/{path}"
                         list_img.append(full_path)
     img_array = []
+    size=(120,120)
     for filename in list_img:
         img = cv2.imread(filename)
         height, width, layers = img.shape
