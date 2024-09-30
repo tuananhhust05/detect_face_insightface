@@ -57,6 +57,9 @@ else:
     logging.warning("No GPUs detected. Exiting.")
     exit(1)
 
+# Set CUDA_VISIBLE_DEVICES
+os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(i) for i in range(num_gpus))
+
 # Utility functions
 def getduration(file):
     data = cv2.VideoCapture(file)
@@ -79,11 +82,20 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
     logging.info(f"Process {current_process().name} started with GPU ID: {gpu_id}")
     try:
         # Set the device
-        device = torch.device(f'cuda:{gpu_id}' if torch.cuda.is_available() else 'cpu')
         torch.cuda.set_device(gpu_id)
+        cuda_available = torch.cuda.is_available()
+        logging.info(f"{current_process().name}: torch.cuda.is_available() = {cuda_available}")
+
+        device = torch.device(f'cuda:{gpu_id}' if cuda_available else 'cpu')
+
+        # Check available providers in onnxruntime
+        import onnxruntime
+        available_providers = onnxruntime.get_available_providers()
+        logging.info(f"{current_process().name}: onnxruntime available providers: {available_providers}")
 
         # Ensure that the providers include CUDAExecutionProvider
-        providers = ['CUDAExecutionProvider'] if torch.cuda.is_available() else ['CPUExecutionProvider']
+        providers = ['CUDAExecutionProvider'] if 'CUDAExecutionProvider' in available_providers else ['CPUExecutionProvider']
+        logging.info(f"{current_process().name}: Using providers: {providers}")
 
         # Initialize FaceAnalysis and model in this process with GPU providers
         face_analysis = FaceAnalysis(
@@ -97,6 +109,8 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
             providers=providers
         )
         model.prepare(ctx_id=gpu_id, det_size=(640, 640))
+
+        logging.info(f"{current_process().name}: Model and face analysis initialized.")
 
         frame_count = 0
         duration = getduration(video_file)
@@ -119,7 +133,7 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
             if frame_count % frame_rate == 0:
                 logging.info(f"{current_process().name}: Processing frame {frame_count}")
 
-                # Convert frame to appropriate format
+                # Convert frame to RGB
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
                 detections, _ = model.detect(frame_rgb, input_size=(640, 640))
@@ -211,9 +225,18 @@ def worker_process(gpu_id, folder, video_file, index_local, time_per_segment, ca
 # Function to process target images
 def target_processing(case_id, target_folder, gpu_id):
     torch.cuda.set_device(gpu_id)
-    device = torch.device(f'cuda:{gpu_id}' if torch.cuda.is_available() else 'cpu')
+    cuda_available = torch.cuda.is_available()
+    logging.info(f"{current_process().name}: torch.cuda.is_available() = {cuda_available}")
 
-    providers = ['CUDAExecutionProvider'] if torch.cuda.is_available() else ['CPUExecutionProvider']
+    device = torch.device(f'cuda:{gpu_id}' if cuda_available else 'cpu')
+
+    # Check available providers in onnxruntime
+    import onnxruntime
+    available_providers = onnxruntime.get_available_providers()
+    logging.info(f"{current_process().name}: onnxruntime available providers: {available_providers}")
+
+    providers = ['CUDAExecutionProvider'] if 'CUDAExecutionProvider' in available_providers else ['CPUExecutionProvider']
+    logging.info(f"{current_process().name}: Using providers: {providers}")
 
     app_recognize = FaceAnalysis(
         name='buffalo_l',
