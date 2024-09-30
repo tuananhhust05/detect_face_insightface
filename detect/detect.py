@@ -40,7 +40,7 @@ pc = Pinecone(api_key="6bebb6ba-195f-471e-bb60-e0209bd5c697")
 index = pc.Index("detectcamera")
 
 weight_point = 0.4
-time_per_frame = 2 
+time_per_frame_global = 2 
 ctx_id = 0 if device.type == 'cuda' else -1
 app = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app.prepare(ctx_id=ctx_id, det_size=(640, 640))
@@ -77,7 +77,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
     duration = getduration(video_file)
     cap = cv2.VideoCapture(video_file)
     fps = cap.get(cv2.CAP_PROP_FPS)
-    frame_rate = time_per_frame * fps 
+    frame_rate = time_per_frame_global * fps 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     while True:
@@ -135,9 +135,10 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                                 })
                                 
                             else:
-                                array_em_result[0]["age"] = sum_age // count_face 
-                                array_em_result[0]["gender"] = sum_gender // count_face 
-                                array_em_result[0]["frames"].append(frame_count)
+                                if(count_face > 0):
+                                    array_em_result[0]["age"] = sum_age // count_face 
+                                    array_em_result[0]["gender"] = sum_gender // count_face 
+                                    array_em_result[0]["frames"].append(frame_count)
 
                             try:
                                 bbox = [int(b) for b in face['bbox']]
@@ -257,19 +258,20 @@ def groupJson(folder,video_file,count_thread,case_id):
                     final_result["time"].append([duration[0] + stt * time_per_segment,duration[1] + stt * time_per_segment])
 
     final_result['age'] = max_age
-    final_result['gender'] = sum_gender/ count_face
+    if count_face > 0 : 
+        final_result['gender'] = sum_gender/ count_face
     
-    facematches.update_many(
-        {
-            "case_id":case_id
-        },
-        {
-            "$set":{
-                "gender":sum_gender/ count_face,
-                "age": max_age,
+        facematches.update_many(
+            {
+                "case_id":case_id
+            },
+            {
+                "$set":{
+                    "gender":sum_gender/ count_face,
+                    "age": max_age,
+                }
             }
-        }
-    )
+        )
 
     with open(f"final_result/{case_id}/{folder}/final_result.json", 'w') as f:
         json.dump(final_result, f, indent=4)
