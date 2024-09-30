@@ -7,7 +7,7 @@ import json
 import time
 from insightface.app import FaceAnalysis
 from insightface.model_zoo import model_zoo
-import pinecone
+from pinecone import Pinecone, ServerlessSpec  # Updated import
 import subprocess
 import multiprocessing
 import uuid
@@ -24,9 +24,23 @@ videos = mydb["videos"]
 
 dir_project = "/home/poc4a5000/detect/detect"
 
-# Initialize Pinecone
-pinecone.init(api_key="6bebb6ba-195f-471e-bb60-e0209bd5c697", environment="us-west1-gcp")
-index = pinecone.Index("detectcamera")
+# Initialize Pinecone client
+pc = Pinecone(api_key="6bebb6ba-195f-471e-bb60-e0209bd5c697")
+
+# Check if the index exists; if not, create it
+if 'detectcamera' not in pc.list_indexes().names():
+    pc.create_index(
+        name='detectcamera', 
+        dimension=512,  # Adjust to match your embedding dimension
+        metric='cosine',  # Use 'cosine' or 'euclidean' as needed
+        spec=ServerlessSpec(
+            cloud='gcp',  # Adjust cloud provider if necessary
+            region='us-west1'  # Adjust region as needed
+        )
+    )
+
+# Access the index
+index = pc.index('detectcamera')
 
 weight_point = 0.4
 time_per_frame_global = 2  # seconds per frame to process
@@ -37,13 +51,13 @@ print(f"Number of GPUs available: {num_gpus}")
 gpu_ids = list(range(num_gpus))
 
 def getduration(file):
-    data = cv2.VideoCapture(file)
-    frames = data.get(cv2.CAP_PROP_FRAME_COUNT)
-    fps = data.get(cv2.CAP_PROP_FPS)
+    data = cv2.VideoCapture(file) 
+    frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 
+    fps = data.get(cv2.CAP_PROP_FPS) 
     data.release()
     if fps == 0:
         return 0
-    seconds = frames / fps
+    seconds = frames / fps 
     return seconds
 
 def current_date():
@@ -100,6 +114,7 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
                     for idx, face in enumerate(faces):
                         if face.get("det_score", 0) > 0.5:
                             embedding = torch.tensor(face['embedding']).to(device)
+                            # Use the 'index' from the Pinecone client instance
                             search_result = index.query(
                                 vector=embedding.cpu().numpy().tolist(),
                                 top_k=1,
@@ -181,6 +196,7 @@ def process_targets(case_id, target_folder, gpu_id):
             faces = app_recognize.get(img)
             for face in faces:
                 embedding_vector = face['embedding']
+                # Use the 'index' from the Pinecone client instance
                 search_result = index.query(
                     vector=embedding_vector.tolist(),
                     top_k=1,
