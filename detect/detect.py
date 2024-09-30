@@ -40,7 +40,7 @@ pc = Pinecone(api_key="6bebb6ba-195f-471e-bb60-e0209bd5c697")
 index = pc.Index("detectcamera")
 
 weight_point = 0.4
-
+time_per_frame = 2 
 ctx_id = 0 if device.type == 'cuda' else -1
 app = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app.prepare(ctx_id=ctx_id, det_size=(640, 640))
@@ -73,10 +73,11 @@ def current_date():
 def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
     array_em_result = []
     list_result_ele = []
-    frame_count = 0
-    frame_rate = 60  
+    frame_count = 0 
     duration = getduration(video_file)
     cap = cv2.VideoCapture(video_file)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    frame_rate = time_per_frame * fps 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     while True:
@@ -284,7 +285,7 @@ def groupJson(folder,video_file,count_thread,case_id):
            {
                "start":time[0],
                "end":time[1],
-               "frame":0
+               "frame": (time[1] - time[0]) // time_per_frame
            }
        )
     final_result["time"] = new_arr
