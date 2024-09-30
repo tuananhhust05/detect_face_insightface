@@ -204,7 +204,6 @@ def worker_process(gpu_id, folder, video_file, index_local, time_per_segment, ca
     # Set CUDA_VISIBLE_DEVICES for this process before any CUDA code
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
     logging.info(f"Process {current_process().name} started with GPU ID: {gpu_id}")
-    torch.cuda.set_device(gpu_id)
     process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
 
 # Function to process target images
