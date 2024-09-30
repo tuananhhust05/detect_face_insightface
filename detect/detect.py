@@ -75,7 +75,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
     list_result_ele = []
     frame_count = 0 
     duration = getduration(video_file)
-    cap = cv2.VideoCapture(video_file)
+    cap = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
     fps = cap.get(cv2.CAP_PROP_FPS)
     frame_rate = time_per_frame_global * fps 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -99,9 +99,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                 if(len(facechecks[0]) > 0):
                     flagDetect = True
             
-            # gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            # face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-            # faces = face_cascade.detectMultiScale(gray_frame, scaleFactor=1.1, minNeighbors=5)
             if(flagDetect == True):
                 sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
                 sharpen = cv2.cuda.filter2D(gpu_frame, 0, sharpen_kernel)
