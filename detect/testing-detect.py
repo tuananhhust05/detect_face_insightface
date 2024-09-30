@@ -10,16 +10,13 @@ from numpy.linalg import norm
 from insightface.app import FaceAnalysis
 from insightface.model_zoo import model_zoo
 from pinecone import Pinecone
-from numba import jit, cuda
 import subprocess
-import threading
 import logging
 import uuid
 from flask import Flask, jsonify, request
 import pymongo
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from multiprocessing import Process, Queue, current_process
 from torch.cuda.amp import autocast
-from itertools import cycle
 
 # Cấu hình logging
 logging.basicConfig(
@@ -69,36 +66,7 @@ else:
     logging.warning("No GPUs detected. Using CPU.")
     gpu_ids = [-1]  # CPU
 
-# Tạo một vòng lặp tuần tự các GPU IDs
-gpu_cycle = cycle(gpu_ids)
-
-# Khởi tạo FaceAnalysis và model cho từng GPU
-face_analysis_instances = {}
-model_instances = {}
-for gpu_id in gpu_ids:
-    if gpu_id >= 0:
-        providers = ['CUDAExecutionProvider']
-    else:
-        providers = []
-    face_analysis = FaceAnalysis('buffalo_l', providers=providers)
-    face_analysis.prepare(ctx_id=gpu_id, det_size=(640, 640))
-    face_recognize = FaceAnalysis('buffalo_l', providers=providers)
-    face_recognize.prepare(ctx_id=gpu_id, det_thresh=0.3, det_size=(640, 640))
-    model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
-    model.prepare(ctx_id=gpu_id, det_size=(640, 640))
-    
-    face_analysis_instances[gpu_id] = face_analysis
-    model_instances[gpu_id] = model
-
-# Khởi tạo app_recognize cho handle_main, sử dụng GPU 0 nếu có
-if num_gpus > 0:
-    app_recognize = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
-    app_recognize.prepare(ctx_id=0, det_thresh=0.3, det_size=(640, 640))
-else:
-    app_recognize = FaceAnalysis('buffalo_l')
-    app_recognize.prepare(det_thresh=0.3, det_size=(640, 640))
-
-# Các hàm tiện ích
+# Hàm tiện ích
 def getduration(file):
     data = cv2.VideoCapture(file) 
     frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 
@@ -119,41 +87,25 @@ def current_date():
     date_string = now.strftime(format_date)
     return datetime.datetime.strptime(date_string, format_date)
 
-# Hàm xử lý trích xuất khung hình với Batch Processing và Mixed Precision
-def extract_frames_batch(folder, video_file, index_local, time_per_segment, case_id, ctx_id, batch_size=16):
-    array_em_result = []
-    list_result_ele = []
-    frame_count = 0 
-    duration = getduration(video_file)
-    cap = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    frame_rate = time_per_frame_global * fps 
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    
-    frames_batch = []
-    frame_indices = []
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        frame_count += 1
-        if frame_count % frame_rate == 0:
-            frames_batch.append(frame)
-            frame_indices.append(frame_count)
-            if len(frames_batch) == batch_size:
-                process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, array_em_result, list_result_ele, duration, total_frames, ctx_id)
-                frames_batch = []
-                frame_indices = []
-    if frames_batch:
-        process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, array_em_result, list_result_ele, duration, total_frames, ctx_id)
-    cap.release()
-
-def process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, array_em_result, list_result_ele, duration, total_frames, ctx_id):
+# Hàm xử lý batch trong từng tiến trình
+def process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id):
     try:
-        face_analysis = face_analysis_instances.get(ctx_id)
-        model = model_instances.get(ctx_id)
+        if gpu_id >= 0:
+            device_str = f'cuda:{gpu_id}'
+            providers = ['CUDAExecutionProvider']
+        else:
+            device_str = 'cpu'
+            providers = []
         
-        with torch.cuda.amp.autocast(enabled=(ctx_id >=0)):
+        # Khởi tạo FaceAnalysis và model trong tiến trình này
+        face_analysis = FaceAnalysis('buffalo_l', providers=providers)
+        face_analysis.prepare(ctx_id=gpu_id, det_size=(640, 640))
+        model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
+        model.prepare(ctx_id=gpu_id, det_size=(640, 640))
+        
+        logging.info(f"Process {current_process().name} using {device_str}")
+
+        with torch.cuda.amp.autocast(enabled=(gpu_id >=0)):
             # Giả định rằng model.detect có thể xử lý batch, nếu không cần xử lý từng frame một
             detections = [model.detect(frame, input_size=(640, 640)) for frame in frames_batch]
         
@@ -170,7 +122,7 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
 
                 for face in faces:
                     if face["det_score"] > 0.5:
-                        embedding = torch.tensor(face['embedding']).to(ctx_id)
+                        embedding = torch.tensor(face['embedding']).to(device_str)
                         search_result = index.query(
                             vector=embedding.tolist(),
                             top_k=1,
@@ -185,18 +137,24 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
                             sum_age += int(face['age'])
                             sum_gender += int(face['gender'])
 
-                            if not array_em_result:
-                                array_em_result.append({
-                                    "speaker": 0,
-                                    "gender": int(face['gender']),
-                                    "age": int(face['age']),
-                                    "frames": [frame_count],
-                                })
-                            else:
-                                array_em_result[0]["age"] = sum_age // count_face 
-                                array_em_result[0]["gender"] = sum_gender // count_face 
-                                array_em_result[0]["frames"].append(frame_count)
+                            # Ghi lại kết quả
+                            if not facematches.find_one({"frame_count": frame_count}):
+                                mydict = { 
+                                    "id":  str(uuid.uuid4()), 
+                                    "case_id": case_id,
+                                    "similarity_face":str(matches[0]['score']),
+                                    "gender":int(face['gender']),
+                                    "age":int(face['age']),
+                                    "time_invideo":str(frame_count * time_per_frame_global + time_per_segment * index_local),
+                                    "proofImage":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{frame_count}_0_face.jpg',
+                                    "url":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{frame_count}_0_face.jpg',
+                                    "createdAt":current_date(),
+                                    "updatedAt":current_date(),
+                                    "file":folder
+                                }
+                                facematches.insert_one(mydict)
 
+                            # Vẽ hình chữ nhật quanh khuôn mặt
                             bbox = [int(b) for b in face['bbox']]
                             filename = f"{frame_count}_0_face.jpg"
                             face_dir = f"./faces/{case_id}/{folder}/{index_local}"
@@ -211,9 +169,8 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
                             color = (255, 0, 0)
                             thickness = 2
                             cv2.rectangle(frame, top_left, bottom_right, color, thickness)
-                            time_per_frame = duration / total_frames
-                            text = frame_count * time_per_frame + time_per_segment * index_local
-                            text = str(text)
+                            time_in_video = frame_count * time_per_frame_global + time_per_segment * index_local
+                            text = str(time_in_video)
                             position = (bbox[0], bbox[1])
                             font = cv2.FONT_HERSHEY_SIMPLEX
                             font_scale = 1
@@ -221,28 +178,37 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
                             cv2.putText(frame, text, position, font, font_scale, color, thickness)
                             cv2.imwrite(f'{output_dir}/{filename}', frame)
 
-                            mydict = { 
-                                "id":  str(uuid.uuid4()), 
-                                "case_id": case_id,
-                                "similarity_face":str(matches[0]['score']),
-                                "gender":int(face['gender']),
-                                "age":int(face['age']),
-                                "time_invideo":text,
-                                "proofImage":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
-                                "url":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
-                                "createdAt":current_date(),
-                                "updatedAt":current_date(),
-                                "file":folder
-                            }
-                            facematches.insert_one(mydict)
-
     except Exception as e:
-        logging.error(f"Error processing batch at frame {frame_count}: {e}")
+        logging.error(f"Error processing batch: {e}")
     finally:
-        # Sau khi xử lý batch, có thể giải phóng bộ nhớ GPU nếu cần
-        del frames_batch
-        del frame_indices
         torch.cuda.empty_cache()
+
+# Hàm xử lý từng video
+def process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id):
+    frame_count = 0
+    cap = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    frame_rate = time_per_frame_global * fps 
+    
+    frames_batch = []
+    frame_indices = []
+    batch_size = 16  # Bạn có thể điều chỉnh batch size tùy theo nhu cầu
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        frame_count += 1
+        if frame_count % frame_rate == 0:
+            frames_batch.append(frame)
+            frame_indices.append(frame_count)
+            if len(frames_batch) == batch_size:
+                process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
+                frames_batch = []
+                frame_indices = []
+    if frames_batch:
+        process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
+    cap.release()
 
 # Hàm nhóm kết quả JSON
 def groupJson(folder, video_file, count_thread, case_id):
@@ -362,41 +328,42 @@ def trimvideo(folder, videofile, count_thread, case_id):
         command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy videos/{case_id}/{folder}/{i}.mp4 -y"
         subprocess.run(command, shell=True, check=True)
 
-# Hàm xử lý video với giới hạn số luồng
-def process_videos(folder, video_file_origin, count_thread, case_id, ctx_ids):
-    duration = getduration(video_file_origin)
-    time_per_segment = duration / count_thread
+# Hàm xử lý trong từng tiến trình
+def worker_process(gpu_id, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames):
+    logging.info(f"Process {current_process().name} started with GPU ID: {gpu_id}")
+    process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
 
-    trimvideo(folder, video_file_origin, count_thread, case_id)
-
-    video_files = [f"videos/{case_id}/{folder}/{i}.mp4" for i in range(count_thread)]  
-    with ThreadPoolExecutor(max_workers=num_gpus) as executor:
-        futures = [
-            executor.submit(extract_frames_batch, folder, vf, i, time_per_segment, case_id, next(ctx_ids))
-            for i, vf in enumerate(video_files)
-        ]
-        for future in as_completed(futures):
-            try:
-                future.result()
-            except Exception as exc:
-                logging.error(f"Error in extract_frames_batch: {exc}")
-
-    groupJson(folder, video_file_origin, count_thread, case_id)
-    create_video_apperance(case_id, count_thread)
-
-# Hàm xử lý nhiều tệp
+# Hàm xử lý nhiều tệp sử dụng multiprocessing
 def handle_multiplefile(listfile, thread, case_id):
-    ctx_ids = cycle(gpu_ids) if num_gpus >0 else cycle([-1])
-    with ThreadPoolExecutor(max_workers=num_gpus) as executor:
-        futures = [
-            executor.submit(process_videos, os.path.splitext(os.path.basename(file))[0], file, 50, case_id, ctx_ids)
-            for file in listfile
-        ]
-        for future in as_completed(futures):
-            try:
-                future.result()
-            except Exception as exc:
-                logging.error(f"Error processing file: {exc}")
+    processes = []
+    
+    for idx, file in enumerate(listfile):
+        folder_name = os.path.splitext(os.path.basename(file))[0]
+        gpu_id = gpu_ids[idx % len(gpu_ids)]  # Phân bổ GPU theo vòng quay
+        duration = getduration(file)
+        time_per_segment = duration / thread
+        total_frames = int(cv2.VideoCapture(file).get(cv2.CAP_PROP_FRAME_COUNT))
+        
+        # Cắt video thành các phân đoạn
+        trimvideo(folder_name, file, thread, case_id)
+        
+        video_files = [f"videos/{case_id}/{folder_name}/{i}.mp4" for i in range(thread)]
+        
+        for i, vf in enumerate(video_files):
+            p = Process(target=worker_process, args=(gpu_id, folder_name, vf, i, time_per_segment, case_id, duration, total_frames))
+            p.start()
+            processes.append(p)
+    
+    # Chờ tất cả các tiến trình hoàn thành
+    for p in processes:
+        p.join()
+    
+    # Nhóm kết quả JSON và tạo video xuất hiện
+    for file in listfile:
+        folder_name = os.path.splitext(os.path.basename(file))[0]
+        groupJson(folder_name, file, thread, case_id)
+        create_video_apperance(case_id, thread)
+    
     # Xóa thư mục videos sau khi xử lý
     for file in listfile:
         file_name = os.path.splitext(os.path.basename(file))[0]
@@ -404,6 +371,7 @@ def handle_multiplefile(listfile, thread, case_id):
 
 # Hàm chính xử lý
 def handle_main(case_id, tracking_folder, target_folder):
+    # Xử lý mục tiêu ban đầu trên CPU
     flag_target_folder = True
     for path in os.listdir(target_folder):
         if flag_target_folder and os.path.isfile(os.path.join(target_folder, path)):
@@ -433,6 +401,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                         ]
                     )
     
+    # Danh sách các tệp cần xử lý
     list_file = [
         os.path.join(tracking_folder, f) 
         for f in os.listdir(tracking_folder) 
@@ -440,7 +409,13 @@ def handle_main(case_id, tracking_folder, target_folder):
     ]
     handle_multiplefile(list_file, 8, case_id)
 
+    # Tạo thư mục video xuất hiện
     os.makedirs(f"./video_apperance/{case_id}", exist_ok=True)
+
+# Khởi tạo app_recognize trên CPU để tránh chiếm GPU 0
+app_recognize = FaceAnalysis('buffalo_l', providers=[])  # Empty providers để sử dụng CPU
+app_recognize.prepare(ctx_id=-1, det_thresh=0.3, det_size=(640, 640))
+logging.info("app_recognize initialized on CPU")
 
 # Thiết lập Flask API
 api = Flask(__name__)
