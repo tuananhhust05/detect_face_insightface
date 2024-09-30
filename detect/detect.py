@@ -80,7 +80,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
     frame_rate = 60 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    denoiser = cv2.cuda.createFastNonLocalMeansDenoisingColored()
+    # denoiser = cv2.cuda.createFastNonLocalMeansDenoisingColored()
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -100,14 +100,14 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                     flagDetect = True
             
             if(flagDetect == True):
-                gpu_frame = cv2.cuda_GpuMat()
-                gpu_frame.upload(frame)
+                # gpu_frame = cv2.cuda_GpuMat()
+                # gpu_frame.upload(frame)
                 print("Có mặt......")
-                # sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-                # sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
-                # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
-                gpu_frame = denoiser.denoise(gpu_frame)
-                frame = gpu_frame.download()
+                sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+                sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
+                frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
+                # gpu_frame = denoiser.denoise(gpu_frame)
+                # frame = gpu_frame.download()
                 faces = app.get(frame)
 
                 sum_age = 0 
