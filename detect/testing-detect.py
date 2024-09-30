@@ -30,8 +30,27 @@ videos = mydb["videos"]
 dir_project = "/home/poc4a5000/detect/detect"
 
 # Initialize Pinecone
-pinecone.init(api_key="6bebb6ba-195f-471e-bb60-e0209bd5c697", environment="us-west1-gcp")
-index = pinecone.Index("detectcamera")
+import os
+from pinecone import Pinecone, ServerlessSpec
+
+# Replace with your actual Pinecone API key and environment
+pc = Pinecone(api_key="6bebb6ba-195f-471e-bb60-e0209bd5c697")
+
+index_name = "detectcamera"
+
+# Check if the index exists, create if not
+if index_name not in pc.list_indexes().names():
+    pc.create_index(
+        name=index_name,
+        dimension=512,  # Update based on your embedding dimension
+        metric='cosine',  # Or 'euclidean' depending on your use case
+        spec=ServerlessSpec(
+            cloud='aws',
+            region='us-west-2'  # Adjust based on your Pinecone setup
+        )
+    )
+
+index = pc.index(index_name)
 
 weight_point = 0.4
 time_per_frame_global = 2  # seconds per frame to process
@@ -42,13 +61,13 @@ print(f"Number of GPUs available: {num_gpus}")
 gpu_ids = list(range(num_gpus))
 
 def getduration(file):
-    data = cv2.VideoCapture(file) 
-    frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 
-    fps = data.get(cv2.CAP_PROP_FPS) 
+    data = cv2.VideoCapture(file)
+    frames = data.get(cv2.CAP_PROP_FRAME_COUNT)
+    fps = data.get(cv2.CAP_PROP_FPS)
     data.release()
     if fps == 0:
         return 0
-    seconds = frames / fps 
+    seconds = frames / fps
     return seconds
 
 def current_date():
@@ -79,7 +98,7 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
         )
         app.prepare(ctx_id=gpu_id, det_size=(640, 640))
 
-        frame_count = 0 
+        frame_count = 0
         duration = getduration(video_file)
         cap = cv2.VideoCapture(video_file)
         fps = cap.get(cv2.CAP_PROP_FPS)
@@ -106,26 +125,26 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
                 faces = app.get(frame)
                 if faces:
                     print("Face(s) detected...")
-                    sum_age = 0 
-                    sum_gender = 0 
-                    count_face = 0 
+                    sum_age = 0
+                    sum_gender = 0
+                    count_face = 0
                     for idx, face in enumerate(faces):
                         if face.get("det_score", 0) > 0.5:
                             embedding = torch.tensor(face['embedding']).to(device)
+                            # Perform search in Pinecone
                             search_result = index.query(
                                 vector=embedding.cpu().numpy().tolist(),
                                 top_k=1,
                                 include_metadata=True,
-                                include_values=True,
                                 filter={"face": case_id},
                             )
                             matches = search_result["matches"]
 
                             if len(matches) > 0 and matches[0]['score'] > weight_point:
-                                count_face += 1 
+                                count_face += 1
                                 sum_age += int(face.get('age', 0))
                                 sum_gender += int(face.get('gender', 0))
-                                
+
                                 try:
                                     bbox = [int(b) for b in face['bbox']]
                                     filename = f"{frame_count}_{idx}_face.jpg"
@@ -155,8 +174,8 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
                                 except Exception as e:
                                     print(f"Error saving frame: {e}")
 
-                                mydict = { 
-                                    "id":  str(uuid.uuid4()), 
+                                mydict = {
+                                    "id": str(uuid.uuid4()),
                                     "case_id": case_id,
                                     "similarity_face": str(matches[0]['score']),
                                     "gender": int(face.get('gender', -1)),
@@ -200,11 +219,11 @@ def process_targets(case_id, target_folder, gpu_id):
             faces = app_recognize.get(img)
             for face in faces:
                 embedding_vector = face['embedding']
+                # Perform search in Pinecone
                 search_result = index.query(
                     vector=embedding_vector.tolist(),
                     top_k=1,
                     include_metadata=True,
-                    include_values=True,
                     filter={"face": case_id},
                 )
                 matches = search_result["matches"]
