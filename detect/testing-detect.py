@@ -97,8 +97,9 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
             print(f"FPS is zero for video {video_file}")
             cap.release()
             return
-        frame_rate = 60
-        process_interval = frame_rate * 5  # Process every 5 seconds
+        # frame_rate = int(fps)
+        frame_rate = 60 
+
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         while True:
@@ -108,28 +109,19 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
 
             frame_count += 1
 
-            if frame_count % process_interval == 0:
+            if frame_count % frame_rate == 0:
                 print("Processing frame", frame_count)
-                start_time = time.time()
                 facechecks = model.detect(frame, input_size=(640, 640))
-                detection_time = time.time() - start_time
-                print(f"Face detection took {detection_time:.2f} seconds")
-
                 flagDetect = False
                 if len(facechecks) > 0 and len(facechecks[0]) > 0:
                     flagDetect = True
 
                 if flagDetect:
                     print("Face detected...")
-                    # Preprocessing
                     sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
                     sharpen = cv2.filter2D(frame, -1, sharpen_kernel)
                     frame_denoised = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
-
-                    start_time = time.time()
                     faces = app.get(frame_denoised)
-                    recognition_time = time.time() - start_time
-                    print(f"Face recognition took {recognition_time:.2f} seconds")
 
                     sum_age = 0 
                     sum_gender = 0 
@@ -206,15 +198,58 @@ def extract_frames(folder, video_file, index_local, time_per_segment, case_id, g
                                     "file": folder
                                 }
                                 facematches.insert_one(mydict)
+
         cap.release()
-        torch.cuda.empty_cache()
     except Exception as e:
         print(f"Error in process: {e}")
 
 # Move process_targets to global scope
 def process_targets(case_id, target_folder, gpu_id):
-    # Same as before
-    pass  # For brevity
+    torch.cuda.set_device(gpu_id)
+    device = torch.device(f'cuda:{gpu_id}')
+
+    providers = [
+        ('CUDAExecutionProvider', {
+            'device_id': gpu_id,
+        })
+    ]
+
+    app_recognize = FaceAnalysis(
+        name='buffalo_l',
+        providers=providers,
+        allowed_modules=['detection', 'recognition']
+    )
+    app_recognize.prepare(ctx_id=gpu_id, det_thresh=0.3, det_size=(640, 640))
+
+    flag_target_folder = True
+    for path in os.listdir(target_folder):
+        if flag_target_folder and os.path.isfile(os.path.join(target_folder, path)):
+            full_path = os.path.join(target_folder, path)
+            img = cv2.imread(full_path)
+            print("Processing target image:", full_path)
+            faces = app_recognize.get(img)
+            for face in faces:
+                embedding_vector = face['embedding']
+                search_result = index.query(
+                    vector=embedding_vector.tolist(),
+                    top_k=1,
+                    include_metadata=True,
+                    include_values=True,
+                    filter={"face": case_id},
+                )
+                matches = search_result["matches"]
+                if matches and matches[0]["metadata"]["face"] == case_id:
+                    flag_target_folder = False
+                if flag_target_folder:
+                    index.upsert(
+                        vectors=[
+                            {
+                                "id": str(uuid.uuid4()),
+                                "values": embedding_vector.tolist(),
+                                "metadata": {"face": case_id}
+                            },
+                        ]
+                    )
 
 def groupJson(folder, video_file, count_thread, case_id):
     # Your existing code for groupJson...
@@ -225,8 +260,16 @@ def create_video_apperance(case_id, thread_count):
     pass  # For brevity
 
 def trimvideo(folder, videofile, count_thread, case_id):
-    # Same as before
-    pass  # For brevity
+    duration = getduration(videofile)
+    if duration == 0:
+        print(f"Video duration is zero for file {videofile}")
+        return
+    time_per_segment = duration / count_thread
+    os.makedirs(f"videos/{case_id}/{folder}", exist_ok=True)
+    for i in range(count_thread):
+        start_time = time_per_segment * i
+        command = f"ffmpeg -i {videofile} -ss {start_time} -t {time_per_segment} -c:v copy -c:a copy videos/{case_id}/{folder}/{i}.mp4 -y"
+        subprocess.run(command, shell=True, check=True)
 
 def process_videos(folder, video_file_origin, count_thread, case_id):
     duration = getduration(video_file_origin)
@@ -239,15 +282,14 @@ def process_videos(folder, video_file_origin, count_thread, case_id):
 
     video_files = [f"videos/{case_id}/{folder}/{i}.mp4" for i in range(count_thread)]  
     processes = []
-    max_processes = num_gpus  # Limit to one process per GPU
-
     for i, video_file in enumerate(video_files):
         gpu_id = gpu_ids[i % num_gpus]
         p = multiprocessing.Process(target=extract_frames, args=(folder, video_file, i, time_per_segment, case_id, gpu_id))
         processes.append(p)
         p.start()
 
-        if len(processes) >= max_processes:
+        # Limit to one process per GPU to avoid out-of-memory errors
+        if (i + 1) % num_gpus == 0:
             for p in processes:
                 p.join()
             processes = []
