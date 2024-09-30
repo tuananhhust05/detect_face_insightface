@@ -72,6 +72,32 @@ else:
 # Tạo một vòng lặp tuần tự các GPU IDs
 gpu_cycle = cycle(gpu_ids)
 
+# Khởi tạo FaceAnalysis và model cho từng GPU
+face_analysis_instances = {}
+model_instances = {}
+for gpu_id in gpu_ids:
+    if gpu_id >= 0:
+        providers = ['CUDAExecutionProvider']
+    else:
+        providers = []
+    face_analysis = FaceAnalysis('buffalo_l', providers=providers)
+    face_analysis.prepare(ctx_id=gpu_id, det_size=(640, 640))
+    face_recognize = FaceAnalysis('buffalo_l', providers=providers)
+    face_recognize.prepare(ctx_id=gpu_id, det_thresh=0.3, det_size=(640, 640))
+    model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
+    model.prepare(ctx_id=gpu_id, det_size=(640, 640))
+    
+    face_analysis_instances[gpu_id] = face_analysis
+    model_instances[gpu_id] = model
+
+# Khởi tạo app_recognize cho handle_main, sử dụng GPU 0 nếu có
+if num_gpus > 0:
+    app_recognize = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'])
+    app_recognize.prepare(ctx_id=0, det_thresh=0.3, det_size=(640, 640))
+else:
+    app_recognize = FaceAnalysis('buffalo_l')
+    app_recognize.prepare(det_thresh=0.3, det_size=(640, 640))
+
 # Các hàm tiện ích
 def getduration(file):
     data = cv2.VideoCapture(file) 
@@ -124,26 +150,19 @@ def extract_frames_batch(folder, video_file, index_local, time_per_segment, case
 
 def process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, array_em_result, list_result_ele, duration, total_frames, ctx_id):
     try:
-        # Khởi tạo FaceAnalysis và model trong hàm xử lý để gán cho GPU cụ thể
-        app = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'] if ctx_id >=0 else [])
-        app.prepare(ctx_id=ctx_id, det_size=(640, 640))
-        app_recognize = FaceAnalysis('buffalo_l', providers=['CUDAExecutionProvider'] if ctx_id >=0 else [])
-        app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
-        model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
-        model.prepare(ctx_id=ctx_id, det_size=(640, 640))
+        face_analysis = face_analysis_instances.get(ctx_id)
+        model = model_instances.get(ctx_id)
         
         with torch.cuda.amp.autocast(enabled=(ctx_id >=0)):
-            gpu_frames = [torch.tensor(frame).permute(2, 0, 1).float().to(ctx_id) if ctx_id >=0 else torch.tensor(frame).permute(2, 0, 1).float() for frame in frames_batch]
             # Giả định rằng model.detect có thể xử lý batch, nếu không cần xử lý từng frame một
-            detections = [model.detect(frame, input_size=(640, 640)) for frame in gpu_frames]
+            detections = [model.detect(frame, input_size=(640, 640)) for frame in frames_batch]
         
         for frame, frame_count, detection in zip(frames_batch, frame_indices, detections):
             if detection and len(detection) > 0:
-                # Xử lý tiếp theo tương tự như trong hàm gốc
                 sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
                 sharpen = cv2.filter2D(frame, -1, sharpen_kernel)
                 denoised = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
-                faces = app.get(denoised)
+                faces = face_analysis.get(denoised)
 
                 sum_age = 0 
                 sum_gender = 0 
@@ -221,7 +240,8 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
         logging.error(f"Error processing batch at frame {frame_count}: {e}")
     finally:
         # Sau khi xử lý batch, có thể giải phóng bộ nhớ GPU nếu cần
-        del gpu_frames
+        del frames_batch
+        del frame_indices
         torch.cuda.empty_cache()
 
 # Hàm nhóm kết quả JSON
