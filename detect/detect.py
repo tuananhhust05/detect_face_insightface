@@ -80,7 +80,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
     frame_rate = 60 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    denoiser = cv2.cuda.createFastNonLocalMeansDenoisingColored()
+    # denoiser = cv2.cuda.createFastNonLocalMeansDenoisingColored()
     while True:
         ret, frame = cap.read()
         if not ret:
