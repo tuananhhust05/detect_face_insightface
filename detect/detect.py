@@ -330,14 +330,18 @@ def create_video_apperance(case_id,thread_count):
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
     out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/video.mp4", fourcc, 5.0, size)
+    
+    out2 = cv2.VideoWriter(f"/home/poc4a5000/facesx/db696a35-0043-4aba-a844-295e3432a118/videos/video.mp4", fourcc, 5.0, size)
 
     for i in range(len(img_array)):
         out.write(img_array[i])
+        out2.write(img_array[i])
     out.release()
+    out2.release()
     videos.insert_one({
         "id":str(uuid.uuid4()),
         "case_id":case_id,
-        "path":f"{dir_project}/video_apperance/{case_id}/video.mp4",
+        "path":"/home/poc4a5000/facesx/db696a35-0043-4aba-a844-295e3432a118/videos/video.mp4",
     })
 
 def trimvideo(folder,videofile,count_thread,case_id):
