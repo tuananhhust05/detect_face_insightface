@@ -242,4 +242,4 @@ def handle_main(case_id, tracking_folder, target_folder):
     os.makedirs(f"./video_apperance/{case_id}", exist_ok=True)
 
 if __name__ == '__main__':
-    api.run(debug=True, port=5234, host='0.0.0.0')
+    api.run(debug=True, port=5235, host='0.0.0.0')
