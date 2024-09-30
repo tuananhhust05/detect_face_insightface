@@ -30,7 +30,8 @@ videos = mydb["videos"]
 dir_project = "/home/poc4a5000/detect/detect"
 
 # Initialize Pinecone
-pc = Pinecone(api_key="YOUR_PINECONE_API_KEY")  # Replace with your Pinecone API key
+pc = Pinecone(api_key="6bebb6ba-195f-471e-bb60-e0209bd5c697")
+
 index = pc.Index("detectcamera")
 
 weight_point = 0.4
