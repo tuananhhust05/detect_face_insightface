@@ -73,16 +73,19 @@ def current_date():
     return datetime.datetime.strptime(date_string, format_date)
 
 # Batch processing function
-def process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames):
+def process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id):
     try:
+        # Set the device
+        torch.cuda.set_device(gpu_id)
+        device_str = f'cuda:{gpu_id}'
+
         # Initialize FaceAnalysis and model in this process
         face_analysis = FaceAnalysis('buffalo_l')
-        face_analysis.prepare(ctx_id=0, det_size=(640, 640))
+        face_analysis.prepare(ctx_id=gpu_id, det_size=(640, 640))
         model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
-        model.prepare(ctx_id=0, det_size=(640, 640))
+        model.prepare(ctx_id=gpu_id, det_size=(640, 640))
 
-        # Device string
-        device_str = 'cuda:0'
+        logging.info(f"Process {current_process().name} processing batch on GPU {gpu_id}")
 
         for frame, frame_count in zip(frames_batch, frame_indices):
             detections, _ = model.detect(frame, input_size=(640, 640))
@@ -159,7 +162,7 @@ def process_batch(frames_batch, frame_indices, folder, video_file, index_local, 
         torch.cuda.empty_cache()
 
 # Video processing function
-def process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames):
+def process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id):
     frame_count = 0
     cap = cv2.VideoCapture(video_file)
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -178,12 +181,13 @@ def process_video(folder, video_file, index_local, time_per_segment, case_id, du
             frames_batch.append(frame)
             frame_indices.append(frame_count)
             if len(frames_batch) == batch_size:
-                process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames)
+                process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
                 frames_batch = []
                 frame_indices = []
     if frames_batch:
-        process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames)
+        process_batch(frames_batch, frame_indices, folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
     cap.release()
+
 
 # Function to trim video into segments
 def trimvideo(folder, videofile, count_thread, case_id):
@@ -200,7 +204,8 @@ def worker_process(gpu_id, folder, video_file, index_local, time_per_segment, ca
     # Set CUDA_VISIBLE_DEVICES for this process before any CUDA code
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
     logging.info(f"Process {current_process().name} started with GPU ID: {gpu_id}")
-    process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames)
+    torch.cuda.set_device(gpu_id)
+    process_video(folder, video_file, index_local, time_per_segment, case_id, duration, total_frames, gpu_id)
 
 # Function to process target images
 def target_processing(case_id, target_folder):
