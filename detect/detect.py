@@ -409,6 +409,7 @@ def handle_main(case_id, tracking_folder, target_folder):
             if os.path.isfile(os.path.join(target_folder, path)):
                 full_path = f"{target_folder}/{path}"
                 img = cv2.imread(full_path)
+                print("full_path",full_path)
                 faces = app_recognize.get(img)
                 for face in faces:
                     embedding_vector = face['embedding']
