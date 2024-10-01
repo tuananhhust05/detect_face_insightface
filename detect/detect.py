@@ -385,18 +385,21 @@ def create_video_apperance(case_id,thread_count,folder):
         img_array.append(img)
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
-    out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/{folder}.mp4", fourcc, 5.0, size)
-    
-
+    out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4", fourcc, 5.0, size)
+    outputpathpre= f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4"
+    output = f"{dir_project}/video_apperance/{case_id}/{folder}.mp4"
     for i in range(len(img_array)):
         out.write(img_array[i])
     
     out.release()
-
+    
+    subprocess.run(f"ffmpeg -i {outputpathpre} -codec:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p {output} -y", shell=True, check=True)
+    subprocess.run(f"rm -rf {outputpathpre}", shell=True, check=True)
+    
     videos.insert_one({
         "id":str(uuid.uuid4()),
         "case_id":case_id,
-        "path":f"{dir_project}/video_apperance/{case_id}/{folder}.mp4",
+        "path":output,
     })
 
     return 
