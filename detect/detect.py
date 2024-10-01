@@ -344,29 +344,27 @@ def create_video_apperance(case_id,thread_count,folder):
         "path":f"{dir_project}/video_apperance/{case_id}/{folder}.mp4",
     })
 
-def trim_video_with_cuda(input_file, start_time, duration, output_file):
+def cutvideo(videofile,start,duration,output):
     (
-        # ffmpeg
-        # .input(input_file, ss=start_time, t=duration, hwaccel='cuda')
-        # .output(output_file, vcodec='h264_nvenc', acodec='copy')
-        # .run()
         ffmpeg
-        .input(input_file, ss=start_time, t=duration)
-        .output(output_file, vcodec='h264_nvenc', acodec='copy')
-        .run()
+        .input(videofile, ss=start)
+        .output(output, t=duration, c='copy')
+        .run(overwrite_output=True)
     )
 
 def trimvideo(folder,videofile,count_thread,case_id):
     duration = getduration(videofile)
     time_per_segment = duration / count_thread
     threads = []
+
     for i in range(count_thread):
-        t = threading.Thread(target=trim_video_with_cuda, args=(videofile, time_per_segment*i, time_per_segment, f"/home/poc4a5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4"))
+        t = threading.Thread(target=cutvideo, args=(videofile,time_per_segment*i,time_per_segment,f"/home/poc4a5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4"))
         threads.append(t)
         t.start()
 
     for t in threads:
         t.join()
+
 
     
 def process_videos(folder,video_file_origin,count_thread,case_id):
