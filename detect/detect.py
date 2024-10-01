@@ -495,7 +495,7 @@ def analyst():
     videos.delete_many(myquery)
 
     cases.update_one({
-        "case_id":case_id
+        "id":case_id
     },{
         "$set":{
             "start":current_date(),
@@ -525,14 +525,14 @@ def analyst():
     handle_main(case_id,tracking_folder,target_folder)
 
     cases.update_one({
-        "case_id":case_id
+        "id":case_id
     },{
         "$set":{
             "end":current_date(),
             "status":"completed"
         }
     })
-    
+
     return jsonify({
         "data":"ok"
     })
