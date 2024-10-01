@@ -52,6 +52,7 @@ model.prepare(ctx_id=ctx_id, det_size=(640, 640))
 num_gpus = torch.cuda.device_count()
 print(f"Number of GPUs available: {num_gpus}")
 gpu_ids = list(range(num_gpus))
+
 def getduration(file):
     data = cv2.VideoCapture(file) 
     frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 

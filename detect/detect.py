@@ -50,8 +50,29 @@ app = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app.prepare(ctx_id=ctx_id, det_size=(640, 640))
 app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
-model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
-model.prepare(ctx_id=ctx_id, det_size=(640, 640))
+# model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
+# model.prepare(ctx_id=ctx_id, det_size=(640, 640))
+
+num_gpus = torch.cuda.device_count()
+print(f"Number of GPUs available: {num_gpus}")
+gpu_ids = list(range(num_gpus)) 
+
+list_model_detect = []
+for j in range(num_gpus):
+    # Define providers with device_id
+    providers = [
+        ('CUDAExecutionProvider', {
+            'device_id': j,
+        })
+    ]
+    # Load the model with providers
+    model_ele = model_zoo.get_model(
+        '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
+        providers=providers
+    )
+    model_ele.prepare(ctx_id=j, det_size=(640, 640))
+    list_model_detect.append(model_ele)
+
 
 def getduration(file):
     data = cv2.VideoCapture(file) 
@@ -74,7 +95,7 @@ def current_date():
   date_string = now.strftime(format_date)
   return datetime.datetime.strptime(date_string, format_date)
 
-def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
+def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id):
     array_em_result = []
     list_result_ele = []
     frame_count = 0 
@@ -100,8 +121,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
 
         if frame_count % frame_rate == 0:
             print("frame_count", frame_count)
-           
-            facechecks = model.detect(frame,input_size=(640, 640))
+            
+            # facechecks = model.detect(frame,input_size=(640, 640))
+            facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
             flagDetect = False
             if(len(facechecks) > 0):
                 if(len(facechecks[0]) > 0):
@@ -380,7 +402,8 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
     video_files = [f"videos/{case_id}/{folder}/{i}.mp4" for i in range(count_thread)]  
     threads = []
     for i, video_file in enumerate(video_files):
-        t = threading.Thread(target=extract_frames, args=(folder,video_file,i,time_per_segment,case_id))
+        gpu_id = gpu_ids[i % num_gpus]
+        t = threading.Thread(target=extract_frames, args=(folder,video_file,i,time_per_segment,case_id,gpu_id))
         threads.append(t)
         t.start()
 
