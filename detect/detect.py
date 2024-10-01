@@ -347,7 +347,7 @@ def create_video_apperance(case_id,thread_count,folder):
 def cutvideo(videofile,start,duration,output):
     (
         ffmpeg
-        .input(videofile, ss=start)
+        .input(videofile, ss=start, hwaccel='cuda')
         .output(output, t=duration, c='copy')
         .run(overwrite_output=True)
     )
