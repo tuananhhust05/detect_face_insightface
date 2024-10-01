@@ -350,18 +350,19 @@ def create_video_apperance(case_id,thread_count,folder):
     if not os.path.exists(f"{dir_project}/video_apperance/{case_id}"):
         os.makedirs(f"{dir_project}/video_apperance/{case_id}")
     list_img = []
-    list_dir_file = os.listdir(f"{dir_project}/outputs/{case_id}")
+    list_dir_file = os.listdir(f"{dir_project}/outputs/{case_id}/{folder}")
     for dir in list_dir_file:
-        dir_full = f"{dir_project}/outputs/{case_id}/{dir}"
-        for i in range(thread_count):
-            folder_count = i 
-            dir_full_new = f"{dir_full}/{folder_count}"
-            print(dir_full)
-            if  os.path.exists(dir_full_new):
-                for path in os.listdir(dir_full_new):
-                    if os.path.isfile(os.path.join(dir_full_new, path)):
-                        full_path = f"{dir_full_new}/{path}"
-                        list_img.append(full_path)
+        dir_full = f"{dir_project}/outputs/{case_id}/{folder}/{dir}"
+        # for i in range(thread_count):
+        #     folder_count = i 
+        #     dir_full_new = f"{dir_full}/{folder_count}"
+        dir_full_new = dir_full
+        print(dir_full)
+        if  os.path.exists(dir_full_new):
+            for path in os.listdir(dir_full_new):
+                if os.path.isfile(os.path.join(dir_full_new, path)):
+                    full_path = f"{dir_full_new}/{path}"
+                    list_img.append(full_path)
     img_array = []
     size=(120,120)
     for filename in list_img:
