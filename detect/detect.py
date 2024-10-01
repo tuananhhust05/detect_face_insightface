@@ -324,8 +324,8 @@ def groupJson(folder,video_file,count_thread,case_id):
             },
             {
                 "$set":{
-                    "gender":sum_gender/ count_face,
-                    "age": sum_gender // count_face
+                    "gender":sum_gender // count_face,
+                    "age": sum_age // count_face
                 }
             }
         )
