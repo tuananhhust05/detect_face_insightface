@@ -134,13 +134,13 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         if frame_count % frame_rate == 0:
             print("frame_count", frame_count)
             
-            gpu_frame = cv2.cuda_GpuMat()
-            gpu_frame.upload(frame)
+            # gpu_frame = cv2.cuda_GpuMat()
+            # gpu_frame.upload(frame)
             
-            # Now the frame is on GPU memory. You can perform GPU-based processing here.
+            # # Now the frame is on GPU memory. You can perform GPU-based processing here.
 
-            # For demonstration: download it back to CPU and show it
-            frame = gpu_frame.download()
+            # # For demonstration: download it back to CPU and show it
+            # frame = gpu_frame.download()
             # facechecks = model.detect(frame,input_size=(640, 640))
             facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
             flagDetect = False
