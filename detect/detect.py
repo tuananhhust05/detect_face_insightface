@@ -195,11 +195,11 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
                                 cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
 
-                                # top_left = (bbox[0], bbox[1])
-                                # bottom_right = (bbox[2], bbox[3])
-                                # color = (255, 0, 0)
-                                # thickness = 2
-                                # cv2.rectangle(frame, top_left, bottom_right, color, thickness)
+                                top_left = (bbox[0], bbox[1])
+                                bottom_right = (bbox[2], bbox[3])
+                                color = (255, 0, 0)
+                                thickness = 2
+                                cv2.rectangle(frame, top_left, bottom_right, color, thickness)
                                 # time_per_frame = duration / total_frames
                                 # text = frame_count * time_per_frame + time_per_segment*index_local
                                 # text = str(text)
