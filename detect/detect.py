@@ -40,7 +40,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 
-pc = Pinecone(api_key="6bebb6ba-195f-471e-bb60-e0209bd5c697")
+pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
 index = pc.Index("detectcamera")
 
 weight_point = 0.4
