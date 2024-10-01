@@ -395,7 +395,7 @@ def create_video_apperance(case_id,thread_count,folder):
     out.release()
     
     subprocess.run(f"ffmpeg -i {outputpathpre} -codec:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p {output} -y", shell=True, check=True)
-    # subprocess.run(f"rm -rf {outputpathpre}", shell=True, check=True)
+    subprocess.run(f"rm -rf {outputpathpre}", shell=True, check=True)
     
 
 
@@ -406,16 +406,16 @@ def create_video_apperance(case_id,thread_count,folder):
             print("start")
             if os.path.isfile(f"{dir_project}/video_apperance/{case_id}/tempt.txt"): 
                 subprocess.run(f"rm -rf {dir_project}/video_apperance/{case_id}/tempt.txt", shell=True, check=True)
-            subprocess.run(f"nano {dir_project}/video_apperance/{case_id}/tempt.txt", shell=True, check=True)
+            
             print("create file ...")
-            f = open(f"{dir_project}/video_apperance/{case_id}/tempt.txt")
+            f = open(f"{dir_project}/video_apperance/{case_id}/tempt.txt","w")
             print("declare...")
             f.write(f"file '{outputfinal}'\nfile '{output}' ")
             subprocess.run(f"ffmpeg -f concat -safe 0 -i {dir_project}/video_apperance/{case_id}/tempt.txt -c copy {outputfinal}", shell=True, check=True)
        except Exception as e:
             print("error merge file",e)
            
-    # subprocess.run(f"rm -rf {output}", shell=True, check=True)
+    subprocess.run(f"rm -rf {output}", shell=True, check=True)
 
     videos.insert_one({
         "id":str(uuid.uuid4()),
