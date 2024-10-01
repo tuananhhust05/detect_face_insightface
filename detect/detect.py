@@ -462,7 +462,8 @@ def handle_main(case_id, tracking_folder, target_folder):
         if os.path.isfile(os.path.join(tracking_folder, path)):
             full_path = f"{tracking_folder}/{path}"
             list_file.append(full_path)
-            handle_multiplefile(list_file,50,case_id)
+    if(len(list_file) > 0):
+        handle_multiplefile(list_file,50,case_id)
 
     if not os.path.exists(f"./video_apperance"):
         os.makedirs(f"./video_apperance")
@@ -505,21 +506,7 @@ def analyst():
     if(len(listId) > 0):
         index.delete(ids=listId)
 
-    listToDelete = index.query(
-        vector=vectorFlag,
-        top_k=1000,
-        filter={
-            "face": {"$eq": case_id}
-        },
-        include_metadata=True
-    )
 
-    listToDelete=listToDelete["matches"]
-    listId = []
-    for ele in listToDelete:
-        listId.append(ele['id'])
-    if(len(listId) > 0):
-        index.delete(ids=listId)
     
     subprocess.run("cd /home/poc4a5000/detect/detect && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces", shell=True, check=True)
     
