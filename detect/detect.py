@@ -212,7 +212,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                             except Exception as e:
                                 print(f"Error saving frame: {e}")
                             
-
                             mydict = { 
                                        "id":  str(uuid.uuid4()), 
                                        "case_id": case_id,
@@ -296,7 +295,7 @@ def groupJson(folder,video_file,count_thread,case_id):
             list_stt.append(stt)
            
     list_stt=sorted(list_stt)
-    max_age = 0 
+    sum_age = 0 
     sum_gender = 0 
     count_face = 0 
     for stt in list_stt:
@@ -304,8 +303,9 @@ def groupJson(folder,video_file,count_thread,case_id):
            data = json.load(file)
            if(len(data) > 0):
                 data = data[0]
-                if( int(data['age']) > max_age ):
-                    max_age = int(data['age'])
+                # if( int(data['age']) > max_age ):
+                #     max_age = int(data['age'])
+                sum_age = sum_age + int(data['age'])
                 sum_gender = sum_gender + int(data['gender'])
                 count_face = count_face + 1 
                 for duration in data["duration_exist"]:
@@ -315,7 +315,7 @@ def groupJson(folder,video_file,count_thread,case_id):
                     ])
                     # final_result["time"].append([duration[0] + stt * time_per_segment,duration[1] + stt * time_per_segment])
 
-    final_result['age'] = max_age
+    final_result['age'] = sum_gender // count_face
     if count_face > 0 : 
         final_result['gender'] = sum_gender/ count_face
     
