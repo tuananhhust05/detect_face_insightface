@@ -143,7 +143,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                                     "age":int(face['age']),
                                     "frames": [frame_count],
                                 })
-                                
                             else:
                                 if(count_face > 0):
                                     array_em_result[0]["age"] = max_age
@@ -509,7 +508,7 @@ def analyst():
 
 
     
-    subprocess.run("cd /home/poc4a5000/detect/detect && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces", shell=True, check=True)
+    subprocess.run("cd /home/poc4a5000/detect/detect && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && rm -rf video_apperance && mkdir video_apperance", shell=True, check=True)
     
     handle_main(case_id,tracking_folder,target_folder)
     return jsonify({
