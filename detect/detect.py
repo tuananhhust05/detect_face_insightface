@@ -388,6 +388,7 @@ def create_video_apperance(case_id,thread_count,folder):
     out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4", fourcc, 5.0, size)
     outputpathpre= f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4"
     output = f"{dir_project}/video_apperance/{case_id}/{folder}.mp4"
+    outputfinal = f"{dir_project}/video_apperance/{case_id}/final.mp4"
     for i in range(len(img_array)):
         out.write(img_array[i])
     
@@ -396,10 +397,23 @@ def create_video_apperance(case_id,thread_count,folder):
     subprocess.run(f"ffmpeg -i {outputpathpre} -codec:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p {output} -y", shell=True, check=True)
     subprocess.run(f"rm -rf {outputpathpre}", shell=True, check=True)
     
+
+
+    if not os.path.isfile(outputfinal):
+       subprocess.run(f"cp {output} {outputfinal}", shell=True, check=True)
+    else:
+       if os.path.isfile(f"{dir_project}/video_apperance/{case_id}/tempt.txt"): subprocess.run(f"rm -rf {dir_project}/video_apperance/{case_id}/tempt.txt", shell=True, check=True)
+       subprocess.run(f"mkdir {dir_project}/video_apperance/{case_id}/tempt.txt", shell=True, check=True)
+       f = open(f"{dir_project}/video_apperance/{case_id}/tempt.txt")
+       f.write(f"file '{outputfinal}'\nfile '{output}' ")
+       subprocess.run(f"ffmpeg -f concat -safe 0 -i tempt.txt -c copy {outputfinal}", shell=True, check=True)
+    
+    subprocess.run(f"rm -rf {output}", shell=True, check=True)
+
     videos.insert_one({
         "id":str(uuid.uuid4()),
         "case_id":case_id,
-        "path":output,
+        "path":outputfinal,
     })
 
     return 
