@@ -270,7 +270,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     
 
     cap.release()
-
+    
+    return 
 
 
 def groupJson(folder,video_file,count_thread,case_id):
@@ -341,6 +342,8 @@ def groupJson(folder,video_file,count_thread,case_id):
     final_result["time"] = new_arr
     appearances.insert_one(final_result)
 
+    return 
+
 def create_video_apperance(case_id,thread_count,folder):
     if not os.path.exists(f"{dir_project}/video_apperance"):
         os.makedirs(f"{dir_project}/video_apperance")
@@ -383,6 +386,8 @@ def create_video_apperance(case_id,thread_count,folder):
         "path":f"{dir_project}/video_apperance/{case_id}/{folder}.mp4",
     })
 
+    return 
+
 def cutvideo(videofile,start,duration,output):
     (
         ffmpeg
@@ -390,6 +395,8 @@ def cutvideo(videofile,start,duration,output):
         .output(output, t=duration, c='copy')
         .run(overwrite_output=True)
     )
+
+    return 
 
 def trimvideo(folder,videofile,count_thread,case_id):
     duration = getduration(videofile)
@@ -403,7 +410,7 @@ def trimvideo(folder,videofile,count_thread,case_id):
 
     for t in threads:
         t.join()
-
+    
 
     
 def process_videos(folder,video_file_origin,count_thread,case_id):
@@ -425,6 +432,8 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
 
     groupJson(folder,video_file_origin,count_thread,case_id)
     create_video_apperance(case_id,count_thread,folder)
+
+    return 
 
 
 def handle_multiplefile(listfile,thread,case_id):
