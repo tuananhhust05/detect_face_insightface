@@ -46,8 +46,8 @@ index = pc.Index("detectcamera")
 weight_point = 0.4
 time_per_frame_global = 2 
 ctx_id = 0 if device.type == 'cuda' else -1
-app = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
-app.prepare(ctx_id=ctx_id, det_size=(640, 640))
+# app = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
+# app.prepare(ctx_id=ctx_id, det_size=(640, 640))
 app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
 # model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
@@ -73,6 +73,18 @@ for j in range(num_gpus):
     model_ele.prepare(ctx_id=j, det_size=(640, 640))
     list_model_detect.append(model_ele)
 
+list_model_analyst = []
+for j in range(num_gpus):
+    # Define providers with device_id
+    providers = [
+        ('CUDAExecutionProvider', {
+            'device_id': j,
+        })
+    ]
+    # Load the model with providers
+    app_ele = FaceAnalysis('buffalo_l',providers=providers)
+    app_ele.prepare(ctx_id=j, det_size=(640, 640))
+    list_model_analyst.append(app_ele)
 
 def getduration(file):
     data = cv2.VideoCapture(file) 
@@ -138,7 +150,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
                 # gpu_frame = denoiser.denoise(gpu_frame)
                 # frame = gpu_frame.download()
-                faces = app.get(frame)
+                # faces = app.get(frame)
+                faces = list_model_analyst[gpu_id].get(frame)
 
                 for face in faces:
                     if face["det_score"] > 0.5:
