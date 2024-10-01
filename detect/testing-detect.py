@@ -29,6 +29,7 @@ facematches = mydb["facematches"]
 appearances = mydb["appearances"]
 targets = mydb["targets"]
 videos = mydb["videos"]
+cases = mydb["cases"]
 
 dir_project = "/home/poc4a5000/detect/detect"
 
@@ -493,6 +494,14 @@ def analyst():
     targets.delete_many(myquery)
     videos.delete_many(myquery)
 
+    cases.update_one({
+        "case_id":case_id
+    },{
+        "$set":{
+            "status":"completed"
+        }
+    })
+    
     targets.insert_one({
         "id":str(uuid.uuid4()),
         "folder":target_folder,
@@ -500,6 +509,8 @@ def analyst():
     })
 
     handle_main(case_id,tracking_folder,target_folder)
+
+
     print(f"START ANALYST: {current_date()}")
 
     return jsonify({
