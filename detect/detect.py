@@ -494,11 +494,14 @@ def analyst():
     # targets.delete_many(myquery)
     videos.delete_many(myquery)
 
-    # targets.insert_one({
-    #     "id":str(uuid.uuid4()),
-    #     "folder":target_folder,
-    #     "case_id":case_id
-    # })
+    cases.update_one({
+        "case_id":case_id
+    },{
+        "$set":{
+            "start":current_date(),
+            "status":"completed"
+        }
+    })
 
     listToDelete = index.query(
             vector=vectorFlag,
@@ -525,9 +528,11 @@ def analyst():
         "case_id":case_id
     },{
         "$set":{
+            "end":current_date(),
             "status":"completed"
         }
     })
+    
     return jsonify({
         "data":"ok"
     })
