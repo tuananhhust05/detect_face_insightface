@@ -318,7 +318,6 @@ def groupJson(folder,video_file,count_thread,case_id):
     final_result['age'] = sum_gender // count_face
     if count_face > 0 : 
         final_result['gender'] = sum_gender/ count_face
-    
         facematches.update_many(
             {
                 "case_id":case_id
@@ -326,7 +325,7 @@ def groupJson(folder,video_file,count_thread,case_id):
             {
                 "$set":{
                     "gender":sum_gender/ count_face,
-                    "age": max_age,
+                    "age": sum_gender // count_face
                 }
             }
         )
