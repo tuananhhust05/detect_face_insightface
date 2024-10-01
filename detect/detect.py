@@ -406,7 +406,7 @@ def create_video_apperance(case_id,thread_count,folder):
        subprocess.run(f"mkdir {dir_project}/video_apperance/{case_id}/tempt.txt", shell=True, check=True)
        f = open(f"{dir_project}/video_apperance/{case_id}/tempt.txt")
        f.write(f"file '{outputfinal}'\nfile '{output}' ")
-       subprocess.run(f"ffmpeg -f concat -safe 0 -i tempt.txt -c copy {outputfinal}", shell=True, check=True)
+       subprocess.run(f"ffmpeg -f concat -safe 0 -i {dir_project}/video_apperance/{case_id}/tempt.txt -c copy {outputfinal}", shell=True, check=True)
     
     subprocess.run(f"rm -rf {output}", shell=True, check=True)
 
