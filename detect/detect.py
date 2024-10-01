@@ -307,6 +307,10 @@ def groupJson(folder,video_file,count_thread,case_id):
     appearances.insert_one(final_result)
 
 def create_video_apperance(case_id,thread_count,folder):
+    if not os.path.exists(f"{dir_project}/video_apperance"):
+        os.makedirs(f"{dir_project}/video_apperance")
+    if not os.path.exists(f"{dir_project}/video_apperance/{case_id}"):
+        os.makedirs(f"{dir_project}/video_apperance/{case_id}")
     list_img = []
     list_dir_file = os.listdir(f"{dir_project}/outputs/{case_id}")
     for dir in list_dir_file:
