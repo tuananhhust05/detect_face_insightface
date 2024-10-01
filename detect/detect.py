@@ -32,6 +32,7 @@ facematches = mydb["facematches"]
 appearances = mydb["appearances"]
 targets = mydb["targets"]
 videos = mydb["videos"]
+cases = mydb["cases"]
 
 dir_project = "/home/poc4a5000/detect/detect"
 
@@ -343,19 +344,25 @@ def create_video_apperance(case_id,thread_count,folder):
         "path":f"{dir_project}/video_apperance/{case_id}/{folder}.mp4",
     })
 
+def trim_video_with_cuda(input_file, start_time, duration, output_file):
+    (
+        ffmpeg
+        .input(input_file, ss=start_time, t=duration, hwaccel='cuda')
+        .output(output_file, vcodec='h264_nvenc', acodec='copy')
+        .run()
+    )
+
 def trimvideo(folder,videofile,count_thread,case_id):
     duration = getduration(videofile)
     time_per_segment = duration / count_thread
+    threads = []
     for i in range(count_thread):
-        (
-            ffmpeg
-            .input(videofile, ss=time_per_segment*i)
-            .output(f"/home/poc4a5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4", t=time_per_segment, c='copy')
-            .run(overwrite_output=True)
-        )
-        # command = f"ffmpeg -i {videofile} -ss {time_per_segment*i} -t {time_per_segment} -c:v copy -c:a copy  /home/poc4a5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4 -y"
-        # subprocess.run(command, shell=True, check=True)
+        t = threading.Thread(target=trim_video_with_cuda, args=(videofile, time_per_segment*i, time_per_segment, f"/home/poc4a5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4"))
+        threads.append(t)
+        t.start()
 
+    for t in threads:
+        t.join()
 
     
 def process_videos(folder,video_file_origin,count_thread,case_id):
@@ -511,6 +518,14 @@ def analyst():
     subprocess.run("cd /home/poc4a5000/detect/detect && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && rm -rf video_apperance && mkdir video_apperance", shell=True, check=True)
     
     handle_main(case_id,tracking_folder,target_folder)
+
+    cases.update_one({
+        "case_id":case_id
+    },{
+        "$set":{
+            "status":"completed"
+        }
+    })
     return jsonify({
         "data":"ok"
     })
