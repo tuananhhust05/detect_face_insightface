@@ -112,7 +112,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
 
-    max_age = 0 
+    sum_age = 0 
     sum_gender = 0 
     count_face = 0 
     while True:
@@ -168,8 +168,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                         if len(matches) > 0 and matches[0]['score'] > weight_point:
                         # if True:
                             count_face = count_face + 1 
-                            if( int(face['age']) > max_age):
-                                max_age = int(face['age'])
+                            # if( int(face['age']) > max_age):
+                            #     max_age = int(face['age'])
+                            sum_age = sum_age + int(face['age'])
                             sum_gender = sum_gender + int(face['gender'])
  
                             if len(array_em_result) == 0:
@@ -181,7 +182,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 })
                             else:
                                 if(count_face > 0):
-                                    array_em_result[0]["age"] = max_age
+                                    array_em_result[0]["age"] = sum_age
                                     array_em_result[0]["gender"] = sum_gender // count_face 
                                     array_em_result[0]["frames"].append(frame_count)
 
@@ -325,7 +326,7 @@ def groupJson(folder,video_file,count_thread,case_id):
             {
                 "$set":{
                     "gender":sum_gender // count_face,
-                    "age": sum_age // count_face
+                    "age": sum_age / count_face
                 }
             }
         )
