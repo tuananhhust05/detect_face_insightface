@@ -182,8 +182,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 })
                             else:
                                 if(count_face > 0):
-                                    array_em_result[0]["age"] = sum_age
-                                    array_em_result[0]["gender"] = sum_gender // count_face 
+                                    array_em_result[0]["age"] = sum_age / count_face 
+                                    array_em_result[0]["gender"] = sum_gender / count_face 
                                     array_em_result[0]["frames"].append(frame_count)
 
                             try:
@@ -316,16 +316,16 @@ def groupJson(folder,video_file,count_thread,case_id):
                     ])
                     # final_result["time"].append([duration[0] + stt *  time_per_segment,duration[1] + stt * time_per_segment])
 
-    final_result['age'] = sum_gender // count_face
+    final_result['age'] = sum_gender / count_face
     if count_face > 0 : 
-        final_result['gender'] = sum_gender/ count_face
+        final_result['gender'] = sum_gender / count_face
         facematches.update_many(
             {
                 "case_id":case_id
             },
             {
                 "$set":{
-                    "gender":sum_gender // count_face,
+                    "gender":sum_gender / count_face,
                     "age": sum_age / count_face
                 }
             }
