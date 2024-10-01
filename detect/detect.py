@@ -402,12 +402,19 @@ def create_video_apperance(case_id,thread_count,folder):
     if not os.path.isfile(outputfinal):
        subprocess.run(f"cp {output} {outputfinal}", shell=True, check=True)
     else:
-       if os.path.isfile(f"{dir_project}/video_apperance/{case_id}/tempt.txt"): subprocess.run(f"rm -rf {dir_project}/video_apperance/{case_id}/tempt.txt", shell=True, check=True)
-       subprocess.run(f"mkdir {dir_project}/video_apperance/{case_id}/tempt.txt", shell=True, check=True)
-       f = open(f"{dir_project}/video_apperance/{case_id}/tempt.txt")
-       f.write(f"file '{outputfinal}'\nfile '{output}' ")
-       subprocess.run(f"ffmpeg -f concat -safe 0 -i {dir_project}/video_apperance/{case_id}/tempt.txt -c copy {outputfinal}", shell=True, check=True)
-    
+       try: 
+            print("start")
+            if os.path.isfile(f"{dir_project}/video_apperance/{case_id}/tempt.txt"): 
+                subprocess.run(f"rm -rf {dir_project}/video_apperance/{case_id}/tempt.txt", shell=True, check=True)
+            subprocess.run(f"mkdir {dir_project}/video_apperance/{case_id}/tempt.txt", shell=True, check=True)
+            print("create file ...")
+            f = open(f"{dir_project}/video_apperance/{case_id}/tempt.txt")
+            print("declare...")
+            f.write(f"file '{outputfinal}'\nfile '{output}' ")
+            subprocess.run(f"ffmpeg -f concat -safe 0 -i {dir_project}/video_apperance/{case_id}/tempt.txt -c copy {outputfinal}", shell=True, check=True)
+       except Exception as e:
+            print("error merge file",e)
+           
     # subprocess.run(f"rm -rf {output}", shell=True, check=True)
 
     videos.insert_one({
