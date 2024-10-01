@@ -195,19 +195,19 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
                                 cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
 
-                                top_left = (bbox[0], bbox[1])
-                                bottom_right = (bbox[2], bbox[3])
-                                color = (255, 0, 0)
-                                thickness = 2
-                                cv2.rectangle(frame, top_left, bottom_right, color, thickness)
-                                time_per_frame = duration / total_frames
-                                text = frame_count * time_per_frame + time_per_segment*index_local
-                                text = str(text)
-                                position = (bbox[0], bbox[1])
-                                font = cv2.FONT_HERSHEY_SIMPLEX
-                                font_scale = 1
+                                # top_left = (bbox[0], bbox[1])
+                                # bottom_right = (bbox[2], bbox[3])
+                                # color = (255, 0, 0)
+                                # thickness = 2
+                                # cv2.rectangle(frame, top_left, bottom_right, color, thickness)
+                                # time_per_frame = duration / total_frames
+                                # text = frame_count * time_per_frame + time_per_segment*index_local
+                                # text = str(text)
+                                # position = (bbox[0], bbox[1])
+                                # font = cv2.FONT_HERSHEY_SIMPLEX
+                                # font_scale = 1
 
-                                cv2.putText(frame, text, position, font, font_scale, color, thickness)
+                                # cv2.putText(frame, text, position, font, font_scale, color, thickness)
                                 cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
                             except Exception as e:
                                 print(f"Error saving frame: {e}")
@@ -529,7 +529,7 @@ def handle_main(case_id, tracking_folder, target_folder):
             full_path = f"{tracking_folder}/{path}"
             list_file.append(full_path)
     if(len(list_file) > 0):
-        handle_multiplefile(list_file,150,case_id)
+        handle_multiplefile(list_file,100,case_id)
 
     return 
 
