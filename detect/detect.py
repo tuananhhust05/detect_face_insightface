@@ -410,7 +410,7 @@ def create_video_apperance(case_id,thread_count,folder):
             print("create file ...")
             f = open(f"{dir_project}/video_apperance/{case_id}/tempt.txt","w")
             print("declare...")
-            f.write(f"file '{outputfinal}'\nfile '{output}' ")
+            f.write(f"file 'final.mp4'\nfile '{folder}.mp4' ")
             subprocess.run(f"cd {dir_project}/video_apperance/{case_id} && ffmpeg -f concat -safe 0 -i tempt.txt -c copy {outputfinal} -y", shell=True, check=True)
        except Exception as e:
             print("error merge file",e)
