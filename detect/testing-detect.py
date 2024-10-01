@@ -253,8 +253,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
     cap.release()
 
-
-
 def groupJson(folder,video_file,count_thread,case_id):
     final_result = {
         "time":[]
@@ -385,7 +383,7 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
 
     groupJson(folder,video_file_origin,count_thread,case_id)
     create_video_apperance(case_id,count_thread)
-
+    return 
 
 def handle_multiplefile(listfile,thread,case_id):
     for file in listfile:
