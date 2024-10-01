@@ -415,7 +415,7 @@ def create_video_apperance(case_id,thread_count,folder):
        except Exception as e:
             print("error merge file",e)
            
-    subprocess.run(f"rm -rf {output}", shell=True, check=True)
+    # subprocess.run(f"rm -rf {output}", shell=True, check=True)
 
     videos.insert_one({
         "id":str(uuid.uuid4()),
