@@ -406,7 +406,7 @@ def create_video_apperance(case_id,thread_count,folder):
             print("start")
             if os.path.isfile(f"{dir_project}/video_apperance/{case_id}/tempt.txt"): 
                 subprocess.run(f"rm -rf {dir_project}/video_apperance/{case_id}/tempt.txt", shell=True, check=True)
-            subprocess.run(f"mkdir {dir_project}/video_apperance/{case_id}/tempt.txt", shell=True, check=True)
+            subprocess.run(f"nano {dir_project}/video_apperance/{case_id}/tempt.txt", shell=True, check=True)
             print("create file ...")
             f = open(f"{dir_project}/video_apperance/{case_id}/tempt.txt")
             print("declare...")
