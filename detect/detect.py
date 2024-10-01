@@ -46,12 +46,9 @@ index = pc.Index("detectcamera")
 weight_point = 0.4
 time_per_frame_global = 2 
 ctx_id = 0 if device.type == 'cuda' else -1
-# app = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
-# app.prepare(ctx_id=ctx_id, det_size=(640, 640))
 app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
-# model = model_zoo.get_model('/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx')
-# model.prepare(ctx_id=ctx_id, det_size=(640, 640))
+
 
 num_gpus = torch.cuda.device_count()
 print(f"Number of GPUs available: {num_gpus}")
@@ -59,13 +56,11 @@ gpu_ids = list(range(num_gpus))
 
 list_model_detect = []
 for j in range(num_gpus):
-    # Define providers with device_id
     providers = [
         ('CUDAExecutionProvider', {
             'device_id': j,
         })
     ]
-    # Load the model with providers
     model_ele = model_zoo.get_model(
         '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
         providers=providers
@@ -75,13 +70,11 @@ for j in range(num_gpus):
 
 list_model_analyst = []
 for j in range(num_gpus):
-    # Define providers with device_id
     providers = [
         ('CUDAExecutionProvider', {
             'device_id': j,
         })
     ]
-    # Load the model with providers
     app_ele = FaceAnalysis('buffalo_l',providers=providers)
     app_ele.prepare(ctx_id=j, det_size=(640, 640))
     list_model_analyst.append(app_ele)
@@ -118,7 +111,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     frame_rate = time_per_frame_global * fps 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    # denoiser = cv2.cuda.createFastNonLocalMeansDenoisingColored()
+
     max_age = 0 
     sum_gender = 0 
     count_face = 0 
@@ -257,12 +250,20 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                     duration_exist.append(0)
                 duration_exist.append(list_frame[i])
                 if( (list_frame[i + 1] - list_frame[i]) > frame_rate):
-                    list_time_exist.append([duration_exist[0]*time_per_frame,duration_exist[len(duration_exist) - 1] * time_per_frame])
+                    # list_time_exist.append([duration_exist[0]*time_per_frame,duration_exist[len(duration_exist) - 1] * time_per_frame])
+                    list_time_exist.append([
+                        {"path":f"{dir_project}/outputs/{case_id}/{folder}/{index_local}/{duration_exist[0]}_0_face.jpg", "time":duration_exist[0]*time_per_frame},
+                        {"path":"","time":duration_exist[len(duration_exist) - 1] * time_per_frame}
+                    ])
                     duration_exist = []
                 else:
                         if( i == len(list_frame)-2):
                             duration_exist.append(list_frame[i+1])
-                            list_time_exist.append([duration_exist[0]*time_per_frame,duration_exist[len(duration_exist) - 1] * time_per_frame])
+                            # list_time_exist.append([duration_exist[0]*time_per_frame,duration_exist[len(duration_exist) - 1] * time_per_frame])
+                            list_time_exist.append([
+                                {"path":f"{dir_project}/outputs/{case_id}/{folder}/{index_local}/{duration_exist[0]}_0_face.jpg", "time":duration_exist[0]*time_per_frame},
+                                {"path":"","time":duration_exist[len(duration_exist) - 1] * time_per_frame}
+                            ])
                             duration_exist = []
             list_result_ele.append({
                 'face':em['speaker'],
@@ -308,7 +309,11 @@ def groupJson(folder,video_file,count_thread,case_id):
                 sum_gender = sum_gender + int(data['gender'])
                 count_face = count_face + 1 
                 for duration in data["duration_exist"]:
-                    final_result["time"].append([duration[0] + stt * time_per_segment,duration[1] + stt * time_per_segment])
+                    final_result["time"].append([
+                        {"path":duration[0]["path"], "time":duration[0]["time"] + stt * time_per_segment},
+                        {"path":"","time":duration[1]["time"] + stt * time_per_segment}
+                    ])
+                    # final_result["time"].append([duration[0] + stt * time_per_segment,duration[1] + stt * time_per_segment])
 
     final_result['age'] = max_age
     if count_face > 0 : 
@@ -339,9 +344,9 @@ def groupJson(folder,video_file,count_thread,case_id):
     for time in final_result["time"]:
        new_arr.append(
            {
-               "start":time[0],
-               "end":time[1],
-               "frame": (time[1] - time[0]) // time_per_frame_global,
+               "path":time[0]["path"],
+               "start":time[0]["time"],
+               "end":time[1]["time"],
                "similiarity":random.randint(85, 99 )
            }
        )
