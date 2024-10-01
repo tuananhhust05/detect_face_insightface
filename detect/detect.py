@@ -316,7 +316,7 @@ def groupJson(folder,video_file,count_thread,case_id):
                     ])
                     # final_result["time"].append([duration[0] + stt *  time_per_segment,duration[1] + stt * time_per_segment])
 
-    final_result['age'] = sum_gender / count_face
+    final_result['age'] = sum_age / count_face
     if count_face > 0 : 
         final_result['gender'] = sum_gender / count_face
         facematches.update_many(
