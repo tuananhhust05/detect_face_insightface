@@ -346,8 +346,12 @@ def create_video_apperance(case_id,thread_count,folder):
 
 def trim_video_with_cuda(input_file, start_time, duration, output_file):
     (
+        # ffmpeg
+        # .input(input_file, ss=start_time, t=duration, hwaccel='cuda')
+        # .output(output_file, vcodec='h264_nvenc', acodec='copy')
+        # .run()
         ffmpeg
-        .input(input_file, ss=start_time, t=duration, hwaccel='cuda')
+        .input(input_file, ss=start_time, t=duration)
         .output(output_file, vcodec='h264_nvenc', acodec='copy')
         .run()
     )
