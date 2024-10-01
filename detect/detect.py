@@ -85,6 +85,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     # denoiser = cv2.cuda.createFastNonLocalMeansDenoisingColored()
+    max_age = 0 
+    sum_gender = 0 
+    count_face = 0 
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -114,9 +117,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                 # frame = gpu_frame.download()
                 faces = app.get(frame)
 
-                sum_age = 0 
-                sum_gender = 0 
-                count_face = 0 
                 for face in faces:
                     if face["det_score"] > 0.5:
                         embedding = torch.tensor(face['embedding']).to(device)  # Move embedding to GPU
@@ -132,7 +132,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                         if len(matches) > 0 and matches[0]['score'] > weight_point:
                         # if True:
                             count_face = count_face + 1 
-                            sum_age = sum_age + int(face['age'])
+                            if( int(face['age']) > max_age):
+                                max_age = int(face['age'])
                             sum_gender = sum_gender + int(face['gender'])
  
                             if len(array_em_result) == 0:
@@ -145,7 +146,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                                 
                             else:
                                 if(count_face > 0):
-                                    array_em_result[0]["age"] = sum_age // count_face 
+                                    array_em_result[0]["age"] = max_age
                                     array_em_result[0]["gender"] = sum_gender // count_face 
                                     array_em_result[0]["frames"].append(frame_count)
 
@@ -183,7 +184,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id):
                                        "similarity_face":float(matches[0]['score']),
                                        "gender":int(face['gender']),
                                        "age":int(face['age']),
-                                       "time_invideo":text,
+                                       "time_invideo":"",
                                        "proofImage":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
                                        "url":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
                                        "createdAt":current_date(),
