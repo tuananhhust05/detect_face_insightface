@@ -439,7 +439,7 @@ def handle_main(case_id, tracking_folder, target_folder):
         os.makedirs(f"./video_apperance")
     if not os.path.exists(f"./video_apperance/{case_id}"):
         os.makedirs(f"./video_apperance/{case_id}")
-        
+
     flag_target_folder = True
     for path in os.listdir(target_folder):
         if(flag_target_folder == True):
@@ -495,7 +495,7 @@ def analyst():
     # targets.delete_many(myquery)
     videos.delete_many(myquery)
 
-    cases.update_one({
+    cases.update_many({
         "id":case_id
     },{
         "$set":{
@@ -525,7 +525,7 @@ def analyst():
     
     handle_main(case_id,tracking_folder,target_folder)
 
-    cases.update_one({
+    cases.update_many({
         "id":case_id
     },{
         "$set":{
