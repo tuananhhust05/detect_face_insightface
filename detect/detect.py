@@ -417,7 +417,7 @@ def create_video_apperance(case_id,thread_count,folder):
             # print("declare...")
             # f.write(f"file 'final.mp4'\nfile '{folder}.mp4' ")
             # ffmpeg -f concat -safe 0 -i <(for f in elon-musk-05.mp4 elon-musk-02.mp4 elon-musk-04.mp4 elon-musk-01.mp4 elon-musk-03.mp4; do echo "file '$PWD/$f'"; done) -c copy final.mp4
-            subprocess.run(f"cd {dir_project}/video_apperance/{case_id} && ffmpeg -f concat -safe 0 -i <(for f in ${str_for_merge}; do echo \"file '$PWD/$f'\"; done) -c copy final.mp4 -y", shell=True, check=True)
+            subprocess.run(f"cd {dir_project}/video_apperance/{case_id} && ffmpeg -f concat -safe 0 -i <(for f in {str_for_merge}; do echo \"file '$PWD/$f'\"; done) -c copy final.mp4 -y", shell=True, check=True)
             # subprocess.run(f"cd {dir_project}/video_apperance/{case_id} && ffmpeg -f concat -safe 0 -i tempt.txt -c copy {outputfinal} -y", shell=True, check=True)
        except Exception as e:
             print("error merge file",e)
