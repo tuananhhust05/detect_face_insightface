@@ -43,8 +43,11 @@ print(f"Using device: {device}")
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
 index = pc.Index("detectcamera")
 
+res = faiss.StandardGpuResources()
 indexGpu = faiss.IndexFlatL2(512)
-gpu_index = faiss.index_cpu_to_all_gpus(index)
+gpu_index = faiss.index_cpu_to_gpu(res, 0, indexGpu)
+
+
 
 weight_point = 0.4
 time_per_frame_global = 2 
@@ -578,7 +581,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                 for face in faces:
 
                     embedding_vector = face['embedding']
-                    
+
                     # Add vectors to the GPU index
                     gpu_index.add(embedding_vector)
                     # Verify the number of indexed vectors
