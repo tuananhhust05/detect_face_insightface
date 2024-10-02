@@ -79,6 +79,10 @@ for j in range(num_gpus):
     app_ele.prepare(ctx_id=j, det_size=(640, 640))
     list_model_analyst.append(app_ele)
 
+list_vector = []
+
+
+
 def getduration(file):
     data = cv2.VideoCapture(file) 
     frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 
@@ -93,6 +97,15 @@ def cosin(question, answer):
     answer = torch.tensor(answer).to(device)
     cosine = torch.dot(question, answer) / (torch.norm(question) * torch.norm(answer))
     return cosine.item()  
+
+def checkface(vector):
+    global list_vector 
+    for ele in list_vector:
+        cos = cosin(ele,vector)
+        if(cos > weight_point):
+            return cos
+    return 0
+
 
 def current_date():
   format_date = "%Y-%m-%d %H:%M:%S"
@@ -150,17 +163,10 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
                 for face in faces:
                     if face["det_score"] > 0.5:
-                        embedding = torch.tensor(face['embedding']).to(device)  # Move embedding to GPU
-                        search_result = index.query(
-                            vector=embedding.tolist(),
-                            top_k=1,
-                            include_metadata=True,
-                            include_values=True,
-                            filter={"case_id": case_id},
-                        )
-                        matches = search_result["matches"]
+                        similarity  = checkface(face['embedding'])
 
-                        if len(matches) > 0 and matches[0]['score'] > weight_point:
+                        # if len(matches) > 0 and matches[0]['score'] > weight_point:
+                        if(similarity > 0):
                         # if True:
                             count_face = count_face + 1 
                             # if( int(face['age']) > max_age):
@@ -211,7 +217,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                             mydict = { 
                                        "id":  str(uuid.uuid4()), 
                                        "case_id": case_id,
-                                       "similarity_face":float(matches[0]['score']),
+                                       "similarity_face":similarity,
                                        "gender":int(face['gender']),
                                        "age":int(face['age']),
                                        "time_invideo":"",
@@ -559,6 +565,9 @@ def handle_multiplefile(listfile,thread,case_id):
     return 
 
 def handle_main(case_id, tracking_folder, target_folder):
+
+    global list_vector
+
     if not os.path.exists(f"./video_apperance"):
         os.makedirs(f"./video_apperance")
     if not os.path.exists(f"./video_apperance/{case_id}"):
@@ -574,6 +583,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                 faces = app_recognize.get(img)
                 for face in faces:
                     embedding_vector = face['embedding']
+                    list_vector.append(embedding_vector)
                     # check_insert_target = index.query(
                     #     vector=embedding_vector.tolist(),
                     #     top_k=1,
@@ -585,16 +595,16 @@ def handle_main(case_id, tracking_folder, target_folder):
                     # if(len(matches) > 0):
                     #     if(matches[0]["metadata"]["case_id"] == case_id):
                     #        flag_target_folder = False
-                    if(flag_target_folder == True):
-                        index.upsert(
-                            vectors=[
-                                    {
-                                        "id": str(uuid.uuid4()),
-                                        "values": embedding_vector,
-                                        "metadata": {"case_id":case_id }
-                                    },
-                                ]
-                        )
+                    # if(flag_target_folder == True):
+                    #     index.upsert(
+                    #         vectors=[
+                    #                 {
+                    #                     "id": str(uuid.uuid4()),
+                    #                     "values": embedding_vector,
+                    #                     "metadata": {"case_id":case_id }
+                    #                 },
+                    #             ]
+                    #     )
     list_file = []
     for path in os.listdir(tracking_folder):
         if os.path.isfile(os.path.join(tracking_folder, path)):
@@ -618,7 +628,7 @@ def analyst():
     appearances.delete_many(myquery)
     # targets.delete_many(myquery)
     videos.delete_many(myquery)
-
+    
     cases.update_many({
         "id":case_id
     },{
@@ -627,21 +637,23 @@ def analyst():
             "status":"processing"
         }
     })
-
-    listToDelete = index.query(
-            vector=vectorFlag,
-            top_k=1000,
-            filter={
-                "case_id": {"$eq": case_id}
-            },
-            include_metadata=True
-        )
-    listToDelete=listToDelete["matches"]
-    listId = []
-    for ele in listToDelete:
-        listId.append(ele['id'])
-    if(len(listId) > 0):
-        index.delete(ids=listId)
+    
+    global list_vector 
+    list_vector  = []
+    # listToDelete = index.query(
+    #         vector=vectorFlag,
+    #         top_k=1000,
+    #         filter={
+    #             "case_id": {"$eq": case_id}
+    #         },
+    #         include_metadata=True
+    #     )
+    # listToDelete=listToDelete["matches"]
+    # listId = []
+    # for ele in listToDelete:
+    #     listId.append(ele['id'])
+    # if(len(listId) > 0):
+    #     index.delete(ids=listId)
 
 
     
