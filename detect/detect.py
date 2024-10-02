@@ -23,7 +23,7 @@ from flask import Flask, jsonify, request
 import pymongo
 import ffmpeg
 import random
-
+import faiss
 
 myclient = pymongo.MongoClient("mongodb://root:facex@192.168.50.10:27018")
 
@@ -42,6 +42,9 @@ print(f"Using device: {device}")
 
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
 index = pc.Index("detectcamera")
+
+indexGpu = faiss.IndexFlatL2(512)
+gpu_index = faiss.index_cpu_to_all_gpus(index)
 
 weight_point = 0.4
 time_per_frame_global = 2 
@@ -573,18 +576,14 @@ def handle_main(case_id, tracking_folder, target_folder):
                 print("full_path",full_path)
                 faces = app_recognize.get(img)
                 for face in faces:
+
                     embedding_vector = face['embedding']
-                    # check_insert_target = index.query(
-                    #     vector=embedding_vector.tolist(),
-                    #     top_k=1,
-                    #     include_metadata=True,
-                    #     include_values=True,
-                    #     filter={"case_id": case_id},
-                    # )
-                    # matches = check_insert_target["matches"]
-                    # if(len(matches) > 0):
-                    #     if(matches[0]["metadata"]["case_id"] == case_id):
-                    #        flag_target_folder = False
+                    
+                    # Add vectors to the GPU index
+                    gpu_index.add(embedding_vector)
+                    # Verify the number of indexed vectors
+                    print(f'Total indexed vectors: {gpu_index.ntotal}')
+        
                     if(flag_target_folder == True):
                         index.upsert(
                             vectors=[
