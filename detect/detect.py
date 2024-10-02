@@ -403,22 +403,47 @@ def create_video_apperance(case_id,thread_count,folder):
        subprocess.run(f"cp {output} {outputfinal}", shell=True, check=True)
     else:
        try: 
-            listmp4file = os.listdir("/home/poc4a5000/detect/detect/video_apperance/db696a35-0043-4aba-a844-295e3432a118")
-            str_for_merge = ""
+            working_directory = f"/home/poc4a5000/detect/detect/video_apperance/{case_id}"
+            listmp4file = os.listdir(working_directory)
+            # List of video files
+            files = []
             for file in listmp4file:
                 if(file != "final.mp4"):
-                    str_for_merge = f"{str_for_merge} {file}"
-            # print("start")
-            # if os.path.isfile(f"{dir_project}/video_apperance/{case_id}/tempt.txt"): 
-            #     subprocess.run(f"rm -rf {dir_project}/video_apperance/{case_id}/tempt.txt", shell=True, check=True)
-            
-            # print("create file ...")
-            # f = open(f"{dir_project}/video_apperance/{case_id}/tempt.txt","w")
-            # print("declare...")
-            # f.write(f"file 'final.mp4'\nfile '{folder}.mp4' ")
-            # ffmpeg -f concat -safe 0 -i <(for f in elon-musk-05.mp4 elon-musk-02.mp4 elon-musk-04.mp4 elon-musk-01.mp4 elon-musk-03.mp4; do echo "file '$PWD/$f'"; done) -c copy final.mp4
-            subprocess.run(f"cd {dir_project}/video_apperance/{case_id} && ffmpeg -f concat -safe 0 -i <(for f in {str_for_merge}; do echo \"file '$PWD/$f'\"; done) -c copy final.mp4 -y", shell=True, check=True)
-            # subprocess.run(f"cd {dir_project}/video_apperance/{case_id} && ffmpeg -f concat -safe 0 -i tempt.txt -c copy {outputfinal} -y", shell=True, check=True)
+                    files.append(file)
+
+            # Absolute path or current directory with absolute path
+            current_dir = os.getcwd()
+
+            # Create a list of file arguments
+            filelist = ''.join(f"file '{os.path.join(current_dir, f)}'\n" for f in files).encode('utf-8')
+
+            # Run the FFmpeg command using subprocess and stdin pipe
+            command = [
+                "ffmpeg",
+                "-f", "concat",
+                "-safe", "0",
+                "-protocol_whitelist", "file,pipe",
+                "-i", "-",  # Read from standard input
+                "-c", "copy",
+                "-y",  # Overwrite existing files without asking
+                "final.mp4"
+            ]
+
+            try:
+                subprocess.run(
+                    command,
+                    input=filelist,
+                    check=True,
+                    text=False,  # Because we are passing byte-encoded input
+                    cwd=working_directory
+                )
+                print("Videos concatenated successfully into final.mp4")
+            except subprocess.CalledProcessError as e:
+                print(f"An error occurred: {e}")
+            except Exception as ex:
+                print(f"An unexpected error occurred: {ex}")
+
+          
        except Exception as e:
             print("error merge file",e)
            
