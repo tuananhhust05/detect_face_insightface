@@ -122,6 +122,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     frame_count = 0 
     duration = getduration(video_file)
     cap = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
+
     fps = cap.get(cv2.CAP_PROP_FPS)
     fps = ( fps + 1 ) // 1
     frame_rate = time_per_frame_global * fps 
@@ -146,7 +149,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             # # For demonstration: download it back to CPU and show it
             # frame = gpu_frame.download()
             # facechecks = model.detect(frame,input_size=(640, 640))
-            frame = cv2.resize(frame, (640, 640))
+            # frame = cv2.resize(frame, (640, 640))
             facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
             flagDetect = False
             if(len(facechecks) > 0):
@@ -615,7 +618,7 @@ def handle_main(case_id, tracking_folder, target_folder):
             full_path = f"{tracking_folder}/{path}"
             list_file.append(full_path)
     if(len(list_file) > 0):
-        handle_multiplefile(list_file,50,case_id)
+        handle_multiplefile(list_file,80,case_id)
 
     return 
 
