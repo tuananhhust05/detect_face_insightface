@@ -114,6 +114,9 @@ def current_date():
   return datetime.datetime.strptime(date_string, format_date)
 
 def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id):
+    # Set the device
+    torch.cuda.set_device(gpu_id)
+    
     array_em_result = []
     list_result_ele = []
     frame_count = 0 
