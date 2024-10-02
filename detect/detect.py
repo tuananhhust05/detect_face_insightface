@@ -398,7 +398,7 @@ def create_video_apperance(case_id,thread_count,folder):
     
     out.release()
     
-    subprocess.run(f"ffmpeg -i {outputpathpre} -c:v h264_nvenc -profile:v baseline -level:v 3.0 -pix_fmt yuv420p {output} -y", shell=True, check=True)
+    subprocess.run(f"ffmpeg -i {outputpathpre} -codec:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p {output} -y", shell=True, check=True)
     subprocess.run(f"rm -rf {outputpathpre}", shell=True, check=True)
     
 
