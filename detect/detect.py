@@ -426,6 +426,7 @@ def create_video_apperance(case_id,thread_count,folder):
             # Run the FFmpeg command using subprocess and stdin pipe
             command = [
                 "ffmpeg",
+                "-hwaccel", "cuda",  # Use CUDA for hardware acceleration
                 "-f", "concat",
                 "-safe", "0",
                 "-protocol_whitelist", "file,pipe",
