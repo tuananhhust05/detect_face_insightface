@@ -1,7 +1,9 @@
 import json
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 app = Flask(__name__,static_url_path='', 
             static_folder='')
+CORS(app)
 # from detect.detect import handle_main
 
 @app.route('/analyst', methods=['GET'])
