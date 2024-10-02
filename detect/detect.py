@@ -44,7 +44,7 @@ pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
 index = pc.Index("detectcamera")
 
 weight_point = 0.4
-time_per_frame_global = 2 
+time_per_frame_global = 3 
 ctx_id = 0 if device.type == 'cuda' else -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
@@ -116,7 +116,7 @@ def current_date():
 def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id):
     # Set the device
     torch.cuda.set_device(gpu_id)
-    
+
     array_em_result = []
     list_result_ele = []
     frame_count = 0 
@@ -146,6 +146,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             # # For demonstration: download it back to CPU and show it
             # frame = gpu_frame.download()
             # facechecks = model.detect(frame,input_size=(640, 640))
+            frame = cv2.resize(frame, (640, 640))
             facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
             flagDetect = False
             if(len(facechecks) > 0):
