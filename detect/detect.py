@@ -408,7 +408,7 @@ def create_video_apperance(case_id,thread_count,folder):
             # List of video files
             files = []
             for file in listmp4file:
-                if(file != "final.mp4"):
+                if(file != "final.mp4" and "mp4" in file):
                     files.append(file)
 
             # Absolute path or current directory with absolute path
@@ -428,7 +428,7 @@ def create_video_apperance(case_id,thread_count,folder):
                 "-y",  # Overwrite existing files without asking
                 "final.mp4"
             ]
-
+            print(command,filelist,working_directory)
             try:
                 subprocess.run(
                     command,
