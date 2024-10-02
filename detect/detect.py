@@ -411,11 +411,10 @@ def create_video_apperance(case_id,thread_count,folder):
                 if(file != "final.mp4" and "mp4" in file):
                     files.append(file)
 
-            # Absolute path or current directory with absolute path
-            current_dir = os.getcwd()
+
 
             # Create a list of file arguments
-            filelist = ''.join(f"file '{os.path.join(current_dir, f)}'\n" for f in files).encode('utf-8')
+            filelist = ''.join(f"file '{os.path.join(working_directory, f)}'\n" for f in files).encode('utf-8')
 
             # Run the FFmpeg command using subprocess and stdin pipe
             command = [
