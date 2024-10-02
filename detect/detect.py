@@ -249,7 +249,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                     file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[0]}_0_face.jpg"
                     if duration_exist[0] == 0 :
                         if not os.path.exists(file_path_ele):
-                            file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{int(frame_rate)}_0_face.jpg"
+                            stt = int(duration_exist[0]) + int(frame_rate)
+                            file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{stt}_0_face.jpg"
                     list_time_exist.append([
                         {"path":file_path_ele, "time":duration_exist[0]*time_per_frame},
                         {"path":"","time":duration_exist[len(duration_exist) - 1] * time_per_frame}
@@ -261,7 +262,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                             file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[0]}_0_face.jpg"
                             if duration_exist[0] == 0 :
                                 if not os.path.exists(file_path_ele):
-                                    file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{int(frame_rate)}_0_face.jpg"
+                                    stt = int(duration_exist[0]) + int(frame_rate)
+                                    file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{stt}_0_face.jpg"
                             list_time_exist.append([
                                 {"path":file_path_ele, "time":duration_exist[0]*time_per_frame},
                                 {"path":"","time":duration_exist[len(duration_exist) - 1] * time_per_frame}
