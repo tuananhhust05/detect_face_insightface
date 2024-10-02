@@ -250,16 +250,23 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                     duration_exist.append(0)
                 duration_exist.append(list_frame[i])
                 if( (list_frame[i + 1] - list_frame[i]) > frame_rate):
-                    # list_time_exist.append([duration_exist[0]*time_per_frame,duration_exist[len(duration_exist) - 1] * time_per_frame])
+            
+                    file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[0]}_0_face.jpg"
+                    if duration_exist[0] == 0 :
+                        if not os.path.exists(file_path_ele):
+                            file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[len(duration_exist) - 1]}_0_face.jpg"
                     list_time_exist.append([
-                        {"path":f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[0]}_0_face.jpg", "time":duration_exist[0]*time_per_frame},
+                        {"path":file_path_ele, "time":duration_exist[0]*time_per_frame},
                         {"path":"","time":duration_exist[len(duration_exist) - 1] * time_per_frame}
                     ])
                     duration_exist = []
                 else:
                         if( i == len(list_frame)-2):
                             duration_exist.append(list_frame[i+1])
-                            # list_time_exist.append([duration_exist[0]*time_per_frame,duration_exist[len(duration_exist) - 1] * time_per_frame])
+                            file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[0]}_0_face.jpg"
+                            if duration_exist[0] == 0 :
+                                if not os.path.exists(file_path_ele):
+                                    file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[len(duration_exist) - 1]}_0_face.jpg"
                             list_time_exist.append([
                                 {"path":f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[0]}_0_face.jpg", "time":duration_exist[0]*time_per_frame},
                                 {"path":"","time":duration_exist[len(duration_exist) - 1] * time_per_frame}
