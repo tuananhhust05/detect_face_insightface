@@ -119,19 +119,14 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         ret, frame = cap.read()
         if not ret:
             break
-
         frame_count += 1
      
-        
-
         if frame_count % frame_rate == 0:
             print("frame_count", frame_count)
             
             # gpu_frame = cv2.cuda_GpuMat()
             # gpu_frame.upload(frame)
-            
             # # Now the frame is on GPU memory. You can perform GPU-based processing here.
-
             # # For demonstration: download it back to CPU and show it
             # frame = gpu_frame.download()
             # facechecks = model.detect(frame,input_size=(640, 640))
@@ -250,11 +245,11 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                     duration_exist.append(0)
                 duration_exist.append(list_frame[i])
                 if( (list_frame[i + 1] - list_frame[i]) > frame_rate):
-            
+                   
                     file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[0]}_0_face.jpg"
                     if duration_exist[0] == 0 :
                         if not os.path.exists(file_path_ele):
-                            file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[len(duration_exist) - 1]}_0_face.jpg"
+                            file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[0]+frame_rate}_0_face.jpg"
                     list_time_exist.append([
                         {"path":file_path_ele, "time":duration_exist[0]*time_per_frame},
                         {"path":"","time":duration_exist[len(duration_exist) - 1] * time_per_frame}
@@ -266,7 +261,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                             file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[0]}_0_face.jpg"
                             if duration_exist[0] == 0 :
                                 if not os.path.exists(file_path_ele):
-                                    file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[len(duration_exist) - 1]}_0_face.jpg"
+                                    file_path_ele = f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[0]+frame_rate}_0_face.jpg"
                             list_time_exist.append([
                                 {"path":f"{dir_project}/faces/{case_id}/{folder}/{index_local}/{duration_exist[0]}_0_face.jpg", "time":duration_exist[0]*time_per_frame},
                                 {"path":"","time":duration_exist[len(duration_exist) - 1] * time_per_frame}
