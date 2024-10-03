@@ -641,55 +641,65 @@ def handle_multiplefile(listfile,thread,case_id):
     return 
 
 def handle_main(case_id, tracking_folder, target_folder):
+    try:
+        global list_vector
 
-    global list_vector
+        if not os.path.exists(f"./video_apperance"):
+            os.makedirs(f"./video_apperance")
+        if not os.path.exists(f"./video_apperance/{case_id}"):
+            os.makedirs(f"./video_apperance/{case_id}")
 
-    if not os.path.exists(f"./video_apperance"):
-        os.makedirs(f"./video_apperance")
-    if not os.path.exists(f"./video_apperance/{case_id}"):
-        os.makedirs(f"./video_apperance/{case_id}")
+        flag_target_folder = True
+        for path in os.listdir(target_folder):
+            if(flag_target_folder == True):
+                if os.path.isfile(os.path.join(target_folder, path)):
+                    full_path = f"{target_folder}/{path}"
+                    img = cv2.imread(full_path)
+                    print("full_path",full_path)
+                    faces = app_recognize.get(img)
+                    for face in faces:
+                        embedding_vector = face['embedding']
+                        list_vector.append(embedding_vector)
+                        # check_insert_target = index.query(
+                        #     vector=embedding_vector.tolist(),
+                        #     top_k=1,
+                        #     include_metadata=True,
+                        #     include_values=True,
+                        #     filter={"case_id": case_id},
+                        # )
+                        # matches = check_insert_target["matches"]
+                        # if(len(matches) > 0):
+                        #     if(matches[0]["metadata"]["case_id"] == case_id):
+                        #        flag_target_folder = False
+                        # if(flag_target_folder == True):
+                        #     index.upsert(
+                        #         vectors=[
+                        #                 {
+                        #                     "id": str(uuid.uuid4()),
+                        #                     "values": embedding_vector,
+                        #                     "metadata": {"case_id":case_id }
+                        #                 },
+                        #             ]
+                        #     )
+        list_file = []
+        for path in os.listdir(tracking_folder):
+            if os.path.isfile(os.path.join(tracking_folder, path)):
+                full_path = f"{tracking_folder}/{path}"
+                list_file.append(full_path)
+        if(len(list_file) > 0):
+            handle_multiplefile(list_file,80,case_id)
 
-    flag_target_folder = True
-    for path in os.listdir(target_folder):
-        if(flag_target_folder == True):
-            if os.path.isfile(os.path.join(target_folder, path)):
-                full_path = f"{target_folder}/{path}"
-                img = cv2.imread(full_path)
-                print("full_path",full_path)
-                faces = app_recognize.get(img)
-                for face in faces:
-                    embedding_vector = face['embedding']
-                    list_vector.append(embedding_vector)
-                    # check_insert_target = index.query(
-                    #     vector=embedding_vector.tolist(),
-                    #     top_k=1,
-                    #     include_metadata=True,
-                    #     include_values=True,
-                    #     filter={"case_id": case_id},
-                    # )
-                    # matches = check_insert_target["matches"]
-                    # if(len(matches) > 0):
-                    #     if(matches[0]["metadata"]["case_id"] == case_id):
-                    #        flag_target_folder = False
-                    # if(flag_target_folder == True):
-                    #     index.upsert(
-                    #         vectors=[
-                    #                 {
-                    #                     "id": str(uuid.uuid4()),
-                    #                     "values": embedding_vector,
-                    #                     "metadata": {"case_id":case_id }
-                    #                 },
-                    #             ]
-                    #     )
-    list_file = []
-    for path in os.listdir(tracking_folder):
-        if os.path.isfile(os.path.join(tracking_folder, path)):
-            full_path = f"{tracking_folder}/{path}"
-            list_file.append(full_path)
-    if(len(list_file) > 0):
-        handle_multiplefile(list_file,80,case_id)
-
-    return 
+        return 
+    except Exception as e:
+        cases.update_many({
+            "id":case_id
+        },{
+            "$set":{
+                "end":current_date(),
+                "status":"completed"
+            }
+        })
+    
 
 
 api = Flask(__name__)
