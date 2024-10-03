@@ -532,25 +532,28 @@ def cutvideo(videofile,start,duration,output):
     #         .output(output, t=duration, vf=f'scale=640:640', c:v='h264_nvenc', c:a='copy')
     #         .run(overwrite_output=True)
     # )
-    (
+    # (
         # ffmpeg
         # .input(videofile, ss=start, hwaccel='cuda')
         # .output(output, t=duration, vf=f'scale=640:640', vcodec='h264_nvenc', acodec='copy')
         # .run(overwrite_output=True)
-        ffmpeg
-        .input(videofile, ss=start)
-        .filter('scale', 640, 640)
-        .output(
-            output,
-            t=duration,
-            vcodec='h264_nvenc',
-            preset='fast',
-            video_bitrate='5M',
-            acodec='aac',
-            audio_bitrate='128k'
-        )
-        .run(overwrite_output=True)
-    )
+        # ffmpeg
+        # .input(videofile, ss=start)
+        # .filter('scale', 640, 640)
+        # .output(
+        #     output,
+        #     t=duration,
+        #     vcodec='h264_nvenc',
+        #     preset='fast',
+        #     video_bitrate='5M',
+        #     acodec='aac',
+        #     audio_bitrate='128k'
+        # )
+        # .run(overwrite_output=True)
+        # ffmpeg -ss 00:01:00 -i input.mp4 -t 00:02:00 -vf "scale=426:240" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k output.mp4
+    subprocess.run(f"ffmpeg -ss {start} -i {videofile} -t {duration} -vf \"scale=640:640\" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k {output}", shell=True, check=True)
+    
+    # )
 
     return 
 
