@@ -519,10 +519,20 @@ def create_video_apperance(case_id,thread_count,folder):
     return 
 
 def cutvideo(videofile,start,duration,output):
+    # (
+    #     # ffmpeg
+    #     # .input(videofile, ss=start, hwaccel='cuda')
+    #     # .output(output, t=duration, c='copy')
+    #     # .run(overwrite_output=True)
+    #     ffmpeg
+    #         .input(videofile, ss=start, hwaccel='cuda')
+    #         .output(output, t=duration, vf=f'scale=640:640', c:v='h264_nvenc', c:a='copy')
+    #         .run(overwrite_output=True)
+    # )
     (
         ffmpeg
         .input(videofile, ss=start, hwaccel='cuda')
-        .output(output, t=duration, c='copy')
+        .output(output, t=duration, vf=f'scale=640:640', vcodec='h264_nvenc', acodec='copy')
         .run(overwrite_output=True)
     )
 
@@ -662,7 +672,7 @@ def handle_main(case_id, tracking_folder, target_folder):
             full_path = f"{tracking_folder}/{path}"
             list_file.append(full_path)
     if(len(list_file) > 0):
-        handle_multiplefile(list_file,50,case_id)
+        handle_multiplefile(list_file,80,case_id)
 
     return 
 
