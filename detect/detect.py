@@ -551,7 +551,8 @@ def cutvideo(videofile,start,duration,output):
         # )
         # .run(overwrite_output=True)
         # ffmpeg -ss 00:01:00 -i input.mp4 -t 00:02:00 -vf "scale=426:240" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k output.mp4
-    subprocess.run(f"ffmpeg -ss {start} -i {videofile} -t {duration} -vf \"scale=640:640\" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k {output}", shell=True, check=True)
+    # subprocess.run(f"ffmpeg -ss {start} -i {videofile} -t {duration} -vf \"scale=640:640\" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k {output}", shell=True, check=True)
+    subprocess.run(f"ffmpeg -ss {start} -i {videofile}  -t {duration} -vf \"scale=640:640,pad=640:640:(ow-iw)/2:(oh-ih)/2\" -c:v libx264 -crf 23 {output}", shell=True, check=True)
     
     # )
 
