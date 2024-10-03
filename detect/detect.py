@@ -93,7 +93,7 @@ for j in range(num_gpus):
         })
     ]
     app_ele = FaceAnalysis('buffalo_l',providers=providers)
-    app_ele.prepare(ctx_id=j,det_thresh=0.3, det_size=(640, 640))
+    app_ele.prepare(ctx_id=j, det_size=(640, 640))
     list_model_analyst.append(app_ele)
 
 list_vector = []
@@ -194,9 +194,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             # frame = gpu_frame.download()
             # facechecks = model.detect(frame,input_size=(640, 640))
             # frame = cv2.resize(frame, (640, 640))
-            sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-            sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
-            frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
+            # sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+            # sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
+            # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
             facechecks = model.detect(frame,input_size=(640, 640))
             flagDetect = False
             if(len(facechecks) > 0):
@@ -207,9 +207,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 # gpu_frame = cv2.cuda_GpuMat()
                 # gpu_frame.upload(frame)
                 print("Có mặt......")
-                # sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-                # sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
-                # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
+                sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+                sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
+                frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
                 # gpu_frame = denoiser.denoise(gpu_frame)
                 # frame = gpu_frame.download()
                 # faces = app.get(frame)
