@@ -194,6 +194,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             # frame = gpu_frame.download()
             # facechecks = model.detect(frame,input_size=(640, 640))
             # frame = cv2.resize(frame, (640, 640))
+            sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+            sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
+            frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
             facechecks = model.detect(frame,input_size=(640, 640))
             flagDetect = False
             if(len(facechecks) > 0):
