@@ -1,0 +1,19 @@
+[
+    {
+        "face": 0,
+        "age": 40.0,
+        "gender": 0.0,
+        "duration_exist": [
+            [
+                {
+                    "path": "/home/poc4a5000/detect/detect/faces/db696a35-0043-4aba-a844-295e3432a118/ch02_20240904131243_000_640x640/39/378_0_face.jpg",
+                    "time": 17.625
+                },
+                {
+                    "path": "",
+                    "time": 17.625
+                }
+            ]
+        ]
+    }
+]

@@ -1,0 +1,13 @@
+[
+    {
+        "speaker": 0,
+        "gender": 1,
+        "age": 30,
+        "frames": [
+            756
+        ],
+        "frame_count": 1260,
+        "duration": 49,
+        "frame_rate": 63.0
+    }
+]

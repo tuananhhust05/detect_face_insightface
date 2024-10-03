@@ -1,0 +1,29 @@
+[
+    {
+        "face": 0,
+        "age": 59.4,
+        "gender": 1.0,
+        "duration_exist": [
+            [
+                {
+                    "path": "/home/poc4a5000/detect/detect/faces/db696a35-0043-4aba-a844-295e3432a118/ch02_20240904131243_000_640x640/55/63_0_face.jpg",
+                    "time": 0.0
+                },
+                {
+                    "path": "",
+                    "time": 14.0
+                }
+            ],
+            [
+                {
+                    "path": "/home/poc4a5000/detect/detect/faces/db696a35-0043-4aba-a844-295e3432a118/ch02_20240904131243_000_640x640/55/378_0_face.jpg",
+                    "time": 42.0
+                },
+                {
+                    "path": "",
+                    "time": 56.0
+                }
+            ]
+        ]
+    }
+]
