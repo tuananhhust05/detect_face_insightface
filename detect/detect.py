@@ -118,6 +118,8 @@ class VideoCaptureThreading:
     def __init__(self, src=0):
         self.src = src
         self.cap = cv2.VideoCapture(self.src)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
         self.ret, self.frame = self.cap.read()
         self.running = True
         self.thread = Thread(target=self.update, args=())
@@ -148,8 +150,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     # cap = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
     # cap = cv2.VideoCapture(video_file)
     cap = VideoCaptureThreading(video_file)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
 
     fps = cap.get(cv2.CAP_PROP_FPS)
     fps = ( fps + 1 ) // 1
