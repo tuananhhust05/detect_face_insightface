@@ -93,7 +93,7 @@ for j in range(num_gpus):
         })
     ]
     app_ele = FaceAnalysis('buffalo_l',providers=providers)
-    app_ele.prepare(ctx_id=j,det_thresh=0.4, det_size=(640, 640))
+    app_ele.prepare(ctx_id=j,det_thresh=0.3, det_size=(640, 640))
     list_model_analyst.append(app_ele)
 
 list_vector = []
