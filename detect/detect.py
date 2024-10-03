@@ -78,7 +78,7 @@ providers = [
         'device_id': 0,
     })
 ]
-# Load the model with providers
+# Load the model with  providers
 model = model_zoo.get_model(
     '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
     providers=providers
