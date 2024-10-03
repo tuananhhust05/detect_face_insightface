@@ -277,6 +277,6 @@ def handle_multiplefile(listfile,thread):
 #         list_file.append(full_path)
 # print(list_file)
 start_time = time.time()
-handle_multiplefile(["/home/poc4a5000/facesx/db696a35-0043-4aba-a844-295e3432a118/input/ch02_20240904040117.mp4"],50)
+handle_multiplefile(["/home/poc4a5000/facesx/ch02_20240902130857.mp4"],50)
 end_time = time.time()
 print(f"Total execution time: {end_time - start_time}")
