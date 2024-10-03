@@ -533,8 +533,12 @@ def cutvideo(videofile,start,duration,output):
     #         .run(overwrite_output=True)
     # )
     (
+        # ffmpeg
+        # .input(videofile, ss=start, hwaccel='cuda')
+        # .output(output, t=duration, vf=f'scale=640:640', vcodec='h264_nvenc', acodec='copy')
+        # .run(overwrite_output=True)
         ffmpeg
-        .input(videofile, ss=start, hwaccel='cuda')
+        .input(videofile, ss=start)
         .output(output, t=duration, vf=f'scale=640:640', vcodec='h264_nvenc', acodec='copy')
         .run(overwrite_output=True)
     )
