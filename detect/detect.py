@@ -220,8 +220,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                         similarity  = checkface(face['embedding'])
 
                         # if len(matches) > 0 and matches[0]['score'] > weight_point:
-                        # if(similarity > 0):
-                        if True:
+                        if(similarity > 0):
+                        # if True:
                             count_face = count_face + 1 
                             # if( int(face['age']) > max_age):
                             #     max_age = int(face['age'])
