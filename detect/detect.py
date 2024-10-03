@@ -23,6 +23,7 @@ from flask import Flask, jsonify, request
 import pymongo
 import ffmpeg
 import random
+from threading import Thread
 
 
 myclient = pymongo.MongoClient("mongodb://root:facex@192.168.50.10:27018")
@@ -113,6 +114,29 @@ def current_date():
   date_string = now.strftime(format_date)
   return datetime.datetime.strptime(date_string, format_date)
 
+class VideoCaptureThreading:
+    def __init__(self, src=0):
+        self.src = src
+        self.cap = cv2.VideoCapture(self.src)
+        self.ret, self.frame = self.cap.read()
+        self.running = True
+        self.thread = Thread(target=self.update, args=())
+        self.thread.start()
+
+    def update(self):
+        while self.running:
+            self.ret, self.frame = self.cap.read()
+
+    def read(self):
+        return self.ret, self.frame
+
+    def stop(self):
+        self.running = False
+        self.thread.join()
+
+    def release(self):
+        self.cap.release()
+
 def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id):
     # Set the device
     torch.cuda.set_device(gpu_id)
@@ -122,7 +146,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     frame_count = 0 
     duration = getduration(video_file)
     # cap = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
-    cap = cv2.VideoCapture(video_file)
+    # cap = cv2.VideoCapture(video_file)
+    cap = VideoCaptureThreading(video_file)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
 
