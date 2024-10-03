@@ -378,8 +378,8 @@ def groupJson(folder,video_file,count_thread,case_id):
                     ])
 
 
-    final_result['age'] = sum_age / count_face
     if count_face > 0 : 
+        final_result['age'] = sum_age / count_face
         final_result['gender'] = sum_gender / count_face
         facematches.update_many(
             {
