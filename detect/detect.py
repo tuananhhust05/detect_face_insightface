@@ -45,7 +45,7 @@ pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
 index = pc.Index("detectcamera")
 
 weight_point = 0.3
-time_per_frame_global = 1
+time_per_frame_global = 0.5
 ctx_id = 0 if device.type == 'cuda' else -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
@@ -93,7 +93,7 @@ for j in range(num_gpus):
         })
     ]
     app_ele = FaceAnalysis('buffalo_l',providers=providers)
-    app_ele.prepare(ctx_id=j,det_thresh=0.3, det_size=(640, 640))
+    app_ele.prepare(ctx_id=j,det_thresh=0.4, det_size=(640, 640))
     list_model_analyst.append(app_ele)
 
 list_vector = []
