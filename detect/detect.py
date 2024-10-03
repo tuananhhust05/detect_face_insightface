@@ -55,19 +55,35 @@ num_gpus = torch.cuda.device_count()
 print(f"Number of GPUs available: {num_gpus}")
 gpu_ids = list(range(num_gpus)) 
 
-list_model_detect = []
-for j in range(num_gpus):
-    providers = [
-        ('CUDAExecutionProvider', {
-            'device_id': j,
-        })
-    ]
-    model_ele = model_zoo.get_model(
-        '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
-        providers=providers
-    )
-    model_ele.prepare(ctx_id=j, det_size=(640, 640))
-    list_model_detect.append(model_ele)
+# list_model_detect = []
+# for j in range(num_gpus):
+#     providers = [
+#         ('CUDAExecutionProvider', {
+#             'device_id': j,
+#         })
+#     ]
+#     model_ele = model_zoo.get_model(
+#         '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
+#         providers=providers
+#     )
+#     model_ele.prepare(ctx_id=j, det_size=(640, 640))
+#     list_model_detect.append(model_ele)
+# torch.cuda.set_device(gpu_id)
+# device = torch.device(f'cuda:{gpu_id}')
+
+# Define providers with device_id
+torch.cuda.set_device(0)
+providers = [
+    ('CUDAExecutionProvider', {
+        'device_id': 0,
+    })
+]
+# Load the model with providers
+model = model_zoo.get_model(
+    '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
+    providers=providers
+)
+model.prepare(ctx_id=0, det_size=(640, 640))
 
 list_model_analyst = []
 for j in range(num_gpus):
@@ -178,7 +194,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             # frame = gpu_frame.download()
             # facechecks = model.detect(frame,input_size=(640, 640))
             # frame = cv2.resize(frame, (640, 640))
-            facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
+            facechecks = model.detect(frame,input_size=(640, 640))
             flagDetect = False
             if(len(facechecks) > 0):
                 if(len(facechecks[0]) > 0):
