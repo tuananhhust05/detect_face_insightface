@@ -121,132 +121,121 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     list_result_ele = []
     frame_count = 0 
     duration = getduration(video_file)
-    cap = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
+    # cap = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
+    cap = cv2.VideoCapture(video_file)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     fps = cap.get(cv2.CAP_PROP_FPS)
     fps = ( fps + 1 ) // 1
     frame_rate = time_per_frame_global * fps 
-    
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
 
     sum_age = 0 
     sum_gender = 0 
     count_face = 0 
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        frame_count += 1
+        print("frame_count", frame_count)
+        if frame_count % frame_rate == 0:
+           
+            
+            # gpu_frame = cv2.cuda_GpuMat()
+            # gpu_frame.upload(frame)
+            # # Now the frame is on GPU memory. You can perform GPU-based processing here.
+            # # For demonstration: download it back to CPU and show it
+            # frame = gpu_frame.download()
+            # facechecks = model.detect(frame,input_size=(640, 640))
+            # frame = cv2.resize(frame, (640, 640))
+            facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
+            flagDetect = False
+            if(len(facechecks) > 0):
+                if(len(facechecks[0]) > 0):
+                    flagDetect = True
+            
+            if(flagDetect == True):
+                # gpu_frame = cv2.cuda_GpuMat()
+                # gpu_frame.upload(frame)
+                print("Có mặt......")
+                # sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+                # sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
+                # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
+                # gpu_frame = denoiser.denoise(gpu_frame)
+                # frame = gpu_frame.download()
+                # faces = app.get(frame)
+                faces = list_model_analyst[gpu_id].get(frame)
 
-    for j in range(total_frames):
-        if(j % frame_rate == 0):
-            cap.set(cv2.CAP_PROP_POS_FRAMES, j)
-            ret, frame = cap.read()
-            if not ret:
-                print(f"Failed to capture frame number")
-            else:
-                
-                # while True:
-                    ret, frame = cap.read()
-                    if not ret:
-                        # break
-                        print("frame not exist")
-                    else:
-                        # frame_count += 1
-                        frame_count = j
-                        if frame_count % frame_rate == 0:
-                            print("frame_count", frame_count)
+                for face in faces:
+                    if face["det_score"] > 0.5:
+                        similarity  = checkface(face['embedding'])
+
+                        # if len(matches) > 0 and matches[0]['score'] > weight_point:
+                        if(similarity > 0):
+                        # if True:
+                            count_face = count_face + 1 
+                            # if( int(face['age']) > max_age):
+                            #     max_age = int(face['age'])
+                            sum_age = sum_age + int(face['age'])
+                            sum_gender = sum_gender + int(face['gender'])
+ 
+                            if len(array_em_result) == 0:
+                                array_em_result.append({
+                                    "speaker": 0,
+                                    "gender":int(face['gender']),
+                                    "age":int(face['age']),
+                                    "frames": [frame_count],
+                                })
+                            else:
+                                if(count_face > 0):
+                                    array_em_result[0]["age"] = sum_age / count_face 
+                                    array_em_result[0]["gender"] = sum_gender / count_face 
+                                    array_em_result[0]["frames"].append(frame_count)
+
+                            try:
+                                bbox = [int(b) for b in face['bbox']]
+                                filename = f"{frame_count}_0_face.jpg"
+                                if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
+                                    os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
+                                if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
+                                    os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
+
+                                cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+
+                                top_left = (bbox[0], bbox[1])
+                                bottom_right = (bbox[2], bbox[3])
+                                color = (255, 0, 0)
+                                thickness = 2
+                                cv2.rectangle(frame, top_left, bottom_right, color, thickness)
+                                # time_per_frame = duration / total_frames
+                                # text = frame_count * time_per_frame + time_per_segment*index_local
+                                # text = str(text)
+                                # position = (bbox[0], bbox[1])
+                                # font = cv2.FONT_HERSHEY_SIMPLEX
+                                # font_scale = 1
+
+                                # cv2.putText(frame, text, position, font, font_scale, color, thickness)
+                                cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
+                            except Exception as e:
+                                print(f"Error saving frame: {e}")
                             
-                            # gpu_frame = cv2.cuda_GpuMat()
-                            # gpu_frame.upload(frame)
-                            # # Now the frame is on GPU memory. You can perform GPU-based processing here.
-                            # # For demonstration: download it back to CPU and show it
-                            # frame = gpu_frame.download()
-                            # facechecks = model.detect(frame,input_size=(640, 640))
-                            # frame = cv2.resize(frame, (640, 640))
-                            facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
-                            flagDetect = False
-                            if(len(facechecks) > 0):
-                                if(len(facechecks[0]) > 0):
-                                    flagDetect = True
-                            
-                            if(flagDetect == True):
-                                # gpu_frame = cv2.cuda_GpuMat()
-                                # gpu_frame.upload(frame)
-                                print("Có mặt......")
-                                # sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-                                # sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
-                                # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
-                                # gpu_frame = denoiser.denoise(gpu_frame)
-                                # frame = gpu_frame.download()
-                                # faces = app.get(frame)
-                                faces = list_model_analyst[gpu_id].get(frame)
-
-                                for face in faces:
-                                    if face["det_score"] > 0.5:
-                                        similarity  = checkface(face['embedding'])
-
-                                        # if len(matches) > 0 and matches[0]['score'] > weight_point:
-                                        if(similarity > 0):
-                                        # if True:
-                                            count_face = count_face + 1 
-                                            # if( int(face['age']) > max_age):
-                                            #     max_age = int(face['age'])
-                                            sum_age = sum_age + int(face['age'])
-                                            sum_gender = sum_gender + int(face['gender'])
-                
-                                            if len(array_em_result) == 0:
-                                                array_em_result.append({
-                                                    "speaker": 0,
-                                                    "gender":int(face['gender']),
-                                                    "age":int(face['age']),
-                                                    "frames": [frame_count],
-                                                })
-                                            else:
-                                                if(count_face > 0):
-                                                    array_em_result[0]["age"] = sum_age / count_face 
-                                                    array_em_result[0]["gender"] = sum_gender / count_face 
-                                                    array_em_result[0]["frames"].append(frame_count)
-
-                                            try:
-                                                bbox = [int(b) for b in face['bbox']]
-                                                filename = f"{frame_count}_0_face.jpg"
-                                                if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
-                                                    os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
-                                                if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
-                                                    os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
-
-                                                cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
-
-                                                top_left = (bbox[0], bbox[1])
-                                                bottom_right = (bbox[2], bbox[3])
-                                                color = (255, 0, 0)
-                                                thickness = 2
-                                                cv2.rectangle(frame, top_left, bottom_right, color, thickness)
-                                                # time_per_frame = duration / total_frames
-                                                # text = frame_count * time_per_frame + time_per_segment*index_local
-                                                # text = str(text)
-                                                # position = (bbox[0], bbox[1])
-                                                # font = cv2.FONT_HERSHEY_SIMPLEX
-                                                # font_scale = 1
-
-                                                # cv2.putText(frame, text, position, font, font_scale, color, thickness)
-                                                cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
-                                            except Exception as e:
-                                                print(f"Error saving frame: {e}")
-                                            
-                                            mydict = { 
-                                                    "id":  str(uuid.uuid4()), 
-                                                    "case_id": case_id,
-                                                    "similarity_face":similarity,
-                                                    "gender":int(face['gender']),
-                                                    "age":int(face['age']),
-                                                    "time_invideo":"",
-                                                    "proofImage":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
-                                                    "url":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
-                                                    "createdAt":current_date(),
-                                                    "updatedAt":current_date(),
-                                                    "file":folder
-                                                    }
-                                            facematches.insert_one(mydict)
+                            mydict = { 
+                                       "id":  str(uuid.uuid4()), 
+                                       "case_id": case_id,
+                                       "similarity_face":similarity,
+                                       "gender":int(face['gender']),
+                                       "age":int(face['age']),
+                                       "time_invideo":"",
+                                       "proofImage":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                       "url":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                       "createdAt":current_date(),
+                                       "updatedAt":current_date(),
+                                       "file":folder
+                                    }
+                            facematches.insert_one(mydict)
 
     for ele in array_em_result:
         ele["frame_count"] = frame_count
