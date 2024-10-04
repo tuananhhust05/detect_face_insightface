@@ -753,6 +753,14 @@ def handle_main(case_id, tracking_folder, target_folder):
                 list_file.append(full_path)
         if(len(list_file) > 0):
             handle_multiplefile(list_file,80,case_id)
+            cases.update_many({
+                "id":case_id
+            },{
+                "$set":{
+                    "end":current_date(),
+                    "status":"groupping"
+                }
+            })
             handle_other_face()
         return 
     except Exception as e:
@@ -804,7 +812,7 @@ def analyst():
         "id":case_id
     },{
         "$set":{
-            "end":current_date(),
+            # "end":current_date(),
             "status":"completed"
         }
     })
