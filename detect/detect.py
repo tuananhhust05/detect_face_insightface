@@ -677,6 +677,7 @@ def handle_other_face():
                 face_id_max = face_id_max + 1
         
         for face in list_vector_other:
+            del(face["embedding"])
             facematches.insert_one(face)
     except Exception as e:
         print("handle_other_face.....", e)
