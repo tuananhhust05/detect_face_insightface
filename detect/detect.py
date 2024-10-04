@@ -691,7 +691,7 @@ def handle_other_face():
                 face = list_vector_other[i]
                 for face_compare in list_vector_other:
                     if(face_compare["face_id"] != face["face_id"]):
-                        if(checkOnArr(list_face_not_check, face_compare["face_id"]) == False):
+                        # if(checkOnArr(list_face_not_check, face_compare["face_id"]) == False):
                             cos = cosin(face["embedding"], face_compare["embedding"])
                             if(cos > weight_point):
                                 list_face_not_check.append(face_compare["face_id"])
