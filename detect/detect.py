@@ -144,7 +144,6 @@ def search_with_cosine_similarity(query_vec):
 
 def checkface(vector):
     try:
-        # print("input check face ...", vector, type(vector))
         response = search_with_cosine_similarity(vector)
         for hit in response['hits']['hits']:
             score = float(hit['_score'])
@@ -243,6 +242,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                     if face["det_score"] > 0.5:
          
                         similarity  = checkface(face['embedding'].tolist())
+                        print("similarity.....",similarity)
                         if(similarity > 0):
                         # if True:
                             count_face = count_face + 1 
@@ -644,7 +644,6 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
 
     return 
 
-
 def handle_multiplefile(listfile,thread,case_id):
     for file in listfile:
         file_name = file.split(".")[0]
@@ -867,7 +866,7 @@ def analyst():
     list_vector_other = []
     list_vector  = []
 
-    delete_all_documents("images")
+    delete_all_documents(index_name)
     
     subprocess.run("cd /home/poc4a5000/detect/detect && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && rm -rf video_apperance && mkdir video_apperance", shell=True, check=True)
     
