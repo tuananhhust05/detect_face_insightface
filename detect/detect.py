@@ -148,8 +148,8 @@ def checkface(vector):
         for hit in response['hits']['hits']:
             score = float(hit['_score'])
             score = score - 1 
-            if(float(hit['_score']) > float(weight_point)):
-                return float(hit['_score'])
+            if( score > float(weight_point)):
+                return score
         return 0 
     except Exception as ex:
         print(f"checkface: {ex}")
