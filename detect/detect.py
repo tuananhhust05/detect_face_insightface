@@ -668,23 +668,24 @@ def checkOnArr(arr,num):
             return True
     return False
 
-def insert_to_database(data):
+def insert_to_database(id,embedding,face_id,similarity_face,gender,age,proofImage,url,file,case_id):
     try:
-        similarity  = checkface(data['embedding'])
-        if(similarity > 0): data["face_id"] = 0
+        face_id_insert = face_id 
+        similarity  = checkface(embedding)
+        if(similarity > 0): face_id_insert = 0
         mydict = { 
-                "id":data["id"], 
-                "case_id": data["case_id"],
-                "similarity_face":data["similarity_face"],
-                "gender":data["gender"],
-                "age":data["age"],
-                "time_invideo":data["time_invideo"],
-                "proofImage":data["proofImage"],
-                "url":data["url"],
-                "createdAt":data["createdAt"],
-                "updatedAt":data["updatedAt"],
-                "file":data["file"],
-                "face_id":data["face_id"]
+                "id":id, 
+                "case_id": case_id,
+                "similarity_face":similarity_face,
+                "gender":gender,
+                "age":age,
+                "time_invideo":"",
+                "proofImage":proofImage,
+                "url": url,
+                "createdAt":current_date(),
+                "updatedAt":current_date(),
+                "file":file,
+                "face_id":face_id_insert
             }
         facematches.insert_one(mydict)
     except Exception as e:
@@ -725,26 +726,7 @@ def handle_other_face():
                                     if(face_change["face_id"] == face_compare["face_id"]):
                                         face_change["face_id"] = face["face_id"]
                 print("length list_vector",len(list_vector))
-                # similarity  = checkface(face['embedding'])
-                # if(similarity > 0): face["face_id"] = 0
-                # mydict = { 
-                #         "id":face["id"], 
-                #         "case_id": face["case_id"],
-                #         "similarity_face":face["similarity_face"],
-                #         "gender":face["gender"],
-                #         "age":face["age"],
-                #         "time_invideo":"time_invideo",
-                #         "proofImage":face["proofImage"],
-                #         "url":face["url"],
-                #         "createdAt":face["createdAt"],
-                #         "updatedAt":face["updatedAt"],
-                #         "file":face["file"],
-                #         "face_id":face["face_id"]
-                #     }
-                # facematches.insert_one(mydict)
-                # insert_to_database(face)
-
-                t = threading.Thread(target=insert_to_database, args=(face))
+                t = threading.Thread(target=insert_to_database, args=(face["id"],face["embedding"],face["face_id"],face["similarity_face"],face["gender"],face["age"],face["proofImage"],face["url"],face["file"],face["case_id"]))
                 t.start()
                 t.join()
                 list_inserted.append(face["id"])
