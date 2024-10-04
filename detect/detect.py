@@ -55,19 +55,19 @@ num_gpus = torch.cuda.device_count()
 print(f"Number of GPUs available: {num_gpus}")
 gpu_ids = list(range(num_gpus)) 
 
-# list_model_detect = []
-# for j in range(num_gpus):
-#     providers = [
-#         ('CUDAExecutionProvider', {
-#             'device_id': j,
-#         })
-#     ]
-#     model_ele = model_zoo.get_model(
-#         '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
-#         providers=providers
-#     )
-#     model_ele.prepare(ctx_id=j, det_size=(640, 640))
-#     list_model_detect.append(model_ele)
+list_model_detect = []
+for j in range(num_gpus):
+    providers = [
+        ('CUDAExecutionProvider', {
+            'device_id': j,
+        })
+    ]
+    model_ele = model_zoo.get_model(
+        '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
+        providers=providers
+    )
+    model_ele.prepare(ctx_id=j, det_size=(640, 640))
+    list_model_detect.append(model_ele)
 # torch.cuda.set_device(gpu_id)
 # device = torch.device(f'cuda:{gpu_id}')
 
@@ -98,7 +98,7 @@ for j in range(num_gpus):
 
 list_vector = []
 
-
+list_vector_other = []
 
 def getduration(file):
     data = cv2.VideoCapture(file) 
@@ -156,23 +156,16 @@ class VideoCaptureThreading:
         self.cap.release()
 
 def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id):
-    # Set the device
-    torch.cuda.set_device(gpu_id)
-
     array_em_result = []
     list_result_ele = []
     frame_count = 0 
     duration = getduration(video_file)
     cap2 = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
-    # cap = cv2.VideoCapture(video_file)
     cap = VideoCaptureThreading(video_file)
-    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
 
     fps = cap2.get(cv2.CAP_PROP_FPS)
     fps = ( fps + 1 ) // 1
     frame_rate = time_per_frame_global * fps 
-    # total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
 
     sum_age = 0 
@@ -197,7 +190,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             # sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
             # sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
             # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
-            facechecks = model.detect(frame,input_size=(640, 640))
+            facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
             flagDetect = False
             if(len(facechecks) > 0):
                 if(len(facechecks[0]) > 0):
@@ -212,19 +205,14 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
                 # gpu_frame = denoiser.denoise(gpu_frame)
                 # frame = gpu_frame.download()
-                # faces = app.get(frame)
                 faces = list_model_analyst[gpu_id].get(frame)
 
                 for face in faces:
                     if face["det_score"] > 0.5:
                         similarity  = checkface(face['embedding'])
-
-                        # if len(matches) > 0 and matches[0]['score'] > weight_point:
                         if(similarity > 0):
                         # if True:
                             count_face = count_face + 1 
-                            # if( int(face['age']) > max_age):
-                            #     max_age = int(face['age'])
                             sum_age = sum_age + int(face['age'])
                             sum_gender = sum_gender + int(face['gender'])
  
@@ -256,14 +244,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 color = (255, 0, 0)
                                 thickness = 2
                                 cv2.rectangle(frame, top_left, bottom_right, color, thickness)
-                                # time_per_frame = duration / total_frames
-                                # text = frame_count * time_per_frame + time_per_segment*index_local
-                                # text = str(text)
-                                # position = (bbox[0], bbox[1])
-                                # font = cv2.FONT_HERSHEY_SIMPLEX
-                                # font_scale = 1
-
-                                # cv2.putText(frame, text, position, font, font_scale, color, thickness)
+                          
                                 cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
                             except Exception as e:
                                 print(f"Error saving frame: {e}")
@@ -271,6 +252,45 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                             mydict = { 
                                        "id":  str(uuid.uuid4()), 
                                        "case_id": case_id,
+                                       "face_id": 0,
+                                       "similarity_face":similarity,
+                                       "gender":int(face['gender']),
+                                       "age":int(face['age']),
+                                       "time_invideo":"",
+                                       "proofImage":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                       "url":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                       "createdAt":current_date(),
+                                       "updatedAt":current_date(),
+                                       "file":folder
+                                    }
+                            facematches.insert_one(mydict)
+                        
+                        else:
+                          
+                            try:
+                                bbox = [int(b) for b in face['bbox']]
+                                filename = f"{frame_count}_{str(uuid.uuid4())}_face.jpg"
+                                if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
+                                    os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
+                                if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
+                                    os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
+
+                                cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+
+                                top_left = (bbox[0], bbox[1])
+                                bottom_right = (bbox[2], bbox[3])
+                                color = (255, 0, 0)
+                                thickness = 2
+                                cv2.rectangle(frame, top_left, bottom_right, color, thickness)
+                          
+                                cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
+                            except Exception as e:
+                                print(f"Error saving frame: {e}")
+                            
+                            mydict = { 
+                                       "id":  str(uuid.uuid4()), 
+                                       "case_id": case_id,
+                                       "face_id": 1,
                                        "similarity_face":similarity,
                                        "gender":int(face['gender']),
                                        "age":int(face['age']),
@@ -383,7 +403,8 @@ def groupJson(folder,video_file,count_thread,case_id):
         final_result['gender'] = sum_gender / count_face
         facematches.update_many(
             {
-                "case_id":case_id
+                "case_id":case_id,
+                "face_id": 0
             },
             {
                 "$set":{
