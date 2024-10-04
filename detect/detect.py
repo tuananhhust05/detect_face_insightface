@@ -100,6 +100,8 @@ list_vector = []
 
 list_vector_other = []
 
+list_vector_widden = []
+
 def getduration(file):
     data = cv2.VideoCapture(file) 
     frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 
@@ -265,7 +267,12 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                        "file":folder
                                     }
                             facematches.insert_one(mydict)
-                        
+                            mydict["embedding"] = face['embedding']
+                            list_vector_widden.append(mydict)
+
+                            global list_vector 
+                            if(len(list_vector) < 100):
+                                list_vector.append(face['embedding'])
                         else:
                           
                             try:
@@ -671,7 +678,17 @@ def handle_other_face():
                         if(cos > weight_point):
                             face_compare["face_id"] = face_id_max
                 face_id_max = face_id_max + 1
-        # print("Start.... handle_other_face", list_vector_other)
+       
+        # compare to main again     
+        for face in list_vector_other:
+            flag = True 
+            for face_main in list_vector_widden:
+                if(flag == True ):
+                    cos = cosin(face["embedding"], face_main["embedding"])
+                    if(cos > weight_point):
+                        flag = False
+                        face["face_id"] = 0
+
         for face in list_vector_other:
             print("insert....")
             del(face["embedding"])
@@ -764,6 +781,8 @@ def analyst():
     })
     
     global list_vector 
+    global list_vector_other
+    list_vector_other = []
     list_vector  = []
 
 
