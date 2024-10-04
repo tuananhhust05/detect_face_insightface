@@ -648,7 +648,7 @@ def handleimage(folder,img_url,case_id):
                 appearances.insert_one({
                     "time":[
                         {
-                            "path":f'./faces/{case_id}/{folder}/1/{filename}',
+                            "path":f'{dir_project}/faces/{case_id}/{folder}/1/{filename}',
                             "start":0,
                             "end":0,
                             "similiarity":90
