@@ -668,6 +668,10 @@ def checkOnArr(arr,num):
             return True
     return False
 
+def insert_to_database(data):
+    del(data["embedding"])
+    facematches.insert_one(data)
+
 def handle_other_face():
     try:
         face_id_max = 1 
@@ -702,10 +706,8 @@ def handle_other_face():
                                     if(face_change["face_id"] == face_compare["face_id"]):
                                         face_change["face_id"] = face["face_id"]
                 if "embedding" in face:
-                    tempt = face
-                    del(tempt["embedding"])
-                    facematches.insert_one(tempt)
-                    list_inserted.append(tempt["id"])
+                    insert_to_database(face)
+                    list_inserted.append(face["id"])
 
         for face in list_vector_other:
             if(checkOnArr(list_inserted, face["id"]) == False):
