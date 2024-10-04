@@ -44,7 +44,7 @@ print(f"Using device: {device}")
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
 index = pc.Index("detectcamera")
 
-weight_point = 0.4
+weight_point = 0.3
 time_per_frame_global = 0.5
 ctx_id = 0 if device.type == 'cuda' else -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
@@ -278,13 +278,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
                                 cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
 
-                                top_left = (bbox[0], bbox[1])
-                                bottom_right = (bbox[2], bbox[3])
-                                color = (255, 0, 0)
-                                thickness = 2
-                                cv2.rectangle(frame, top_left, bottom_right, color, thickness)
-                          
-                                cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
                             except Exception as e:
                                 print(f"Error saving frame: {e}")
 
