@@ -659,13 +659,14 @@ def handle_other_face():
     try:
         face_id_max = 1 
         global list_vector_other
-       
+        print("Start.... handle_other_face")
         for i in range(len(list_vector_other)):
             face = list_vector_other[i]
             if("face_id" not in face):
                 face["face_id"] = face_id_max 
                 for face_compare in list_vector_other:
                     if(face_compare["id"] != face["id"]):
+                        print("caculation ....",i)
                         cos = cosin(face["embedding"], face_compare["embedding"])
                         if(cos > weight_point):
                             face_compare["face_id"] = face_id_max
