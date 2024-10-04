@@ -271,8 +271,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                             list_vector_widden.append(mydict)
 
                             global list_vector 
-                            if(len(list_vector) < 100):
-                                list_vector.append(face['embedding'])
+                            # if(len(list_vector) < 100):
+                            list_vector.append(face['embedding'])
                         else:
                           
                             try:
