@@ -44,7 +44,7 @@ print(f"Using device: {device}")
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
 index = pc.Index("detectcamera")
 
-weight_point = 0.2
+weight_point = 0.3
 time_per_frame_global = 0.5
 ctx_id = 0 if device.type == 'cuda' else -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
@@ -209,9 +209,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
                 for face in faces:
                     if face["det_score"] > 0.5:
-                        sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-                        sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
-                        frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
+         
                         similarity  = checkface(face['embedding'])
                         if(similarity > 0):
                         # if True:
