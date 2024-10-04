@@ -144,6 +144,7 @@ def search_with_cosine_similarity(query_vec):
 
 def checkface(vector):
     try:
+        print("input check face ...", vector)
         response = search_with_cosine_similarity(vector)
         for hit in response['hits']['hits']:
             if(float(hit['_score']) > float(weight_point)):
