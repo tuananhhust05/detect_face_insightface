@@ -240,7 +240,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
                 for face in faces:
                     if face["det_score"] > 0.5:
-         
                         similarity  = checkface(face['embedding'].tolist())
                         print("similarity.....",similarity)
                         if(similarity > 0):
@@ -621,27 +620,72 @@ def trimvideo(folder,videofile,count_thread,case_id):
     
     return 
 
-    
+def handleimage(folder,img_url,case_id):
+   img = cv2.imread(img_url)
+   facechecks = model.detect(img,input_size=(640, 640))
+   if(len(facechecks) > 0):
+       faces = list_model_analyst[0].get(img)
+       for face in faces:
+         if face["det_score"] > 0.5:
+            similarity  = checkface(face['embedding'].tolist())
+            if(similarity > 0):
+                bbox = [int(b) for b in face['bbox']]
+                filename = f"0_0_face.jpg"
+
+                if not os.path.exists(f"./faces/{case_id}/{folder}/1"):
+                    os.makedirs(f"./faces/{case_id}/{folder}/1")
+                if not os.path.exists(f"./outputs/{case_id}/{folder}/1"):
+                    os.makedirs(f"./outputs/{case_id}/{folder}/1")
+                
+                cv2.imwrite(f'./faces/{case_id}/{folder}/1/{filename}', img[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+
+                top_left = (bbox[0], bbox[1])
+                bottom_right = (bbox[2], bbox[3])
+                color = (255, 0, 0)
+                thickness = 2
+                cv2.rectangle(img, top_left, bottom_right, color, thickness)
+                cv2.imwrite(f'./outputs/{case_id}/{folder}/1/{filename}', img)
+                appearances.insert_one({
+                    "time":[
+                        {
+                            "path":f'./faces/{case_id}/{folder}/1/{filename}',
+                            "start":0,
+                            "end":0,
+                            "similiarity":90
+                        }
+                    ],
+                    "gender":int(face['gender']),
+                    "age":int(face['age']),
+                    "file":folder,
+                    "id":str(uuid.uuid4()),
+                    "case_id":case_id,
+                    "createdAt":current_date(),
+                    "updatedAt":current_date(),
+                })
+
 def process_videos(folder,video_file_origin,count_thread,case_id):
-    duration = getduration(video_file_origin)
-    time_per_segment = duration / count_thread
+    filename, file_extension = os.path.splitext(video_file_origin)
+    if(file_extension == ".mp4"):
+        duration = getduration(video_file_origin)
+        time_per_segment = duration / count_thread
 
-    trimvideo(folder,video_file_origin,count_thread,case_id)
+        trimvideo(folder,video_file_origin,count_thread,case_id)
 
-    video_files = [f"videos/{case_id}/{folder}/{i}.mp4" for i in range(count_thread)]  
-    threads = []
-    for i, video_file in enumerate(video_files):
-        gpu_id = gpu_ids[i % num_gpus]
-        t = threading.Thread(target=extract_frames, args=(folder,video_file,i,time_per_segment,case_id,gpu_id))
-        threads.append(t)
-        t.start()
+        video_files = [f"videos/{case_id}/{folder}/{i}.mp4" for i in range(count_thread)]  
+        threads = []
+        for i, video_file in enumerate(video_files):
+            gpu_id = gpu_ids[i % num_gpus]
+            t = threading.Thread(target=extract_frames, args=(folder,video_file,i,time_per_segment,case_id,gpu_id))
+            threads.append(t)
+            t.start()
 
-    for t in threads:
-        t.join()
+        for t in threads:
+            t.join()
 
-    groupJson(folder,video_file_origin,count_thread,case_id)
-    create_video_apperance(case_id,count_thread,folder)
-
+        groupJson(folder,video_file_origin,count_thread,case_id)
+        create_video_apperance(case_id,count_thread,folder)
+    else:
+        handleimage(folder,video_file_origin,case_id)
     return 
 
 def handle_multiplefile(listfile,thread,case_id):
