@@ -691,6 +691,7 @@ def handle_other_face():
         list_face_not_check = []
         list_inserted = []
         for i in range(len(list_vector_other)):
+      
             if(checkOnArr(list_face_not_check, face["face_id"]) == False):
                 print("list_face_not_check",list_face_not_check)
                 face = list_vector_other[i]
@@ -705,6 +706,9 @@ def handle_other_face():
                                 for face_change in list_vector_other:
                                     if(face_change["face_id"] == face_compare["face_id"]):
                                         face_change["face_id"] = face["face_id"]
+                print("length list_vector",len(list_vector))
+                similarity  = checkface(face['embedding'])
+                if(similarity > 0): face["face_id"] = 0
                 mydict = { 
                         "id":face["id"], 
                         "case_id": face["case_id"],
