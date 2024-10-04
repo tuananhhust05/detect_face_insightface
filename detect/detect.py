@@ -24,7 +24,11 @@ import pymongo
 import ffmpeg
 import random
 from threading import Thread
+from elasticsearch import Elasticsearch
 
+# Connect to Elasticsearch
+es = Elasticsearch("http://localhost:9200")
+index_name = "images"
 
 myclient = pymongo.MongoClient("mongodb://root:facex@192.168.50.10:27018")
 
@@ -117,14 +121,37 @@ def cosin(question, answer):
     cosine = torch.dot(question, answer) / (torch.norm(question) * torch.norm(answer))
     return cosine.item()  
 
-def checkface(vector):
-    global list_vector 
-    for ele in list_vector:
-        cos = cosin(ele,vector)
-        if(cos > weight_point):
-            return cos
-    return 0
+def search_with_cosine_similarity(query_vec):
+    search_query = {
+        "query": {
+            "script_score": {
+                "query": {
+                    "match_all": {}
+                },
+                "script": {
+                    "source": "cosineSimilarity(params.query_vector, 'content_vector')",
+                    "params": {
+                        "query_vector": query_vec
+                    }
+                }
+            }
+        },
+        "size": 1,
+    }
 
+    response = es.search(index=index_name, body=search_query)
+    return response
+
+def checkface(vector):
+    try:
+        response = search_with_cosine_similarity(vector)
+        for hit in response['hits']['hits']:
+            if(float(hit['_score']) > float(weight_point)):
+                return float(hit['_score'])
+        return 0 
+    except Exception as ex:
+        print(f"checkface: {ex}")
+        return 0 
 
 def current_date():
   format_date = "%Y-%m-%d %H:%M:%S"
@@ -212,7 +239,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 for face in faces:
                     if face["det_score"] > 0.5:
          
-                        similarity  = checkface(face['embedding'])
+                        similarity  = checkface(face['embedding'].tolist())
                         if(similarity > 0):
                         # if True:
                             count_face = count_face + 1 
@@ -273,6 +300,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                             global list_vector 
                             # if(len(list_vector) < 100):
                             list_vector.append(face['embedding'])
+                            insert_document(str(uuid.uuid4()), face['embedding'])
                         else:
                           
                             try:
@@ -671,7 +699,7 @@ def checkOnArr(arr,num):
 def insert_to_database(id,embedding,face_id,similarity_face,gender,age,proofImage,url,file,case_id):
     try:
         face_id_insert = face_id 
-        similarity  = checkface(embedding)
+        similarity  = checkface(embedding.tolist())
         if(similarity > 0): face_id_insert = 0
         mydict = { 
                 "id":id, 
@@ -739,6 +767,16 @@ def handle_other_face():
     except Exception as e:
         print("handle_other_face.....", e)
     
+def insert_document(doc_id, vector):
+    try:
+        doc = {
+            "title": "image",
+            "content_vector": vector
+        }
+        es.index(index=index_name, id=doc_id, body=doc)
+    except Exception as e:
+        print("insert_document",e)
+
 def handle_main(case_id, tracking_folder, target_folder):
     try:
         global list_vector
@@ -759,27 +797,8 @@ def handle_main(case_id, tracking_folder, target_folder):
                     for face in faces:
                         embedding_vector = face['embedding']
                         list_vector.append(embedding_vector)
-                        # check_insert_target = index.query(
-                        #     vector=embedding_vector.tolist(),
-                        #     top_k=1,
-                        #     include_metadata=True,
-                        #     include_values=True,
-                        #     filter={"case_id": case_id},
-                        # )
-                        # matches = check_insert_target["matches"]
-                        # if(len(matches) > 0):
-                        #     if(matches[0]["metadata"]["case_id"] == case_id):
-                        #        flag_target_folder = False
-                        # if(flag_target_folder == True):
-                        #     index.upsert(
-                        #         vectors=[
-                        #                 {
-                        #                     "id": str(uuid.uuid4()),
-                        #                     "values": embedding_vector,
-                        #                     "metadata": {"case_id":case_id }
-                        #                 },
-                        #             ]
-                        #     )
+                        insert_document(str(uuid.uuid4()), embedding_vector)
+                       
         list_file = []
         for path in os.listdir(tracking_folder):
             if os.path.isfile(os.path.join(tracking_folder, path)):
@@ -808,7 +827,16 @@ def handle_main(case_id, tracking_folder, target_folder):
             }
         })
     
-
+def delete_all_documents(index):
+    try:
+        response = es.delete_by_query(index=index, body={
+            "query": {
+                "match_all": {}
+            }
+        })
+        print(f"Deleted {response['deleted']} documents from index '{index}'.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 api = Flask(__name__)
 @api.route('/analyst', methods=["POST"])
@@ -836,7 +864,7 @@ def analyst():
     list_vector_other = []
     list_vector  = []
 
-
+    delete_all_documents("images")
     
     subprocess.run("cd /home/poc4a5000/detect/detect && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && rm -rf video_apperance && mkdir video_apperance", shell=True, check=True)
     
