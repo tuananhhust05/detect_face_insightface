@@ -668,7 +668,7 @@ def checkOnArr(arr,num):
             return True
     return False
 
-async def insert_to_database(data):
+def insert_to_database(data):
     try:
         similarity  = checkface(data['embedding'])
         if(similarity > 0): data["face_id"] = 0
@@ -742,7 +742,11 @@ def handle_other_face():
                 #         "face_id":face["face_id"]
                 #     }
                 # facematches.insert_one(mydict)
-                insert_to_database(face)
+                # insert_to_database(face)
+
+                t = threading.Thread(target=insert_to_database, args=(face))
+                t.start()
+                t.join()
                 list_inserted.append(face["id"])
 
         for face in list_vector_other:
