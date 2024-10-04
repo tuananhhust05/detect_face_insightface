@@ -659,7 +659,7 @@ def handle_other_face():
     try:
         face_id_max = 1 
         global list_vector_other
-        print("Start.... handle_other_face", list_vector_other)
+       
         for i in range(len(list_vector_other)):
             face = list_vector_other[i]
             if("face_id" not in face):
@@ -670,8 +670,9 @@ def handle_other_face():
                         if(cos > weight_point):
                             face_compare["face_id"] = face_id_max
                 face_id_max = face_id_max + 1
-        
+        print("Start.... handle_other_face", list_vector_other)
         for face in list_vector_other:
+            print("insert....")
             del(face["embedding"])
             facematches.insert_one(face)
     except Exception as e:
