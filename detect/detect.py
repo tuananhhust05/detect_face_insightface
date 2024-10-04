@@ -758,7 +758,7 @@ def handle_main(case_id, tracking_folder, target_folder):
             },{
                 "$set":{
                     "end":current_date(),
-                    "status":"groupping"
+                    "status":"grouping"
                 }
             })
             handle_other_face()
