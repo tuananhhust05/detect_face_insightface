@@ -209,6 +209,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
                 for face in faces:
                     if face["det_score"] > 0.5:
+                        sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+                        sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
+                        frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
                         similarity  = checkface(face['embedding'])
                         if(similarity > 0):
                         # if True:
@@ -236,7 +239,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                     os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
                                 if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
                                     os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
-
+                                
                                 cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
 
                                 top_left = (bbox[0], bbox[1])
