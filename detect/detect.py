@@ -286,11 +286,11 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
                             except Exception as e:
                                 print(f"Error saving frame: {e}")
-                            
+
                             mydict = { 
                                        "id":  str(uuid.uuid4()), 
                                        "case_id": case_id,
-                                       "face_id": 1,
+                                       "embedding": face['embedding'],
                                        "similarity_face":similarity,
                                        "gender":int(face['gender']),
                                        "age":int(face['age']),
@@ -301,7 +301,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                        "updatedAt":current_date(),
                                        "file":folder
                                     }
-                            facematches.insert_one(mydict)
+                            list_vector_other.append(mydict)
 
     for ele in array_em_result:
         ele["frame_count"] = frame_count
@@ -661,6 +661,26 @@ def handle_multiplefile(listfile,thread,case_id):
     
     return 
 
+def handle_other_face():
+    try:
+        face_id_max = 1 
+        global list_vector_other
+        for i in range(len(list_vector_other)):
+            face = list_vector_other[i]
+            if("face_id" not in face):
+                face["face_id"] = face_id_max 
+                for face_compare in list_vector_other:
+                    if(face_compare["id"] != face["id"]):
+                        cos = cosin(face["embedding"], face_compare["embedding"])
+                        if(cos > weight_point):
+                            face_compare["face_id"] = face_id_max
+                face_id_max = face_id_max + 1
+        
+        for face in list_vector_other:
+            facematches.insert_one(face)
+    except Exception as e:
+        print("handle_other_face.....", e)
+    
 def handle_main(case_id, tracking_folder, target_folder):
     try:
         global list_vector
@@ -709,7 +729,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                 list_file.append(full_path)
         if(len(list_file) > 0):
             handle_multiplefile(list_file,80,case_id)
-
+            handle_other_face()
         return 
     except Exception as e:
         cases.update_many({
