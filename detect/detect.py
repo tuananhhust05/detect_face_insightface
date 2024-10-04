@@ -680,14 +680,14 @@ def handle_other_face():
                 face_id_max = face_id_max + 1
        
         # compare to main again     
-        for face in list_vector_other:
-            flag = True 
-            for face_main in list_vector_widden:
-                if(flag == True ):
-                    cos = cosin(face["embedding"], face_main["embedding"])
-                    if(cos > weight_point):
-                        flag = False
-                        face["face_id"] = 0
+        # for face in list_vector_other:
+        #     flag = True 
+        #     for face_main in list_vector_widden:
+        #         if(flag == True ):
+        #             cos = cosin(face["embedding"], face_main["embedding"])
+        #             if(cos > weight_point):
+        #                 flag = False
+        #                 face["face_id"] = 0
 
         for face in list_vector_other:
             print("insert....")
