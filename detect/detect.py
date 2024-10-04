@@ -675,7 +675,7 @@ def handle_other_face():
                 for face_compare in list_vector_other:
                     if(face_compare["id"] != face["id"]):
                         cos = cosin(face["embedding"], face_compare["embedding"])
-                        if(cos > weight_point):
+                        if(cos > 0.4):
                             face_compare["face_id"] = face_id_max
                 face_id_max = face_id_max + 1
         
