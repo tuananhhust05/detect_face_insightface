@@ -685,6 +685,7 @@ def handle_other_face():
                             face_compare["face_id"] = face_id_max
                 face_id_max = face_id_max + 1
         list_face_not_check = []
+        list_inserted = []
         for i in range(len(list_vector_other)):
             if(checkOnArr(list_face_not_check, face["face_id"]) == False):
                 print("list_face_not_check",list_face_not_check)
@@ -692,6 +693,7 @@ def handle_other_face():
                 for face_compare in list_vector_other:
                     if(face_compare["face_id"] != face["face_id"]):
                         # if(checkOnArr(list_face_not_check, face_compare["face_id"]) == False):
+                            print("Caculation2...", i)
                             cos = cosin(face["embedding"], face_compare["embedding"])
                             if(cos > weight_point):
                                 if(checkOnArr(list_face_not_check, face_compare["face_id"]) == False):
@@ -699,6 +701,10 @@ def handle_other_face():
                                 for face_change in list_vector_other:
                                     if(face_change["face_id"] == face_compare["face_id"]):
                                         face_change["face_id"] = face["face_id"]
+                del(face["embedding"])
+                facematches.insert_one(face)
+                list_inserted.append(face["id"])
+
         # compare to main  again     
         # for face in list_vector_other:
         #     flag = True 
@@ -710,9 +716,10 @@ def handle_other_face():
         #                 face["face_id"] = 0
 
         for face in list_vector_other:
-            print("insert....")
-            del(face["embedding"])
-            facematches.insert_one(face)
+            if(checkOnArr(list_inserted, face["id"]) == False):
+                print("insert....")
+                del(face["embedding"])
+                facematches.insert_one(face)
     except Exception as e:
         print("handle_other_face.....", e)
     
