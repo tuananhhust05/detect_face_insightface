@@ -716,7 +716,8 @@ def handle_other_face():
                         "url":face["url"],
                         "createdAt":face["createdAt"],
                         "updatedAt":face["updatedAt"],
-                        "file":face["file"]
+                        "file":face["file"],
+                        "face_id":face["face_id"]
                     }
                 facematches.insert_one(mydict)
                 list_inserted.append(face["id"])
