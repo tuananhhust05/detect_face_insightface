@@ -44,7 +44,7 @@ print(f"Using device: {device}")
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
 index = pc.Index("detectcamera")
 
-weight_point = 0.3
+weight_point = 0.4
 time_per_frame_global = 0.5
 ctx_id = 0 if device.type == 'cuda' else -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
@@ -673,7 +673,7 @@ def handle_other_face():
                 for face_compare in list_vector_other:
                     if(face_compare["id"] != face["id"]):
                         cos = cosin(face["embedding"], face_compare["embedding"])
-                        if(cos > 0.4):
+                        if(cos > weight_point):
                             face_compare["face_id"] = face_id_max
                 face_id_max = face_id_max + 1
         
