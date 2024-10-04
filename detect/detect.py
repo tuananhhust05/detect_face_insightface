@@ -662,6 +662,12 @@ def handle_multiplefile(listfile,thread,case_id):
     
     return 
 
+def checkOnArr(arr,num):
+    for ele in arr:
+        if ele == num:
+            return True
+    return False
+
 def handle_other_face():
     try:
         face_id_max = 1 
@@ -678,16 +684,20 @@ def handle_other_face():
                         if(cos > weight_point):
                             face_compare["face_id"] = face_id_max
                 face_id_max = face_id_max + 1
+        list_face_not_check = []
         for i in range(len(list_vector_other)):
-            face = list_vector_other[i]
-            for face_compare in list_vector_other:
-                if(face_compare["face_id"] != face["face_id"]):
-                     cos = cosin(face["embedding"], face_compare["embedding"])
-                     print("caculation2 ....",i)
-                     if(cos > weight_point):
-                         for face_change in list_vector_other:
-                             if(face_change["face_id"] == face_compare["face_id"]):
-                                 face_change["face_id"] = face["face_id"]
+            if(checkOnArr(list_face_not_check, face["face_id"]) == False):
+                face = list_vector_other[i]
+                for face_compare in list_vector_other:
+                    if(face_compare["face_id"] != face["face_id"]):
+                        if(checkOnArr(list_face_not_check, face_compare["face_id"]) == False):
+                            cos = cosin(face["embedding"], face_compare["embedding"])
+                            print("caculation2 ....",i)
+                            if(cos > weight_point):
+                                list_face_not_check.append(face_compare["face_id"])
+                                for face_change in list_vector_other:
+                                    if(face_change["face_id"] == face_compare["face_id"]):
+                                        face_change["face_id"] = face["face_id"]
         # compare to main again     
         # for face in list_vector_other:
         #     flag = True 
