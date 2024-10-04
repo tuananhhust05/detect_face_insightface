@@ -55,4 +55,5 @@ response = search_with_cosine_similarity(index_name, query_vector)
 # Display the results
 print("Search Results:")
 for hit in response['hits']['hits']:
-    print(f"ID: {hit['_id']}, Score: {hit['_score']}, Title: {hit['_source']['title']}")
+    print(hit)
+    # print(f"ID: {hit['_id']}, Score: {hit['_score']}, Title: {hit['_source']['title']}")
