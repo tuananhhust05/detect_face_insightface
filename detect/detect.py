@@ -129,7 +129,7 @@ def search_with_cosine_similarity(query_vec):
                     "match_all": {}
                 },
                 "script": {
-                    "source": "cosineSimilarity(params.query_vector, 'content_vector')",
+                    "source": "cosineSimilarity(params.query_vector, 'content_vector') + 1",
                     "params": {
                         "query_vector": query_vec
                     }
@@ -144,9 +144,11 @@ def search_with_cosine_similarity(query_vec):
 
 def checkface(vector):
     try:
-        print("input check face ...", vector, type(vector))
+        # print("input check face ...", vector, type(vector))
         response = search_with_cosine_similarity(vector)
         for hit in response['hits']['hits']:
+            score = float(hit['_score'])
+            score = score - 1 
             if(float(hit['_score']) > float(weight_point)):
                 return float(hit['_score'])
         return 0 
