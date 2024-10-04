@@ -657,6 +657,7 @@ def handle_multiplefile(listfile,thread,case_id):
 
 def handle_other_face():
     try:
+        print("Start.... handle_other_face", list_vector_other)
         face_id_max = 1 
         global list_vector_other
         for i in range(len(list_vector_other)):
