@@ -671,7 +671,7 @@ def handle_other_face():
                         if(cos > weight_point):
                             face_compare["face_id"] = face_id_max
                 face_id_max = face_id_max + 1
-        print("Start.... handle_other_face", list_vector_other)
+        # print("Start.... handle_other_face", list_vector_other)
         for face in list_vector_other:
             print("insert....")
             del(face["embedding"])
@@ -730,6 +730,7 @@ def handle_main(case_id, tracking_folder, target_folder):
             handle_other_face()
         return 
     except Exception as e:
+        print("error handle_main",e)
         cases.update_many({
             "id":case_id
         },{
