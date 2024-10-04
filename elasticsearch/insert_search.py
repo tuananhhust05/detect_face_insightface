@@ -37,7 +37,7 @@ def search_with_cosine_similarity(index, query_vec):
                     "match_all": {}
                 },
                 "script": {
-                    "source": "cosineSimilarity(params.query_vector, 'content_vector') + 1.0",
+                    "source": "cosineSimilarity(params.query_vector, 'content_vector')",
                     "params": {
                         "query_vector": query_vector
                     }
