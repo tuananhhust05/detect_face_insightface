@@ -264,7 +264,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
                             try:
                                 bbox = [int(b) for b in face['bbox']]
-                                filename = f"{frame_count}_0_face.jpg"
+                                filename = f"{frame_count}_0_face.png"
                                 if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
                                     os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
                                 if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
@@ -272,6 +272,11 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 
                                 face_img = frame[bbox[1]:bbox[3], bbox[0]:bbox[2]]
                                 resized_image = cv2.resize(face_img, (120, 120), interpolation=cv2.INTER_LINEAR)
+                                kernel = np.array([[0, -1, 0], 
+                                                [-1, 5,-1], 
+                                                [0, -1, 0]])
+                                # Apply the sharpening filter
+                                sharpened = cv2.filter2D(resized_image, -1, kernel)
                                 cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', resized_image, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
 
                 
