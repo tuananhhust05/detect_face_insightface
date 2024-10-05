@@ -147,7 +147,7 @@ def checkface(vector):
         response = search_with_cosine_similarity(vector)
         for hit in response['hits']['hits']:
             score = float(hit['_score'])
-            score = score - 1 - 0.05
+            score = score - 1
             if( score > float(weight_point)):
                 return score
         return 0 
@@ -238,13 +238,27 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 # gpu_frame = denoiser.denoise(gpu_frame)
                 # frame = gpu_frame.download()
                 faces = list_model_analyst[gpu_id].get(frame)
-                
+                max_face = {}
+                max_similarity = 0
+                list_face_chosen = []
+                list_face_chosen_final = []
                 for face in faces:
                     if face["det_score"] > 0.5:
                         similarity  = checkface(face['embedding'].tolist())
                         print("similarity.....",similarity)
                         if(similarity > 0):
                         # if True:
+                            if(similarity >= max_similarity):
+                                max_face = face
+                                max_similarity = similarity 
+                            list_face_chosen.append(face)
+                if(len(list_face_chosen) > 1):
+                    for face in list_face_chosen:
+                        cos = cosin(face["embedding"], max_face["embedding"])
+                        if(cos > weight_point):
+                            list_face_chosen_final.append(face)
+                
+                for face in list_face_chosen_final:
                             count_face = count_face + 1 
                             sum_age = sum_age + int(face['age'])
                             sum_gender = sum_gender + int(face['gender'])
