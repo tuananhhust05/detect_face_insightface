@@ -52,7 +52,7 @@ weight_point = 0.4
 time_per_frame_global = 1
 ctx_id = 0 if device.type == 'cuda' else  -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
-app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
+app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.1, det_size=(640, 640))
 
 
 num_gpus = torch.cuda.device_count()
@@ -264,7 +264,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
                             try:
                                 bbox = [int(b) for b in face['bbox']]
-                                filename = f"{frame_count}_0_face.png"
+                                filename = f"{frame_count}_0_face.jpg"
                                 if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
                                     os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
                                 if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
