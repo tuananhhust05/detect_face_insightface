@@ -52,7 +52,7 @@ weight_point = 0.4
 time_per_frame_global = 1
 ctx_id = 0 if device.type == 'cuda' else  -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
-app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.1, det_size=(640, 640))
+app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
 
 
 num_gpus = torch.cuda.device_count()
