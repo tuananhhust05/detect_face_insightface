@@ -270,16 +270,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
                                     os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
                                 
-                                cropped_image = frame[bbox[1]:bbox[3], bbox[0]:bbox[2]]
-
-                                # Sharpening kernel
-                                kernel = np.array([[0, -1, 0], 
-                                                [-1, 5,-1], 
-                                                [0, -1, 0]])
-
-                                sharpened = cv2.filter2D(cropped_image, -1, kernel)
-
-                                cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', sharpened)
+                                
+                                cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]], [int(cv2.IMWRITE_JPEG_QUALITY), 100])
 
                                 top_left = (bbox[0], bbox[1])
                                 bottom_right = (bbox[2], bbox[3])
