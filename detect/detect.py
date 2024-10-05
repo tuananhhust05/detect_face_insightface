@@ -472,7 +472,7 @@ def groupJson(folder,video_file,count_thread,case_id):
     with open(f"final_result/{case_id}/{folder}/final_result.json", 'w') as f:
         json.dump(final_result, f, indent=4)
     
-    final_result["file"] = folder 
+    final_result["file"] = f"{folder}.mp4" 
     final_result["id"] = str(uuid.uuid4())
     final_result["case_id"] = case_id
     final_result["createdAt"] = current_date()
@@ -644,7 +644,7 @@ def trimvideo(folder,videofile,count_thread,case_id):
     
     return 
 
-def handleimage(folder,img_url,case_id):
+def handleimage(folder,img_url,case_id,file_extension):
    img = cv2.imread(img_url)
    facechecks = model.detect(img,input_size=(640, 640))
    if(len(facechecks) > 0):
@@ -680,7 +680,7 @@ def handleimage(folder,img_url,case_id):
                     ],
                     "gender":int(face['gender']),
                     "age":int(face['age']),
-                    "file":folder,
+                    "file":f"{folder}{file_extension}",
                     "id":str(uuid.uuid4()),
                     "case_id":case_id,
                     "createdAt":current_date(),
@@ -709,7 +709,7 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
         groupJson(folder,video_file_origin,count_thread,case_id)
         create_video_apperance(case_id,count_thread,folder)
     else:
-        handleimage(folder,video_file_origin,case_id)
+        handleimage(folder,video_file_origin,case_id,file_extension)
     return 
 
 def handle_multiplefile(listfile,thread,case_id):
