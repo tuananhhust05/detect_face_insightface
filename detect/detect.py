@@ -211,7 +211,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         
         if frame_count % frame_rate == 0:
             print("frame_count", frame_count)
-            frame_origin = frame 
+            
             # gpu_frame = cv2.cuda_GpuMat()
             # gpu_frame.upload(frame)
             # # Now the frame is on GPU memory. You can perform GPU-based processing here.
@@ -270,15 +270,16 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
                                     os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
                                 
-                                cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame_origin[bbox[1]:bbox[3], bbox[0]:bbox[2]])
 
                                 top_left = (bbox[0], bbox[1])
                                 bottom_right = (bbox[2], bbox[3])
                                 color = (255, 0, 0)
                                 thickness = 2
-                                cv2.rectangle(frame_origin, top_left, bottom_right, color, thickness)
+                                cv2.rectangle(frame, top_left, bottom_right, color, thickness)
                           
-                                cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame_origin)
+                                cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
+                                img = cv2.imread(f'./outputs/{case_id}/{folder}/{index_local}/{filename}')
+                                cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
                             except Exception as e:
                                 print(f"Error saving frame: {e}")
                             
@@ -314,7 +315,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
                                     os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
 
-                                cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame_origin[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+                                cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
 
                             except Exception as e:
                                 print(f"Error saving frame: {e}")
