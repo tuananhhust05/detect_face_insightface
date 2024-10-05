@@ -277,7 +277,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                                 [0, -1, 0]])
                                 # Apply the sharpening filter
                                 sharpened = cv2.filter2D(resized_image, -1, kernel)
-                                cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', resized_image, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+                                cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', sharpened, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
 
                 
                                 top_left = (bbox[0], bbox[1])
