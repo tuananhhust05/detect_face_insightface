@@ -868,6 +868,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                         embedding_vector = face['embedding']
                         list_vector.append(embedding_vector)
                         insert_document(str(uuid.uuid4()), embedding_vector)
+                        print("Có mặt ........")
                        
         list_file = []
         for path in os.listdir(tracking_folder):
