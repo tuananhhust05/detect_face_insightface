@@ -242,6 +242,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 max_similarity = 0
                 list_face_chosen = []
                 list_face_chosen_final = []
+                list_face_no_choose = []
                 for face in faces:
                     if face["det_score"] > 0.5:
                         similarity  = checkface(face['embedding'].tolist())
@@ -252,17 +253,20 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 max_face = face
                                 max_similarity = similarity 
                             list_face_chosen.append(face)
+                        else:
+                            list_face_no_choose.append(face)
                 if(len(list_face_chosen) > 1):
                     for face in list_face_chosen:
                         cos = cosin(face["embedding"], max_face["embedding"])
                         if(cos > weight_point):
                             list_face_chosen_final.append(face)
+                        else:
+                            list_face_no_choose.append(face)
                 
                 for face in list_face_chosen_final:
                             count_face = count_face + 1 
                             sum_age = sum_age + int(face['age'])
                             sum_gender = sum_gender + int(face['gender'])
- 
                             if len(array_em_result) == 0:
                                 array_em_result.append({
                                     "speaker": 0,
@@ -318,8 +322,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                             # if(len(list_vector) < 100):
                             list_vector.append(face['embedding'])
                             insert_document(str(uuid.uuid4()), face['embedding'])
-                        else:
-                          
+                        
+                for face in list_face_no_choose:
+                        # else:
                             try:
                                 bbox = [int(b) for b in face['bbox']]
                                 filename = f"{frame_count}_{str(uuid.uuid4())}_face.jpg"
