@@ -352,7 +352,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 array_em_result[0]["frames"].append(face_other["frame_count"])
             frame_count_current = face_other["frame_count"]
             filename = f"{frame_count_current}_0_face.jpg"
-            subprocess.run(f"mv {mydict["url"]} /home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}", shell=True, check=True)
+            url = face_other["url"]
+            subprocess.run(f"mv {url} /home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}", shell=True, check=True)
 
           
              
