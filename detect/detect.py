@@ -48,7 +48,7 @@ print(f"Using device: {device}")
 pc = Pinecone(api_key="be4036dc-2d41-4621-870d-f9c4e8958412")
 index = pc.Index("detectcamera")
 
-weight_point = 0.4
+weight_point = 0.5
 time_per_frame_global = 1
 ctx_id = 0 if device.type == 'cuda' else -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
@@ -202,6 +202,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     sum_age = 0 
     sum_gender = 0 
     count_face = 0 
+    list_face_other_in_thread = []
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -237,7 +238,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 # gpu_frame = denoiser.denoise(gpu_frame)
                 # frame = gpu_frame.download()
                 faces = list_model_analyst[gpu_id].get(frame)
-
+                
                 for face in faces:
                     if face["det_score"] > 0.5:
                         similarity  = checkface(face['embedding'].tolist())
@@ -317,7 +318,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
                             except Exception as e:
                                 print(f"Error saving frame: {e}")
-
+                            
                             mydict = { 
                                        "id":  str(uuid.uuid4()), 
                                        "case_id": case_id,
@@ -330,9 +331,30 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                        "url":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
                                        "createdAt":current_date(),
                                        "updatedAt":current_date(),
-                                       "file":folder
+                                       "file":folder,
+                                       "frame_count":frame_count
                                     }
+                            list_face_other_in_thread.append(mydict)
                             list_vector_other.append(mydict)
+    
+    # check in face_other again 
+    for face_other in list_face_other_in_thread:
+         similarity  = checkface(face_other['embedding'].tolist())
+         if(similarity > 0):
+            if len(array_em_result) == 0:
+                array_em_result.append({
+                    "speaker": 0,
+                    "gender":int(face_other['gender']),
+                    "age":int(face_other['age']),
+                    "frames": [face_other["frame_count"]],
+                })
+            else:
+                array_em_result[0]["frames"].append(face_other["frame_count"])
+            filename = f"{face_other["frame_count"]}_0_face.jpg"
+            subprocess.run(f"mv {mydict["url"]} /home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}", shell=True, check=True)
+
+          
+             
 
     for ele in array_em_result:
         ele["frame_count"] = frame_count
@@ -793,7 +815,7 @@ def handle_other_face():
                         # if(checkOnArr(list_face_not_check, face_compare["face_id"]) == False):
                             print("Caculation2...", i)
                             cos = cosin(face["embedding"], face_compare["embedding"])
-                            if(cos > ( weight_point+0.1 ) ):
+                            if(cos >  weight_point ):
                                 if(checkOnArr(list_face_not_check, face_compare["face_id"]) == False):
                                     list_face_not_check.append(face_compare["face_id"])
                                 for face_change in list_vector_other:
