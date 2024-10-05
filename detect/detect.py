@@ -54,6 +54,11 @@ ctx_id = 0 if device.type == 'cuda' else  -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.1, det_size=(640, 640))
 
+app_recognize2 = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
+app_recognize2.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
+
+app_recognize3 = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
+app_recognize3.prepare(ctx_id=ctx_id, det_thresh=0.5, det_size=(640, 640))
 
 num_gpus = torch.cuda.device_count()
 print(f"Number of GPUs available: {num_gpus}")
@@ -872,6 +877,12 @@ def handle_main(case_id, tracking_folder, target_folder):
                     img = cv2.imread(full_path)
                     print("full_path",full_path)
                     faces = app_recognize.get(img)
+                    if(len(faces) > 1):
+                        faces = app_recognize2.get(img)
+                    
+                    if(len(faces) > 1):
+                        faces = app_recognize3.get(img)
+
                     for face in faces:
                         embedding_vector = face['embedding']
                         list_vector.append(embedding_vector)
