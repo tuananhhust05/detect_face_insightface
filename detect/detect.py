@@ -56,6 +56,9 @@ app_recognize2.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
 app_recognize3 = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app_recognize3.prepare(ctx_id=ctx_id, det_thresh=0.5, det_size=(640, 640))
 
+appmain = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
+appmain.prepare(ctx_id=ctx_id, det_thresh=0.5, det_size=(640, 640))
+
 num_gpus = torch.cuda.device_count()
 print(f"Number of GPUs available: {num_gpus}")
 gpu_ids = list(range(num_gpus)) 
@@ -91,15 +94,15 @@ model = model_zoo.get_model(
 model.prepare(ctx_id=0, det_size=(640, 640))
 
 list_model_analyst = []
-for j in range(num_gpus):
-    providers = [
-        ('CUDAExecutionProvider', {
-            'device_id': j,
-        })
-    ]
-    app_ele = FaceAnalysis('buffalo_l',providers=providers)
-    app_ele.prepare(ctx_id=j,det_thresh=0.4, det_size=(640, 640))
-    list_model_analyst.append(app_ele)
+# for j in range(num_gpus):
+#     providers = [
+#         ('CUDAExecutionProvider', {
+#             'device_id': j,
+#         })
+#     ]
+#     app_ele = FaceAnalysis('buffalo_l',providers=providers)
+#     app_ele.prepare(ctx_id=j,det_thresh=0.4, det_size=(640, 640))
+#     list_model_analyst.append(app_ele)
 
 list_vector = []
 
@@ -240,7 +243,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
                 # gpu_frame = denoiser.denoise(gpu_frame)
                 # frame = gpu_frame.download()
-                faces = list_model_analyst[gpu_id].get(frame)
+                faces = appmain.get(frame)
                 
                 for face in faces:
                     if face["det_score"] > 0.5:
@@ -665,7 +668,7 @@ def handleimage(folder,img_url,case_id,file_extension):
    img = cv2.imread(img_url)
    facechecks = model.detect(img,input_size=(640, 640))
    if(len(facechecks) > 0):
-       faces = list_model_analyst[0].get(img)
+       faces = appmain.get(img)
        for face in faces:
          if face["det_score"] > 0.5:
             similarity  = checkface(face['embedding'].tolist())
