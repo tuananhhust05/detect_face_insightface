@@ -223,7 +223,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         
         if frame_count % frame_rate == 0:
             # print("frame_count", frame_count)
-            
+            faces = appmain.get(frame)
+            print("số face",len(faces))
             # gpu_frame = cv2.cuda_GpuMat()
             # gpu_frame.upload(frame)
             # # Now the frame is on GPU memory. You can perform GPU-based processing here.
@@ -234,141 +235,141 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             # sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
             # sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
             # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
-            facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
-            flagDetect = False
-            if(len(facechecks) > 0):
-                if(len(facechecks[0]) > 0):
-                    flagDetect = True
+            # facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
+            # flagDetect = False
+            # if(len(facechecks) > 0):
+            #     if(len(facechecks[0]) > 0):
+            #         flagDetect = True
             
-            if(flagDetect == True):
-                # gpu_frame = cv2.cuda_GpuMat()
-                # gpu_frame.upload(frame)
-                print("Có mặt......")
-                # sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-                # sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
-                # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
-                # gpu_frame = denoiser.denoise(gpu_frame)
-                # frame = gpu_frame.download()
+            # if(flagDetect == True):
+            #     # gpu_frame = cv2.cuda_GpuMat()
+            #     # gpu_frame.upload(frame)
+            #     print("Có mặt......")
+            #     # sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+            #     # sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
+            #     # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
+            #     # gpu_frame = denoiser.denoise(gpu_frame)
+            #     # frame = gpu_frame.download()
 
-                filename = f"{frame_count}_0_face.jpg"
-                if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
-                    os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
-                if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
-                    os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
-                cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
-                print("frame_count", frame_count, index_local)
+            #     filename = f"{frame_count}_0_face.jpg"
+            #     if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
+            #         os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
+            #     if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
+            #         os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
+            #     cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
+            #     print("frame_count", frame_count, index_local)
 
                 
-                faces = appmain.get(frame)
+            #     faces = appmain.get(frame)
                 
-                # for face in faces:
-                #     if face["det_score"] > 0.5:
-                #         similarity  = checkface(face['embedding'].tolist())
-                #         print("similarity.....",similarity)
-                #         if(similarity > 0):
-                #         # if True:
-                #             count_face = count_face + 1 
-                #             sum_age = sum_age + int(face['age'])
-                #             sum_gender = sum_gender + int(face['gender'])
+            #     # for face in faces:
+            #     #     if face["det_score"] > 0.5:
+            #     #         similarity  = checkface(face['embedding'].tolist())
+            #     #         print("similarity.....",similarity)
+            #     #         if(similarity > 0):
+            #     #         # if True:
+            #     #             count_face = count_face + 1 
+            #     #             sum_age = sum_age + int(face['age'])
+            #     #             sum_gender = sum_gender + int(face['gender'])
  
-                #             if len(array_em_result) == 0:
-                #                 array_em_result.append({
-                #                     "speaker": 0,
-                #                     "gender":int(face['gender']),
-                #                     "age":int(face['age']),
-                #                     "frames": [frame_count],
-                #                 })
-                #             else:
-                #                 if(count_face > 0):
-                #                     array_em_result[0]["age"] = sum_age / count_face 
-                #                     array_em_result[0]["gender"] = sum_gender / count_face 
-                #                     array_em_result[0]["frames"].append(frame_count)
+            #     #             if len(array_em_result) == 0:
+            #     #                 array_em_result.append({
+            #     #                     "speaker": 0,
+            #     #                     "gender":int(face['gender']),
+            #     #                     "age":int(face['age']),
+            #     #                     "frames": [frame_count],
+            #     #                 })
+            #     #             else:
+            #     #                 if(count_face > 0):
+            #     #                     array_em_result[0]["age"] = sum_age / count_face 
+            #     #                     array_em_result[0]["gender"] = sum_gender / count_face 
+            #     #                     array_em_result[0]["frames"].append(frame_count)
 
-                #             try:
-                #                 bbox = [int(b) for b in face['bbox']]
-                #                 filename = f"{frame_count}_0_face.jpg"
-                #                 if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
-                #                     os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
-                #                 if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
-                #                     os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
+            #     #             try:
+            #     #                 bbox = [int(b) for b in face['bbox']]
+            #     #                 filename = f"{frame_count}_0_face.jpg"
+            #     #                 if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
+            #     #                     os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
+            #     #                 if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
+            #     #                     os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
                                 
-                #                 face_img = frame[bbox[1]:bbox[3], bbox[0]:bbox[2]]
-                #                 resized_image = cv2.resize(face_img, (120, 120), interpolation=cv2.INTER_LINEAR)
-                #                 kernel = np.array([[0, -1, 0], 
-                #                                 [-1, 5,-1], 
-                #                                 [0, -1, 0]])
-                #                 # Apply the sharpening filter
-                #                 sharpened = cv2.filter2D(resized_image, -1, kernel)
-                #                 cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', sharpened, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+            #     #                 face_img = frame[bbox[1]:bbox[3], bbox[0]:bbox[2]]
+            #     #                 resized_image = cv2.resize(face_img, (120, 120), interpolation=cv2.INTER_LINEAR)
+            #     #                 kernel = np.array([[0, -1, 0], 
+            #     #                                 [-1, 5,-1], 
+            #     #                                 [0, -1, 0]])
+            #     #                 # Apply the sharpening filter
+            #     #                 sharpened = cv2.filter2D(resized_image, -1, kernel)
+            #     #                 cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', sharpened, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
 
                 
-                #                 top_left = (bbox[0], bbox[1])
-                #                 bottom_right = (bbox[2], bbox[3])
-                #                 color = (255, 0, 0)
-                #                 thickness = 2
-                #                 cv2.rectangle(frame, top_left, bottom_right, color, thickness)
+            #     #                 top_left = (bbox[0], bbox[1])
+            #     #                 bottom_right = (bbox[2], bbox[3])
+            #     #                 color = (255, 0, 0)
+            #     #                 thickness = 2
+            #     #                 cv2.rectangle(frame, top_left, bottom_right, color, thickness)
                           
-                #                 cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
-                #             except Exception as e:
-                #                 print(f"Error saving frame: {e}")
+            #     #                 cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
+            #     #             except Exception as e:
+            #     #                 print(f"Error saving frame: {e}")
                             
-                #             mydict = { 
-                #                        "id":  str(uuid.uuid4()), 
-                #                        "case_id": case_id,
-                #                        "face_id": 0,
-                #                        "similarity_face":similarity,
-                #                        "gender":int(face['gender']),
-                #                        "age":int(face['age']),
-                #                        "time_invideo":"",
-                #                        "proofImage":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
-                #                        "url":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
-                #                        "createdAt":current_date(),
-                #                        "updatedAt":current_date(),
-                #                        "file":folder
-                #                     }
-                #             facematches.insert_one(mydict)
-                #             mydict["embedding"] = face['embedding']
-                #             list_vector_widden.append(mydict)
+            #     #             mydict = { 
+            #     #                        "id":  str(uuid.uuid4()), 
+            #     #                        "case_id": case_id,
+            #     #                        "face_id": 0,
+            #     #                        "similarity_face":similarity,
+            #     #                        "gender":int(face['gender']),
+            #     #                        "age":int(face['age']),
+            #     #                        "time_invideo":"",
+            #     #                        "proofImage":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+            #     #                        "url":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+            #     #                        "createdAt":current_date(),
+            #     #                        "updatedAt":current_date(),
+            #     #                        "file":folder
+            #     #                     }
+            #     #             facematches.insert_one(mydict)
+            #     #             mydict["embedding"] = face['embedding']
+            #     #             list_vector_widden.append(mydict)
 
-                #             global list_vector 
+            #     #             global list_vector 
 
-                #             list_vector.append(face['embedding'])
+            #     #             list_vector.append(face['embedding'])
                             
                             
-                #             # insert elasticsearch 
-                #             insert_document(str(uuid.uuid4()), face['embedding'])
-                #         else:
+            #     #             # insert elasticsearch 
+            #     #             insert_document(str(uuid.uuid4()), face['embedding'])
+            #     #         else:
                           
-                #             try:
-                #                 bbox = [int(b) for b in face['bbox']]
-                #                 filename = f"{frame_count}_{str(uuid.uuid4())}_face.jpg"
-                #                 if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
-                #                     os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
-                #                 if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
-                #                     os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
+            #     #             try:
+            #     #                 bbox = [int(b) for b in face['bbox']]
+            #     #                 filename = f"{frame_count}_{str(uuid.uuid4())}_face.jpg"
+            #     #                 if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
+            #     #                     os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
+            #     #                 if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
+            #     #                     os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
 
-                #                 cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+            #     #                 cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
 
-                #             except Exception as e:
-                #                 print(f"Error saving frame: {e}")
+            #     #             except Exception as e:
+            #     #                 print(f"Error saving frame: {e}")
                             
-                #             mydict = { 
-                #                        "id":  str(uuid.uuid4()), 
-                #                        "case_id": case_id,
-                #                        "embedding": face['embedding'],
-                #                        "similarity_face":similarity,
-                #                        "gender":int(face['gender']),
-                #                        "age":int(face['age']),
-                #                        "time_invideo":"",
-                #                        "proofImage":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
-                #                        "url":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
-                #                        "createdAt":current_date(),
-                #                        "updatedAt":current_date(),
-                #                        "file":folder,
-                #                        "frame_count":frame_count
-                #                     }
-                #             list_face_other_in_thread.append(mydict)
-                #             list_vector_other.append(mydict)
+            #     #             mydict = { 
+            #     #                        "id":  str(uuid.uuid4()), 
+            #     #                        "case_id": case_id,
+            #     #                        "embedding": face['embedding'],
+            #     #                        "similarity_face":similarity,
+            #     #                        "gender":int(face['gender']),
+            #     #                        "age":int(face['age']),
+            #     #                        "time_invideo":"",
+            #     #                        "proofImage":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+            #     #                        "url":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+            #     #                        "createdAt":current_date(),
+            #     #                        "updatedAt":current_date(),
+            #     #                        "file":folder,
+            #     #                        "frame_count":frame_count
+            #     #                     }
+            #     #             list_face_other_in_thread.append(mydict)
+            #     #             list_vector_other.append(mydict)
     
     # check in face_other again 
     for face_other in list_face_other_in_thread:
