@@ -9,6 +9,6 @@ ctx_id = 0 if device.type == 'cuda' else  -1
 appmain = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 appmain.prepare(ctx_id=ctx_id, det_thresh=0.5, det_size=(640, 640))
 
-img = cv2.imread("outputs/db696a35-0043-4aba-a844-295e3432a118/4/672_0.jpg")
+img = cv2.imread("/home/ubuntua5000/detect/detect/outputs/db696a35-0043-4aba-a844-295e3432a118/ch02_20240904131243_000_640x640/4/672_0.jpg")
 
 faces = appmain.get(img)
