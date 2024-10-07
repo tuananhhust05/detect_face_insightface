@@ -245,7 +245,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 # gpu_frame = denoiser.denoise(gpu_frame)
                 # frame = gpu_frame.download()
 
-
+                filename = f"{frame_count}_0_face.jpg"
                 if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
                     os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
                 if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
