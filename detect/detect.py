@@ -223,8 +223,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         
         if frame_count % frame_rate == 0:
             # print("frame_count", frame_count)
-            faces = appmain.get(frame)
-            print("số face",len(faces))
+            
+            # print("số face",len(faces))
             # gpu_frame = cv2.cuda_GpuMat()
             # gpu_frame.upload(frame)
             # # Now the frame is on GPU memory. You can perform GPU-based processing here.
@@ -251,13 +251,17 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             #     # gpu_frame = denoiser.denoise(gpu_frame)
             #     # frame = gpu_frame.download()
 
-            #     filename = f"{frame_count}_0_face.jpg"
-            #     if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
-            #         os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
-            #     if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
-            #         os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
-            #     cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
-            #     print("frame_count", frame_count, index_local)
+            filename = f"{frame_count}_0_face.jpg"
+            if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
+                os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
+            if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
+                os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
+            cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
+            try:
+                faces = appmain.get(frame)
+            except Exception as ex:
+                print("error take image ....",f'./outputs/{case_id}/{folder}/{index_local}/{filename}')
+            print("frame_count", frame_count, index_local)
 
                 
             #     faces = appmain.get(frame)
