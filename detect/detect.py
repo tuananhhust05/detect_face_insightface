@@ -14,7 +14,6 @@ from insightface.model_zoo import model_zoo
 import subprocess
 import threading
 import matplotlib.pyplot as plt 
-from imutils.video import FPS 
 import uuid 
 import json
 from flask import Flask, jsonify, request
