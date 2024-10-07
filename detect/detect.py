@@ -898,7 +898,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                                 if(angle > 10):
                                     flag_straight = False
                         if(flag_straight == True):
-                            handle_sadtalker()
+                            handle_sadtalker("test")
                        
         list_file = []
         for path in os.listdir(tracking_folder):
