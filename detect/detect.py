@@ -29,7 +29,7 @@ import requests
 es = Elasticsearch("http://localhost:9200")
 index_name = "images"
 
-myclient = pymongo.MongoClient("mongodb://root:facex@192.168.50.10:27018")
+myclient = pymongo.MongoClient("mongodb://127.0.0.1:27017")
 
 mydb = myclient["faceX"]
 facematches = mydb["facematches"]
