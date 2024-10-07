@@ -259,7 +259,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 print("frame_count", frame_count, index_local)
 
                 
-                # faces = appmain.get(frame)
+                faces = appmain.get(frame)
                 
                 # for face in faces:
                 #     if face["det_score"] > 0.5:
