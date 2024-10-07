@@ -111,6 +111,8 @@ list_vector_other = []
 
 list_vector_widden = []
 
+list_vector_main_character = []  # for optimizing face
+
 def getduration(file):
     data = cv2.VideoCapture(file) 
     frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 
@@ -314,8 +316,14 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                             list_vector_widden.append(mydict)
 
                             global list_vector 
-                            # if(len(list_vector) < 100):
+                            global list_vector_main_character
+
                             list_vector.append(face['embedding'])
+                            
+                            # append to list main face for optimizing 
+                            list_vector_main_character.append(mydict)
+                            
+                            # insert elasticsearch 
                             insert_document(str(uuid.uuid4()), face['embedding'])
                         else:
                           
@@ -850,9 +858,20 @@ def handle_other_face():
                 print("insert....")
                 del(face["embedding"])
                 facematches.insert_one(face)
+
     except Exception as e:
         print("handle_other_face.....", e)
-    
+
+def handle_apperance_other_face():
+    list_apperance_other = []
+    for face in list_vector_other:
+        check = False
+        file = face["file"]
+        face_id = face["face_id"]
+        for apperance in list_apperance_other:
+           print("..")
+
+
 def insert_document(doc_id, vector):
     try:
         doc = {
