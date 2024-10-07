@@ -886,6 +886,8 @@ def handle_loop_optimize_picture(count_thread):
     for index in range(count_thread):
         t = threading.Thread(target=optimize_picture, args=(picture_queue,))
         t.start()
+        
+handle_loop_optimize_picture(20)
 
 def handle_apperance_other_face():
     list_apperance_other = []
