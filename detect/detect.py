@@ -870,23 +870,24 @@ def handle_other_face():
 def optimize_picture(queue):
     while True:
         picture = queue.get()
-        url = "http://gfpgan.192.168.50.231.nip.io/restore-file"
-        payload = json.dumps({
-           "file_path": picture["proofImage"]
-        })
-        headers = {
-          'Content-Type': 'application/json'
-        }
+        if ( ( picture != None) and ( "proofImage" in picture ) ) :
+            url = "http://gfpgan.192.168.50.231.nip.io/restore-file"
+            payload = json.dumps({
+            "file_path": picture["proofImage"]
+            })
+            headers = {
+            'Content-Type': 'application/json'
+            }
 
-        requests.request("POST", url, headers=headers, data=payload)
-        
-        print("optimized ...", picture["proofImage"])
+            requests.request("POST", url, headers=headers, data=payload)
+            
+            print("optimized ...", picture["proofImage"])
 
 def handle_loop_optimize_picture(count_thread):
     for index in range(count_thread):
         t = threading.Thread(target=optimize_picture, args=(picture_queue,))
         t.start()
-        
+
 handle_loop_optimize_picture(20)
 
 def handle_apperance_other_face():
