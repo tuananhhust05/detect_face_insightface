@@ -198,7 +198,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     list_result_ele = []
     frame_count = 0 
     duration = getduration(video_file)
-    cap2 = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
+    cap2 = cv2.VideoCapture(video_file)
     cap = VideoCaptureThreading(video_file)
 
     fps = cap2.get(cv2.CAP_PROP_FPS)
