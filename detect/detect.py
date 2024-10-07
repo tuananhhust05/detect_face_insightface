@@ -110,12 +110,16 @@ list_vector_widden = []
 picture_queue = Queue()  # for optimizing picture 
 
 def getduration(file):
-    data = cv2.VideoCapture(file) 
-    frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 
-    fps = data.get(cv2.CAP_PROP_FPS) 
-    data.release()
-    seconds = round(frames / fps) 
-    return seconds
+    try:
+        data = cv2.VideoCapture(file) 
+        frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 
+        fps = data.get(cv2.CAP_PROP_FPS) 
+        data.release()
+        seconds = round(frames / fps) 
+        return seconds
+    except Exception as ex:
+        print(f"getduration {ex}")
+        return 0 
 
 
 def cosin(question, answer):
@@ -194,6 +198,10 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     list_result_ele = []
     frame_count = 0 
     duration = getduration(video_file)
+
+    if(duration == 0):
+        return 
+    
     cap2 = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
     cap = VideoCaptureThreading(video_file)
 
@@ -932,7 +940,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                 full_path = f"{tracking_folder}/{path}"
                 list_file.append(full_path)
         if(len(list_file) > 0):
-            handle_multiplefile(list_file,40,case_id)
+            handle_multiplefile(list_file,20,case_id)
             cases.update_many({
                 "id":case_id
             },{
