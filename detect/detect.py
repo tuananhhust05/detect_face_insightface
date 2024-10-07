@@ -113,6 +113,7 @@ list_vector_widden = []
 picture_queue = Queue()  # for optimizing picture 
 
 def getduration(file):
+    print(file)
     data = cv2.VideoCapture(file) 
     frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 
     fps = data.get(cv2.CAP_PROP_FPS) 
