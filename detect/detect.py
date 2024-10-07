@@ -38,7 +38,7 @@ targets = mydb["targets"]
 videos = mydb["videos"]
 cases = mydb["cases"]
 
-dir_project = "/home/poc4a5000/detect/detect"
+dir_project = "/home/ubuntua5000/detect/detect"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
@@ -68,7 +68,7 @@ for j in range(num_gpus):
         })
     ]
     model_ele = model_zoo.get_model(
-        '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
+        '/home/ubuntua5000/.insightface/models/buffalo_l/det_10g.onnx',
         providers=providers
     )
     model_ele.prepare(ctx_id=j, det_size=(640, 640))
@@ -85,7 +85,7 @@ providers = [
 ]
 # Load the model with  providers
 model = model_zoo.get_model(
-    '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
+    '/home/ubuntua5000/.insightface/models/buffalo_l/det_10g.onnx',
     providers=providers
 )
 model.prepare(ctx_id=0, det_size=(640, 640))
@@ -301,8 +301,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                        "gender":int(face['gender']),
                                        "age":int(face['age']),
                                        "time_invideo":"",
-                                       "proofImage":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
-                                       "url":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                       "proofImage":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                       "url":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
                                        "createdAt":current_date(),
                                        "updatedAt":current_date(),
                                        "file":folder
@@ -341,8 +341,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                        "gender":int(face['gender']),
                                        "age":int(face['age']),
                                        "time_invideo":"",
-                                       "proofImage":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
-                                       "url":f'/home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                       "proofImage":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                       "url":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
                                        "createdAt":current_date(),
                                        "updatedAt":current_date(),
                                        "file":folder,
@@ -367,7 +367,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             frame_count_current = face_other["frame_count"]
             filename = f"{frame_count_current}_0_face.jpg"
             url = face_other["url"]
-            subprocess.run(f"mv {url} /home/poc4a5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}", shell=True, check=True)
+            subprocess.run(f"mv {url} /home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}", shell=True, check=True)
 
           
              
@@ -552,7 +552,7 @@ def create_video_apperance(case_id,thread_count,folder):
        subprocess.run(f"cp {output} {outputfinal}", shell=True, check=True)
     else:
        try: 
-            working_directory = f"/home/poc4a5000/detect/detect/video_apperance/{case_id}"
+            working_directory = f"/home/ubuntua5000/detect/detect/video_apperance/{case_id}"
             listmp4file = os.listdir(working_directory)
             # List of video files
             files = []
@@ -652,7 +652,7 @@ def trimvideo(folder,videofile,count_thread,case_id):
     threads = []
 
     for i in range(count_thread):
-        t = threading.Thread(target=cutvideo, args=(videofile,time_per_segment*i,time_per_segment,f"/home/poc4a5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4"))
+        t = threading.Thread(target=cutvideo, args=(videofile,time_per_segment*i,time_per_segment,f"/home/ubuntua5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4"))
         threads.append(t)
         t.start()
 
@@ -991,7 +991,7 @@ def analyst():
 
     delete_all_documents(index_name)
     
-    subprocess.run("cd /home/poc4a5000/detect/detect && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && rm -rf video_apperance && mkdir video_apperance", shell=True, check=True)
+    subprocess.run("cd /home/ubuntua5000/detect/detect && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && rm -rf video_apperance && mkdir video_apperance", shell=True, check=True)
     
     handle_main(case_id,tracking_folder,target_folder)
 
@@ -1017,7 +1017,7 @@ if __name__ == '__main__':
 
 
 # Run with  GPU
-# dir_path = r'/home/poc4a5000/facesx '
+# dir_path = r'/home/ubuntua5000/facesx '
 # list_file = []
 # for path in os.listdir(dir_path):
 #     # check if current path is a file
@@ -1036,7 +1036,7 @@ if __name__ == '__main__':
 # handle_multiplefile(list_file,50)
 # ch02_20240904040117.mp4
 # handle_multiplefile(["input/video8p.mp4"],50)
-# handle_main("123456-12", "/home/poc4a5000/detect/detect/example/tracking_folder", "/home/poc4a5000/detect/detect/example/target_folder")
+# handle_main("123456-12", "/home/ubuntua5000/detect/detect/example/tracking_folder", "/home/ubuntua5000/detect/detect/example/target_folder")
 # end_time = time.time()
 # f = open("end.txt", "a")
 # f.write(str(end_time))
