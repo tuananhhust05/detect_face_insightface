@@ -11,8 +11,6 @@ import time
 from numpy.linalg import norm
 from insightface.app import FaceAnalysis
 from insightface.model_zoo import model_zoo
-from pinecone import Pinecone
-from numba import jit, cuda
 import subprocess
 import threading
 import matplotlib.pyplot as plt 
@@ -25,6 +23,8 @@ import ffmpeg
 import random
 from threading import Thread
 from elasticsearch import Elasticsearch
+from queue import Queue
+import requests
 
 # Connect to Elasticsearch
 es = Elasticsearch("http://localhost:9200")
@@ -111,7 +111,7 @@ list_vector_other = []
 
 list_vector_widden = []
 
-list_vector_main_character = []  # for optimizing face
+picture_queue = Queue()  # for optimizing picture 
 
 def getduration(file):
     data = cv2.VideoCapture(file) 
@@ -316,12 +316,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                             list_vector_widden.append(mydict)
 
                             global list_vector 
-                            global list_vector_main_character
 
                             list_vector.append(face['embedding'])
                             
-                            # append to list main face for optimizing 
-                            list_vector_main_character.append(mydict)
                             
                             # insert elasticsearch 
                             insert_document(str(uuid.uuid4()), face['embedding'])
@@ -861,6 +858,15 @@ def handle_other_face():
 
     except Exception as e:
         print("handle_other_face.....", e)
+
+def optimize_picture(queue):
+    picture = queue.get()
+    print(picture)
+
+def handle_loop_optimize_picture(count_thread):
+    for index in range(count_thread):
+        t = threading.Thread(target=optimize_picture, args=(picture_queue,))
+        t.start()
 
 def handle_apperance_other_face():
     list_apperance_other = []
