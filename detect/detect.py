@@ -113,13 +113,17 @@ list_vector_widden = []
 picture_queue = Queue()  # for optimizing picture 
 
 def getduration(file):
-    print(file)
-    data = cv2.VideoCapture(file) 
-    frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 
-    fps = data.get(cv2.CAP_PROP_FPS) 
-    data.release()
-    seconds = round(frames / fps) 
-    return seconds
+    try:
+        data = cv2.VideoCapture(file) 
+        frames = data.get(cv2.CAP_PROP_FRAME_COUNT) 
+        fps = data.get(cv2.CAP_PROP_FPS) 
+        data.release()
+        seconds = round(frames / fps) 
+        return seconds
+    except Exception as ex:
+        print(ex)
+        print(f"getduration: {file}")
+        return 0 
 
 
 def cosin(question, answer):
