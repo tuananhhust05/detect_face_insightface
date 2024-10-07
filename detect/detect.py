@@ -611,10 +611,10 @@ def cutvideo(videofile,start,duration,output):
         .input(videofile, ss=start, hwaccel='cuda')
         .output(output, t=duration, c='copy')
         .run(overwrite_output=True)
-        # ffmpeg
-        #     .input(videofile, ss=start, hwaccel='cuda')
-        #     .output(output, t=duration, vf=f'scale=640:640', c:v='h264_nvenc', c:a='copy')
-        #     .run(overwrite_output=True)
+# ffmpeg
+#     .input(videofile, ss=start, hwaccel='cuda')
+#     .output(output, t=duration, vf=f'scale=640:640', c:v='h264_nvenc', c:a='copy')
+#     .run(overwrite_output=True)
     )
     # (
         # ffmpeg
@@ -815,7 +815,7 @@ def handle_other_face():
                     if(face_compare["id"] != face["id"]):
                         print("caculation ....",i)
                         cos = cosin(face["embedding"], face_compare["embedding"])
-                        if(cos > weight_point):
+                        if(cos > (weight_point-0.1) ):
                             face_compare["face_id"] = face_id_max
                 face_id_max = face_id_max + 1
         list_face_not_check = []
@@ -860,6 +860,9 @@ def insert_document(doc_id, vector):
     except Exception as e:
         print("insert_document",e)
 
+def handle_sadtalker(videopath):
+   return 
+
 def handle_main(case_id, tracking_folder, target_folder):
     try:
         global list_vector
@@ -888,6 +891,14 @@ def handle_main(case_id, tracking_folder, target_folder):
                         list_vector.append(embedding_vector)
                         insert_document(str(uuid.uuid4()), embedding_vector)
                         print("Có mặt ........")
+                        pose = face['pose']
+                        flag_straight = True
+                        for angle in pose:
+                           if(flag_straight == True):
+                                if(angle > 10):
+                                    flag_straight = False
+                        if(flag_straight == True):
+                            handle_sadtalker()
                        
         list_file = []
         for path in os.listdir(tracking_folder):
