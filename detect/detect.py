@@ -217,7 +217,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         frame_count += 1
         
         if frame_count % frame_rate == 0:
-            print("frame_count", frame_count)
+            # print("frame_count", frame_count)
             
             # gpu_frame = cv2.cuda_GpuMat()
             # gpu_frame.upload(frame)
@@ -251,7 +251,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
                     os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
                 cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
-                
+                print("frame_count", frame_count, index_local)
                 faces = appmain.get(frame)
                 
                 for face in faces:
