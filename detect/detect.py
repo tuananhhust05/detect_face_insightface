@@ -57,7 +57,7 @@ app_recognize3 = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
 app_recognize3.prepare(ctx_id=ctx_id, det_thresh=0.5, det_size=(640, 640))
 
 appmain = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
-appmain.prepare(ctx_id=ctx_id, det_thresh=0.5, det_size=(640, 640))
+appmain.prepare(ctx_id=2, det_size=(640, 640))
 
 num_gpus = torch.cuda.device_count()
 print(f"Number of GPUs available: {num_gpus}")
