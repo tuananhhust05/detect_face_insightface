@@ -48,16 +48,16 @@ weight_point = 0.45
 time_per_frame_global = 1
 ctx_id = 0 if device.type == 'cuda' else  -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
-app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.1, det_size=(640, 640))
+app_recognize.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
 
-app_recognize2 = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
-app_recognize2.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
+# app_recognize2 = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
+# app_recognize2.prepare(ctx_id=ctx_id, det_thresh=0.3, det_size=(640, 640))
 
-app_recognize3 = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
-app_recognize3.prepare(ctx_id=ctx_id, det_thresh=0.5, det_size=(640, 640))
+# app_recognize3 = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
+# app_recognize3.prepare(ctx_id=ctx_id, det_thresh=0.5, det_size=(640, 640))
 
 appmain = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
-appmain.prepare(ctx_id=2, det_size=(640, 640))
+appmain.prepare(ctx_id=2, det_thresh=0.5, det_size=(640, 640))
 
 num_gpus = torch.cuda.device_count()
 print(f"Number of GPUs available: {num_gpus}")
@@ -80,7 +80,7 @@ for j in range(num_gpus):
 # device = torch.device(f'cuda:{gpu_id}')
 
 # Define providers with device_id
-torch.cuda.set_device(0)
+# torch.cuda.set_device(0)
 providers = [
     ('CUDAExecutionProvider', {
         'device_id': 0,
@@ -256,8 +256,10 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
             if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
                 os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
+            cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
             try:
-                faces = appmain.get(frame)
+                img = cv2.imread(f'./outputs/{case_id}/{folder}/{index_local}/{filename}')
+                faces = appmain.get(img)
             except Exception as ex:
                 print("error take image ....",f'./outputs/{case_id}/{folder}/{index_local}/{filename}')
                 cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
@@ -928,11 +930,11 @@ def handle_main(case_id, tracking_folder, target_folder):
                     img = cv2.imread(full_path)
                     print("full_path",full_path)
                     faces = app_recognize.get(img)
-                    if(len(faces) > 1):
-                        faces = app_recognize2.get(img)
+                    # if(len(faces) > 1):
+                    #     faces = app_recognize2.get(img)
                     
-                    if(len(faces) > 1):
-                        faces = app_recognize3.get(img)
+                    # if(len(faces) > 1):
+                    #     faces = app_recognize3.get(img)
 
                     for face in faces:
                         embedding_vector = face['embedding']
