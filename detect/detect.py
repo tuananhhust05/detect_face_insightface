@@ -244,6 +244,14 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
                 # gpu_frame = denoiser.denoise(gpu_frame)
                 # frame = gpu_frame.download()
+
+
+                if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
+                    os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
+                if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
+                    os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
+                cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
+                
                 faces = appmain.get(frame)
                 
                 for face in faces:
