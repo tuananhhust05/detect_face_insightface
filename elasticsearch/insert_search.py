@@ -44,7 +44,6 @@ def search_with_cosine_similarity(index, query_vec):
                 }
             }
         },
-        "size": 1,
     }
 
     response = es.search(index=index, body=search_query)
