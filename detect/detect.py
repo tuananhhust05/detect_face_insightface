@@ -325,7 +325,16 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 list_vector.append(face['embedding'])
                                 
                                 # for optimizing picture 
-                                picture_queue.put(mydict)
+                                # picture_queue.put(mydict)
+                                url = "http://gfpgan.192.168.50.231.nip.io/restore-file"
+                                payload = json.dumps({
+                                "file_path": mydict["proofImage"]
+                                })
+                                headers = {
+                                'Content-Type': 'application/json'
+                                }
+
+                                requests.request("POST", url, headers=headers, data=payload)
 
                                 # insert elasticsearch 
                                 insert_document(str(uuid.uuid4()), face['embedding'])
@@ -867,29 +876,29 @@ def handle_other_face():
     except Exception as e:
         print("handle_other_face.....", e)
 
-def optimize_picture(queue):
-    while True:
-        print("take picture .....")
-        picture = queue.get()
-        # if ( ( picture != None) and ( "proofImage" in picture ) ) :
-        url = "http://gfpgan.192.168.50.231.nip.io/restore-file"
-        payload = json.dumps({
-        "file_path": picture["proofImage"]
-        })
-        headers = {
-        'Content-Type': 'application/json'
-        }
+# def optimize_picture(queue):
+#     while True:
+#         print("take picture .....")
+#         picture = queue.get()
+#         # if ( ( picture != None) and ( "proofImage" in picture ) ) :
+#         url = "http://gfpgan.192.168.50.231.nip.io/restore-file"
+#         payload = json.dumps({
+#         "file_path": picture["proofImage"]
+#         })
+#         headers = {
+#         'Content-Type': 'application/json'
+#         }
 
-        requests.request("POST", url, headers=headers, data=payload)
+#         requests.request("POST", url, headers=headers, data=payload)
         
-        print("optimized ...", picture["proofImage"])
+#         print("optimized ...", picture["proofImage"])
 
-def handle_loop_optimize_picture(count_thread):
-    for index in range(count_thread):
-        t = threading.Thread(target=optimize_picture, args=(picture_queue,))
-        t.start()
+# def handle_loop_optimize_picture(count_thread):
+#     for index in range(count_thread):
+#         t = threading.Thread(target=optimize_picture, args=(picture_queue,))
+#         t.start()
 
-handle_loop_optimize_picture(20)
+# handle_loop_optimize_picture(20)
 
 def handle_apperance_other_face():
     list_apperance_other = []
