@@ -930,7 +930,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                 full_path = f"{tracking_folder}/{path}"
                 list_file.append(full_path)
         if(len(list_file) > 0):
-            handle_multiplefile(list_file,80,case_id)
+            handle_multiplefile(list_file,40,case_id)
             cases.update_many({
                 "id":case_id
             },{
