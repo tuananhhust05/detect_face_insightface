@@ -607,17 +607,17 @@ def create_video_apperance(case_id,thread_count,folder):
     return 
 
 def cutvideo(videofile,start,duration,output):
-    # (
-    #     ffmpeg
-    #     .input(videofile, ss=start, hwaccel='cuda')
-    #     .output(output, t=duration, c='copy')
-    #     .run(overwrite_output=True)
-    #     # ffmpeg
-    #     #     .input(videofile, ss=start, hwaccel='cuda')
-    #     #     .output(output, t=duration, vf=f'scale=640:640', c:v='h264_nvenc', c:a='copy')
-    #     #     .run(overwrite_output=True)
-    # )
-    # sudo docker run --rm -it --gpus all -e NVIDIA_DRIVER_CAPABILITIES=video,compute,utility --volume $PWD:/workspace willprice/nvidia-ffmpeg -hwaccel cuda -ss 00:00:30 -i <input_video_name>.mp4 -vf "scale=426:240,pad=426:240:(ow-iw)/2:(oh-ih)/2" -to 00:01:30 -c:v h264_nvenc -preset fast -b:v 5M <output_video_name>.mp4
+    (
+        # ffmpeg
+        # .input(videofile, ss=start, hwaccel='cuda')
+        # .output(output, t=duration, c='copy')
+        # .run(overwrite_output=True)
+        ffmpeg
+            .input(videofile, ss=start, hwaccel='cuda')
+            .output(output, t=duration, vf=f'scale=640:640', vcodec='h264_nvenc', acodec='copy')
+            .run(overwrite_output=True)
+    )
+    
 
     # (
         # ffmpeg
