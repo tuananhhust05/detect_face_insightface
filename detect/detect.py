@@ -324,7 +324,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
                                 list_vector.append(face['embedding'])
                                 
-                                
+                                # for optimizing picture 
+                                picture_queue.put(mydict)
+
                                 # insert elasticsearch 
                                 insert_document(str(uuid.uuid4()), face['embedding'])
                             else:
@@ -866,8 +868,19 @@ def handle_other_face():
         print("handle_other_face.....", e)
 
 def optimize_picture(queue):
-    picture = queue.get()
-    print(picture)
+    while True:
+        picture = queue.get()
+        url = "http://gfpgan.192.168.50.231.nip.io/restore-file"
+        payload = json.dumps({
+           "file_path": picture["proofImage"]
+        })
+        headers = {
+          'Content-Type': 'application/json'
+        }
+
+        requests.request("POST", url, headers=headers, data=payload)
+        
+        print("optimized ...", picture["proofImage"])
 
 def handle_loop_optimize_picture(count_thread):
     for index in range(count_thread):
