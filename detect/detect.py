@@ -203,8 +203,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         return 
     
     cap2 = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
-    cap = VideoCaptureThreading(video_file)
-
+    # cap = VideoCaptureThreading(video_file)
+    cap = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
     fps = cap2.get(cv2.CAP_PROP_FPS)
     fps = ( fps + 1 ) // 1
     frame_rate = time_per_frame_global * fps 
@@ -887,7 +887,7 @@ def insert_document(doc_id, vector):
 
 def analyst_video_sadtalker(path, target_folder):
     try:
-        cap = VideoCaptureThreading(path)
+        cap = cv2.VideoCapture(path, cv2.CAP_FFMPEG)
         count = 0
         while True:
             ret, frame = cap.read()
@@ -895,16 +895,19 @@ def analyst_video_sadtalker(path, target_folder):
                 break
             count = count + 1 
             print("sadtalker ....", count)
-            faces = app_recognize3.get(frame)
-            if(len(faces) == 0):
-                faces = app_recognize2.get(frame)
-            if(len(faces) == 0):
-                faces = app_recognize.get(frame)
-            for face in faces:
-                embedding_vector = face['embedding']
-                insert_document(str(uuid.uuid4()), embedding_vector)
-                list_vector.append(embedding_vector)
-                cv2.imwrite(f'{target_folder}/{str(uuid.uuid4())}.jpg', frame)
+            try:
+                faces = app_recognize3.get(frame)
+                if(len(faces) == 0):
+                    faces = app_recognize2.get(frame)
+                if(len(faces) == 0):
+                    faces = app_recognize.get(frame)
+                for face in faces:
+                    embedding_vector = face['embedding']
+                    insert_document(str(uuid.uuid4()), embedding_vector)
+                    list_vector.append(embedding_vector)
+                    cv2.imwrite(f'{target_folder}/{str(uuid.uuid4())}.jpg', frame)
+            except Exception as e:
+                    print("error recognize sanalyst_video_sadtalker",e)
     except Exception as e:
         print("error analyst_video_sadtalker",e)
 
