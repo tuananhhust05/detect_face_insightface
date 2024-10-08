@@ -897,7 +897,7 @@ def handle_sadtalker(path,case_id):
     ]
     headers = {}
     response = requests.request("POST", url, headers=headers, data=payload, files=files)
-    print(response.json["videos"])
+    print(response.text["videos"])
     return 
 
 def handle_main(case_id, tracking_folder, target_folder):
