@@ -17,7 +17,7 @@ import requests
 # print(faces)
 url = "http://gfpgan.192.168.50.231.nip.io/restore-file"
 payload = json.dumps({
-    "file_path": "/home/ubuntua5000/detect/detect/faces/db696a35-0043-4aba-a844-295e3432a118/ch02_20240904131243_000_640x640/2/840_0_face.jpg"
+    "file_path": "/home/ubuntua5000/storage_facesx/faces/db696a35-0043-4aba-a844-295e3432a118/video_talkshow_low/14/93_0_face.jpg"
 })
 headers = {
 'Content-Type': 'application/json'
