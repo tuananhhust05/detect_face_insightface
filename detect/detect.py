@@ -887,6 +887,15 @@ def insert_document(doc_id, vector):
 
 def analyst_video_sadtalker(path, target_folder):
     try:
+        # redecode
+        origin_videofile = path
+        file = origin_videofile.split("/")[ len(origin_videofile.split("/")) -1 ]
+        name_file = file.split(".")[0]
+        new_name = f"{name_file}_tempt"
+        new_path = origin_videofile.replace(name_file,new_name)
+        print(f"ffmpeg -i {path} -c:v copy -c:a copy {new_path} -y && rm {path} && mv {new_path} {path}")
+        subprocess.run(f"ffmpeg -i {path} -c:v copy -c:a copy {new_path} -y && rm {path} && mv {new_path} {path}", shell=True, check=True)
+
         cap = cv2.VideoCapture(path, cv2.CAP_FFMPEG)
         count = 0
         while True:
@@ -896,11 +905,26 @@ def analyst_video_sadtalker(path, target_folder):
             count = count + 1 
             print("sadtalker ....", count)
             try:
-                faces = app_recognize3.get(frame)
+                faces = []
+                try:
+                    faces = app_recognize3.get(frame)
+                except Exception as e:
+                    print("fail recognize 1 ...")
+                    faces = []
+
                 if(len(faces) == 0):
-                    faces = app_recognize2.get(frame)
+                    try:
+                       faces = app_recognize2.get(frame)
+                    except Exception as e:
+                       print("fail recognize 2 ...")
+                       faces = []
+
                 if(len(faces) == 0):
-                    faces = app_recognize.get(frame)
+                    try:
+                       faces = app_recognize.get(frame)
+                    except Exception as e:
+                       print("fail recognize 3 ...")
+                       faces = []
                 for face in faces:
                     embedding_vector = face['embedding']
                     insert_document(str(uuid.uuid4()), embedding_vector)
