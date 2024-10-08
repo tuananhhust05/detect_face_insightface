@@ -821,7 +821,7 @@ def handle_other_face():
                         # if(checkOnArr(list_face_not_check, face_compare["face_id"]) == False):
                             print("Caculation2...", i)
                             cos = cosin(face["embedding"], face_compare["embedding"])
-                            if(cos > (weight_point - 0.1) ):
+                            if(cos > (weight_point - 0.15) ):
                                 if(checkOnArr(list_face_not_check, face_compare["face_id"]) == False):
                                     list_face_not_check.append(face_compare["face_id"])
                                 for face_change in list_vector_other:
