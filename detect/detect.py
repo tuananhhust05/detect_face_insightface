@@ -887,7 +887,7 @@ def insert_document(doc_id, vector):
 
 def analyst_video_sadtalker(path, target_folder):
     try:
-        cap = VideoCaptureThreading(path)
+        cap = cv2.VideoCapture(path, cv2.CAP_FFMPEG)
         count = 0
         while True:
             ret, frame = cap.read()
