@@ -627,7 +627,7 @@ def create_video_apperance(case_id,thread_count,folder):
 
     return 
 
-def cutvideo(videofile,start,duration,output):
+def cutvideo(videofile,start,duration,output,stt):
     # (
     #     ffmpeg
     #     .input(videofile, ss=start, hwaccel='cuda')
@@ -660,7 +660,8 @@ def cutvideo(videofile,start,duration,output):
         # .run(overwrite_output=True)
         # ffmpeg -ss 00:01:00 -i input.mp4 -t 00:02:00 -vf "scale=426:240" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k output.mp4
     # print(f"ffmpeg -hwaccel cuda -ss {start} -i {videofile} -vf \"scale=640:640,pad=640:640:(ow-iw)/2:(oh-ih)/2\" -t {duration} -c:v h264_nvenc -preset fast -b:v 5M {output} -y")
-    command = f"ffmpeg -hwaccel cuda -ss {start} -i {videofile} -vf \"scale=640:640,pad=640:640:(ow-iw)/2:(oh-ih)/2\" -t {duration} -c:v h264_nvenc -preset fast -b:v 5M {output} -y"
+    gpu_id = gpu_ids[stt % num_gpus]
+    command = f"ffmpeg -hwaccel cuda -hwaccel_device {gpu_id} -ss {start} -i {videofile} -vf \"scale=640:640,pad=640:640:(ow-iw)/2:(oh-ih)/2\" -t {duration} -c:v h264_nvenc -preset fast -b:v 5M {output} -y"
     flag = True 
     while(flag == True):
         try:
@@ -686,7 +687,7 @@ def trimvideo(folder,videofile,count_thread,case_id):
     print(f"ffmpeg -i {videofile} -c:v copy -c:a copy {new_path} -y && rm {videofile} && mv {new_path} {videofile}")
     subprocess.run(f"ffmpeg -i {videofile} -c:v copy -c:a copy {new_path} -y && rm {videofile} && mv {new_path} {videofile}", shell=True, check=True)
     for i in range(count_thread):
-        t = threading.Thread(target=cutvideo, args=(videofile,time_per_segment*i,time_per_segment,f"/home/ubuntua5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4"))
+        t = threading.Thread(target=cutvideo, args=(videofile,time_per_segment*i,time_per_segment,f"/home/ubuntua5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4",i))
         threads.append(t)
         t.start()
 
