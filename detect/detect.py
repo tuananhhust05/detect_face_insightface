@@ -660,15 +660,18 @@ def cutvideo(videofile,start,duration,output,stt):
         # .run(overwrite_output=True)
         # ffmpeg -ss 00:01:00 -i input.mp4 -t 00:02:00 -vf "scale=426:240" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k output.mp4
     # print(f"ffmpeg -hwaccel cuda -ss {start} -i {videofile} -vf \"scale=640:640,pad=640:640:(ow-iw)/2:(oh-ih)/2\" -t {duration} -c:v h264_nvenc -preset fast -b:v 5M {output} -y")
-    gpu_id = gpu_ids[stt % num_gpus]
-    command = f"ffmpeg -hwaccel cuda -hwaccel_device {gpu_id} -ss {start} -i {videofile} -vf \"scale=640:640,pad=640:640:(ow-iw)/2:(oh-ih)/2\" -t {duration} -c:v h264_nvenc -preset fast -b:v 5M {output} -y"
+   
     flag = True 
+    stt_handle = stt 
     while(flag == True):
         try:
+            gpu_id = gpu_ids[stt_handle % num_gpus]
+            command = f"ffmpeg -hwaccel cuda -hwaccel_device {gpu_id} -ss {start} -i {videofile} -vf \"scale=640:640,pad=640:640:(ow-iw)/2:(oh-ih)/2\" -t {duration} -c:v h264_nvenc -preset fast -b:v 5M {output} -y"
             subprocess.run(command, shell=True, check=True)
             flag = False
         except Exception as e:
             print("error",command)
+            stt_handle = stt_handle + 1 
             print(e)
 
     return 
@@ -980,7 +983,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                 full_path = f"{tracking_folder}/{path}"
                 list_file.append(full_path)
         if(len(list_file) > 0):
-            handle_multiplefile(list_file,15,case_id)
+            handle_multiplefile(list_file,25,case_id)
             cases.update_many({
                 "id":case_id
             },{
