@@ -672,6 +672,13 @@ def trimvideo(folder,videofile,count_thread,case_id):
     time_per_segment = duration / count_thread
     threads = []
 
+    origin_videofile = videofile
+    file = origin_videofile.split("/")[ len(str.split("/")) -1 ]
+    name_file = file.split(".")[0]
+    new_name = f"{name_file}_tempt"
+    new_path = origin_videofile.replace(name_file,new_name)
+
+    subprocess.run(f"ffmpeg -i {videofile} -c:v copy -c:a copy {new_path} -y && rm {videofile} && mv {new_path} {videofile}", shell=True, check=True)
     for i in range(count_thread):
         t = threading.Thread(target=cutvideo, args=(videofile,time_per_segment*i,time_per_segment,f"/home/ubuntua5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4"))
         threads.append(t)
