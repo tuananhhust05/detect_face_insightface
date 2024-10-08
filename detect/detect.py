@@ -44,7 +44,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 
-weight_point = 0.65
+weight_point = 0.45
 time_per_frame_global = 1
 ctx_id = 0 if device.type == 'cuda' else  -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
@@ -71,7 +71,7 @@ for j in range(num_gpus):
         '/home/ubuntua5000/.insightface/models/buffalo_l/det_10g.onnx',
         providers=providers
     )
-    model_ele.prepare(ctx_id=j, det_size=(640, 640))
+    model_ele.prepare(ctx_id=j, det_thresh=0.1, det_size=(640, 640))
     list_model_detect.append(model_ele)
 # torch.cuda.set_device(gpu_id)
 # device = torch.device(f'cuda:{gpu_id}')
@@ -88,7 +88,7 @@ model = model_zoo.get_model(                                 # Load the model wi
     '/home/ubuntua5000/.insightface/models/buffalo_l/det_10g.onnx',
     providers=providers
 )
-model.prepare(ctx_id=0, det_size=(640, 640))
+model.prepare(ctx_id=0, det_thresh=0.1, det_size=(640, 640))
 
 list_model_analyst = []
 for j in range(num_gpus):
@@ -98,7 +98,7 @@ for j in range(num_gpus):
         })
     ]
     app_ele = FaceAnalysis('buffalo_l',providers=providers)
-    app_ele.prepare(ctx_id=j,det_thresh=0.1, det_size=(640, 640))
+    app_ele.prepare(ctx_id=j,det_thresh=0.2, det_size=(640, 640))
     list_model_analyst.append(app_ele)
 
 list_vector = []
@@ -913,12 +913,12 @@ def handle_main(case_id, tracking_folder, target_folder):
                     full_path = f"{target_folder}/{path}"
                     img = cv2.imread(full_path)
                     print("full_path",full_path)
-                    faces = app_recognize.get(img)
-                    if(len(faces) > 1):
+                    faces = app_recognize3.get(img)
+                    if(len(faces) == 0):
                         faces = app_recognize2.get(img)
                     
-                    if(len(faces) > 1):
-                        faces = app_recognize3.get(img)
+                    if(len(faces) == 0):
+                        faces = app_recognize.get(img)
 
                     for face in faces:
                         embedding_vector = face['embedding']
