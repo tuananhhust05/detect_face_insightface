@@ -903,7 +903,7 @@ def analyst_video_sadtalker(path, target_folder):
             if not ret:
                 break
             count = count + 1 
-            print("sadtalker ....", count)
+            print("sadtalker ....", frame, count)
             try:
                 faces = []
                 try:
