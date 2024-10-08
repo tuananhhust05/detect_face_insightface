@@ -38,7 +38,7 @@ targets = mydb["targets"]
 videos = mydb["videos"]
 cases = mydb["cases"]
 
-dir_project = "/home/ubuntua5000/detect/detect"
+dir_project = "/home/ubuntua5000/storage_facesx"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
@@ -83,8 +83,8 @@ providers = [
         'device_id': 0,
     })
 ]
-# Load the model with  providers
-model = model_zoo.get_model(
+
+model = model_zoo.get_model(                                 # Load the model with  providers
     '/home/ubuntua5000/.insightface/models/buffalo_l/det_10g.onnx',
     providers=providers
 )
@@ -223,16 +223,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         if frame_count % frame_rate == 0:
             print("frame_count", frame_count)
             
-            # gpu_frame = cv2.cuda_GpuMat()
-            # gpu_frame.upload(frame)
-            # # Now the frame is on GPU memory. You can perform GPU-based processing here.
-            # # For demonstration: download it back to CPU and show it
-            # frame = gpu_frame.download()
-            # facechecks = model.detect(frame,input_size=(640, 640))
-            # frame = cv2.resize(frame, (640, 640))
-            # sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-            # sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
-            # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
             facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
             flagDetect = False
             if(len(facechecks) > 0):
@@ -240,14 +230,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                     flagDetect = True
             
             if(flagDetect == True):
-                # gpu_frame = cv2.cuda_GpuMat()
-                # gpu_frame.upload(frame)
                 print("Có mặt......")
-                # sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-                # sharpen = cv2.filter2D(frame, 0, sharpen_kernel)
-                # frame = cv2.fastNlMeansDenoisingColored(sharpen, None, 10, 10, 7, 21)
-                # gpu_frame = denoiser.denoise(gpu_frame)
-                # frame = gpu_frame.download()
                 try:
                     faces = list_model_analyst[gpu_id].get(frame)
                     
@@ -277,10 +260,10 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 try:
                                     bbox = [int(b) for b in face['bbox']]
                                     filename = f"{frame_count}_0_face.jpg"
-                                    if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
-                                        os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
-                                    if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
-                                        os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
+                                    if not os.path.exists(f"{dir_project}/faces/{case_id}/{folder}/{index_local}"):
+                                        os.makedirs(f"{dir_project}/faces/{case_id}/{folder}/{index_local}")
+                                    if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}"):
+                                        os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
                                     
                                     face_img = frame[bbox[1]:bbox[3], bbox[0]:bbox[2]]
                                     resized_image = cv2.resize(face_img, (120, 120), interpolation=cv2.INTER_LINEAR)
@@ -289,7 +272,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                                     [0, -1, 0]])
                                     # Apply the sharpening filter
                                     sharpened = cv2.filter2D(resized_image, -1, kernel)
-                                    cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', sharpened, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+                                    cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', sharpened, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
 
                     
                                     top_left = (bbox[0], bbox[1])
@@ -298,7 +281,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                     thickness = 2
                                     cv2.rectangle(frame, top_left, bottom_right, color, thickness)
                             
-                                    cv2.imwrite(f'./outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
+                                    cv2.imwrite(f'{dir_project}/outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
                                 except Exception as e:
                                     print(f"Error saving frame: {e}")
                                 
@@ -310,8 +293,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                         "gender":int(face['gender']),
                                         "age":int(face['age']),
                                         "time_invideo":"",
-                                        "proofImage":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
-                                        "url":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                        "proofImage":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                        "url":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
                                         "createdAt":current_date(),
                                         "updatedAt":current_date(),
                                         "file":folder
@@ -328,10 +311,10 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 # picture_queue.put(mydict)
                                 url = "http://gfpgan.192.168.50.231.nip.io/restore-file"
                                 payload = json.dumps({
-                                "file_path": mydict["proofImage"]
+                                   "file_path": mydict["proofImage"]
                                 })
                                 headers = {
-                                'Content-Type': 'application/json'
+                                    'Content-Type': 'application/json'
                                 }
 
                                 requests.request("POST", url, headers=headers, data=payload)
@@ -343,12 +326,12 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 try:
                                     bbox = [int(b) for b in face['bbox']]
                                     filename = f"{frame_count}_{str(uuid.uuid4())}_face.jpg"
-                                    if not os.path.exists(f"./faces/{case_id}/{folder}/{index_local}"):
-                                        os.makedirs(f"./faces/{case_id}/{folder}/{index_local}")
-                                    if not os.path.exists(f"./outputs/{case_id}/{folder}/{index_local}"):
-                                        os.makedirs(f"./outputs/{case_id}/{folder}/{index_local}")
+                                    if not os.path.exists(f"{dir_project}/faces/{case_id}/{folder}/{index_local}"):
+                                        os.makedirs(f"{dir_project}/faces/{case_id}/{folder}/{index_local}")
+                                    if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}"):
+                                        os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
 
-                                    cv2.imwrite(f'./faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+                                    cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
 
                                 except Exception as e:
                                     print(f"Error saving frame: {e}")
@@ -361,8 +344,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                         "gender":int(face['gender']),
                                         "age":int(face['age']),
                                         "time_invideo":"",
-                                        "proofImage":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
-                                        "url":f'/home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                        "proofImage":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                        "url":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
                                         "createdAt":current_date(),
                                         "updatedAt":current_date(),
                                         "file":folder,
@@ -388,7 +371,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             frame_count_current = face_other["frame_count"]
             filename = f"{frame_count_current}_0_face.jpg"
             url = face_other["url"]
-            subprocess.run(f"mv {url} /home/ubuntua5000/detect/detect/faces/{case_id}/{folder}/{index_local}/{filename}", shell=True, check=True)
+            subprocess.run(f"mv {url} {dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}", shell=True, check=True)
 
           
              
@@ -398,10 +381,10 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         ele["duration"] = duration
         ele["frame_rate"] = frame_rate
         
-    with open(f"datas/{case_id}/{folder}/{index_local}.json", 'w') as f:
+    with open(f"{dir_project}/datas/{case_id}/{folder}/{index_local}.json", 'w') as f:
        json.dump(array_em_result, f, indent=4)
     
-    with open(f"datas/{case_id}/{folder}/{index_local}.json", 'r') as file:
+    with open(f"{dir_project}/datas/{case_id}/{folder}/{index_local}.json", 'r') as file:
         data = json.load(file)
         for em in data:
             frame_rate = em["frame_rate"] 
@@ -447,7 +430,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             })
 
 
-    with open(f"results/{case_id}/{folder}/{index_local}.json", 'w') as f:
+    with open(f"{dir_project}/results/{case_id}/{folder}/{index_local}.json", 'w') as f:
         json.dump(list_result_ele, f, indent=4)
     
 
@@ -464,8 +447,8 @@ def groupJson(folder,video_file,count_thread,case_id):
     time_per_segment = duration / count_thread
 
     list_stt = []
-    for path in os.listdir(f"results/{case_id}/{folder}"):
-        if os.path.isfile(os.path.join(f"results/{case_id}/{folder}", path)):
+    for path in os.listdir(f"{dir_project}/results/{case_id}/{folder}"):
+        if os.path.isfile(os.path.join(f"{dir_project}/results/{case_id}/{folder}", path)):
             stt = int(path.split(".")[0])
             list_stt.append(stt)
            
@@ -474,7 +457,7 @@ def groupJson(folder,video_file,count_thread,case_id):
     sum_gender = 0 
     count_face = 0 
     for stt in list_stt:
-        with open(f"results/{case_id}/{folder}/{stt}.json", 'r') as file:
+        with open(f"{dir_project}/results/{case_id}/{folder}/{stt}.json", 'r') as file:
            data = json.load(file)
            if(len(data) > 0):
                 data = data[0]
@@ -504,7 +487,7 @@ def groupJson(folder,video_file,count_thread,case_id):
             }
         )
 
-    with open(f"final_result/{case_id}/{folder}/final_result.json", 'w') as f:
+    with open(f"{dir_project}/final_result/{case_id}/{folder}/final_result.json", 'w') as f:
         json.dump(final_result, f, indent=4)
     
     final_result["file"] = f"{folder}.mp4" 
@@ -573,7 +556,7 @@ def create_video_apperance(case_id,thread_count,folder):
        subprocess.run(f"cp {output} {outputfinal}", shell=True, check=True)
     else:
        try: 
-            working_directory = f"/home/ubuntua5000/detect/detect/video_apperance/{case_id}"
+            working_directory = f"{dir_project}/video_apperance/{case_id}"
             listmp4file = os.listdir(working_directory)
             # List of video files
             files = []
@@ -616,8 +599,6 @@ def create_video_apperance(case_id,thread_count,folder):
           
        except Exception as e:
             print("error merge file",e)
-           
-    # subprocess.run(f"rm -rf {output}", shell=True, check=True)
 
     videos.insert_one({
         "id":str(uuid.uuid4()),
@@ -628,39 +609,6 @@ def create_video_apperance(case_id,thread_count,folder):
     return 
 
 def cutvideo(videofile,start,duration,output,stt):
-    # (
-    #     ffmpeg
-    #     .input(videofile, ss=start, hwaccel='cuda')
-    #     .output(output, t=duration, c='copy')
-    #     .run(overwrite_output=True)
-    #     # ffmpeg
-    #     #     .input(videofile, ss=start, hwaccel='cuda')
-    #     #     .output(output, t=duration, vf=f'scale=640:640', vcodec='h264_nvenc', acodec='copy')
-    #     #     .run(overwrite_output=True)
-    # )
-    
-
-    # (
-        # ffmpeg
-        # .input(videofile, ss=start, hwaccel='cuda')
-        # .output(output, t=duration, vf=f'scale=640:640', vcodec='h264_nvenc', acodec='copy')
-        # .run(overwrite_output=True)
-        # ffmpeg
-        # .input(videofile, ss=start)
-        # .filter('scale', 640, 640)
-        # .output(
-        #     output,
-        #     t=duration,
-        #     vcodec='h264_nvenc',
-        #     preset='fast',
-        #     video_bitrate='5M',
-        #     acodec='aac',
-        #     audio_bitrate='128k'
-        # )
-        # .run(overwrite_output=True)
-        # ffmpeg -ss 00:01:00 -i input.mp4 -t 00:02:00 -vf "scale=426:240" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k output.mp4
-    # print(f"ffmpeg -hwaccel  cuda -ss {start} -i {videofile} -vf \"scale=640:640,pad=640:640:(ow-iw)/2:(oh-ih)/2\" -t {duration} -c:v h264_nvenc -preset fast -b:v 5M {output} -y")
-   
     flag = True 
     stt_handle = stt 
     while(flag == True):
@@ -687,10 +635,11 @@ def trimvideo(folder,videofile,count_thread,case_id):
     new_name = f"{name_file}_tempt"
     new_path = origin_videofile.replace(name_file,new_name)
     
+    # pre redecode 
     print(f"ffmpeg -i {videofile} -c:v copy -c:a copy {new_path} -y && rm {videofile} && mv {new_path} {videofile}")
     subprocess.run(f"ffmpeg -i {videofile} -c:v copy -c:a copy {new_path} -y && rm {videofile} && mv {new_path} {videofile}", shell=True, check=True)
     for i in range(count_thread):
-        t = threading.Thread(target=cutvideo, args=(videofile,time_per_segment*i,time_per_segment,f"/home/ubuntua5000/detect/detect/videos/{case_id}/{folder}/{i}.mp4",i))
+        t = threading.Thread(target=cutvideo, args=(videofile,time_per_segment*i,time_per_segment,f"/home/ubuntua5000/storage_facesxss/videos/{case_id}/{folder}/{i}.mp4",i))
         threads.append(t)
         t.start()
 
@@ -711,19 +660,19 @@ def handleimage(folder,img_url,case_id,file_extension):
                 bbox = [int(b) for b in face['bbox']]
                 filename = f"0_0_face.jpg"
 
-                if not os.path.exists(f"./faces/{case_id}/{folder}/1"):
-                    os.makedirs(f"./faces/{case_id}/{folder}/1")
-                if not os.path.exists(f"./outputs/{case_id}/{folder}/1"):
-                    os.makedirs(f"./outputs/{case_id}/{folder}/1")
+                if not os.path.exists(f"{dir_project}/faces/{case_id}/{folder}/1"):
+                    os.makedirs(f"{dir_project}/faces/{case_id}/{folder}/1")
+                if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/1"):
+                    os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/1")
                 
-                cv2.imwrite(f'./faces/{case_id}/{folder}/1/{filename}', img[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+                cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/1/{filename}', img[bbox[1]:bbox[3], bbox[0]:bbox[2]])
 
                 top_left = (bbox[0], bbox[1])
                 bottom_right = (bbox[2], bbox[3])
                 color = (255, 0, 0)
                 thickness = 2
                 cv2.rectangle(img, top_left, bottom_right, color, thickness)
-                cv2.imwrite(f'./outputs/{case_id}/{folder}/1/{filename}', img)
+                cv2.imwrite(f'{dir_project}/outputs/{case_id}/{folder}/1/{filename}', img)
                 appearances.insert_one({
                     "time":[
                         {
@@ -750,7 +699,7 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
 
         trimvideo(folder,video_file_origin,count_thread,case_id)
 
-        video_files = [f"videos/{case_id}/{folder}/{i}.mp4" for i in range(count_thread)]  
+        video_files = [f"{dir_project}/videos/{case_id}/{folder}/{i}.mp4" for i in range(count_thread)]  
         threads = []
         for i, video_file in enumerate(video_files):
             gpu_id = gpu_ids[i % num_gpus]
@@ -773,41 +722,41 @@ def handle_multiplefile(listfile,thread,case_id):
         if "/" in file_name: 
             file_name = file_name.split("/")[len(file_name.split("/")) - 1]
         
-        if not os.path.exists(f"./faces/{case_id}"):
-            os.makedirs(f"./faces/{case_id}")
+        if not os.path.exists(f"{dir_project}/faces/{case_id}"):
+            os.makedirs(f"{dir_project}/faces/{case_id}")
 
-        if not os.path.exists(f"./faces/{case_id}/{file_name}"):
-            os.makedirs(f"./faces/{case_id}/{file_name}")
+        if not os.path.exists(f"{dir_project}/faces/{case_id}/{file_name}"):
+            os.makedirs(f"{dir_project}/faces/{case_id}/{file_name}")
         
-        if not os.path.exists(f"./outputs/{case_id}"):
-            os.makedirs(f"./outputs/{case_id}")
+        if not os.path.exists(f"{dir_project}/outputs/{case_id}"):
+            os.makedirs(f"{dir_project}/outputs/{case_id}")
 
-        if not os.path.exists(f"./outputs/{case_id}/{file_name}"):
-            os.makedirs(f"./outputs/{case_id}/{file_name}")
+        if not os.path.exists(f"{dir_project}/outputs/{case_id}/{file_name}"):
+            os.makedirs(f"{dir_project}/outputs/{case_id}/{file_name}")
         
-        if not os.path.exists(f"./videos/{case_id}"):
-            os.makedirs(f"./videos/{case_id}")
+        if not os.path.exists(f"{dir_project}/videos/{case_id}"):
+            os.makedirs(f"{dir_project}/videos/{case_id}")
 
-        if not os.path.exists(f"./videos/{case_id}/{file_name}"):
-            os.makedirs(f"./videos/{case_id}/{file_name}")
+        if not os.path.exists(f"{dir_project}/videos/{case_id}/{file_name}"):
+            os.makedirs(f"{dir_project}/videos/{case_id}/{file_name}")
         
-        if not os.path.exists(f"./datas/{case_id}"):
-            os.makedirs(f"./datas/{case_id}")
+        if not os.path.exists(f"{dir_project}/datas/{case_id}"):
+            os.makedirs(f"{dir_project}/datas/{case_id}")
 
-        if not os.path.exists(f"./datas/{case_id}/{file_name}"):
-            os.makedirs(f"./datas/{case_id}/{file_name}")
+        if not os.path.exists(f"{dir_project}/datas/{case_id}/{file_name}"):
+            os.makedirs(f"{dir_project}/datas/{case_id}/{file_name}")
        
-        if not os.path.exists(f"./results/{case_id}"):
-            os.makedirs(f"./results/{case_id}")
+        if not os.path.exists(f"{dir_project}/results/{case_id}"):
+            os.makedirs(f"{dir_project}/results/{case_id}")
 
-        if not os.path.exists(f"./results/{case_id}/{file_name}"):
-            os.makedirs(f"./results/{case_id}/{file_name}")
+        if not os.path.exists(f"{dir_project}/results/{case_id}/{file_name}"):
+            os.makedirs(f"{dir_project}/results/{case_id}/{file_name}")
         
-        if not os.path.exists(f"./final_result/{case_id}"):
-            os.makedirs(f"./final_result/{case_id}")
+        if not os.path.exists(f"{dir_project}/final_result/{case_id}"):
+            os.makedirs(f"{dir_project}/final_result/{case_id}")
 
-        if not os.path.exists(f"./final_result/{case_id}/{file_name}"):
-            os.makedirs(f"./final_result/{case_id}/{file_name}")
+        if not os.path.exists(f"{dir_project}/final_result/{case_id}/{file_name}"):
+            os.makedirs(f"{dir_project}/final_result/{case_id}/{file_name}")
     
         folder = file_name
         process_videos(folder,file,thread,case_id)
@@ -944,10 +893,10 @@ def handle_main(case_id, tracking_folder, target_folder):
     try:
         global list_vector
 
-        if not os.path.exists(f"./video_apperance"):
-            os.makedirs(f"./video_apperance")
-        if not os.path.exists(f"./video_apperance/{case_id}"):
-            os.makedirs(f"./video_apperance/{case_id}")
+        if not os.path.exists(f"{dir_project}/video_apperance"):
+            os.makedirs(f"{dir_project}/video_apperance")
+        if not os.path.exists(f"{dir_project}/video_apperance/{case_id}"):
+            os.makedirs(f"{dir_project}/video_apperance/{case_id}")
 
         flag_target_folder = True
         for path in os.listdir(target_folder):
@@ -1044,15 +993,13 @@ def analyst():
 
     delete_all_documents(index_name)
     
-    subprocess.run("cd /home/ubuntua5000/detect/detect && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && rm -rf video_apperance && mkdir video_apperance", shell=True, check=True)
-    
+    subprocess.run(f"cd {dir_project} && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && rm -rf video_apperance && mkdir video_apperance", shell=True, check=True)
     handle_main(case_id,tracking_folder,target_folder)
 
     cases.update_many({
         "id":case_id
     },{
         "$set":{
-            # "end":current_date(),
             "status":"completed"
         }
     })
@@ -1067,31 +1014,3 @@ if __name__ == '__main__':
 
 
 
-
-
-# Run with  GPU
-# dir_path = r'/home/ubuntua5000/facesx '
-# list_file = []
-# for path in os.listdir(dir_path):
-#     # check if current path is a file
-#     if os.path.isfile(os.path.join(dir_path, path)):
-#         full_path = f"{dir_path}/{path}"
-#         list_file.append(full_path)
-# # print(list_file)
-
-
-# start_time = time.time()
-# print("Start ......",str(start_time))
-# f = open("start.txt", "a")
-# f.write(str(start_time))
-
-# handle_multiplefile(list_file[6:],50 )
-# handle_multiplefile(list_file,50)
-# ch02_20240904040117.mp4
-# handle_multiplefile(["input/video8p.mp4"],50)
-# handle_main("123456-12", "/home/ubuntua5000/detect/detect/example/tracking_folder", "/home/ubuntua5000/detect/detect/example/target_folder")
-# end_time = time.time()
-# f = open("end.txt", "a")
-# f.write(str(end_time))
-
-# print(f"Total execution time: {end_time - start_time}")
