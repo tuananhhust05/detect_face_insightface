@@ -1,7 +1,7 @@
 import json
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-app = Flask(__name__,static_url_path='/home/ubuntua5000/storage_facesx', 
+app = Flask(__name__,static_url_path='', 
             static_folder='/home/ubuntua5000/storage_facesx')
 CORS(app)
 # from detect.detect import handle_main
