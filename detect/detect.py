@@ -893,8 +893,8 @@ def handle_sadtalker(path):
       ('files',('jackma.jfif',open( path ,'rb'),'application/octet-stream'))
     ]
     headers = {}
-    # response = requests.request("POST", url, headers=headers, data=payload, files=files)
-    # print(response.text)
+    response = requests.request("POST", url, headers=headers, data=payload, files=files)
+    print(response.text)
     return 
 
 def handle_main(case_id, tracking_folder, target_folder):
