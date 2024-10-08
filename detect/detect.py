@@ -673,7 +673,7 @@ def trimvideo(folder,videofile,count_thread,case_id):
     threads = []
 
     origin_videofile = videofile
-    file = origin_videofile.split("/")[ len(str.split("/")) -1 ]
+    file = origin_videofile.split("/")[ len(origin_videofile.split("/")) -1 ]
     name_file = file.split(".")[0]
     new_name = f"{name_file}_tempt"
     new_path = origin_videofile.replace(name_file,new_name)
