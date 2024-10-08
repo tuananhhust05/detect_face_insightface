@@ -438,7 +438,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     
     return 
 
-
 def groupJson(folder,video_file,count_thread,case_id):
     final_result = {
         "time":[]
@@ -886,7 +885,30 @@ def insert_document(doc_id, vector):
     except Exception as e:
         print("insert_document",e)
 
-def handle_sadtalker(path,case_id):
+def analyst_video_sadtalker(path, target_folder):
+    cap = VideoCaptureThreading(path)
+    count = 0
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        count = count + 1 
+        print("sadtalker ....", count)
+        faces = app_recognize3.get(frame)
+        if(len(faces) == 0):
+            faces = app_recognize2.get(frame)
+        if(len(faces) == 0):
+            faces = app_recognize.get(frame)
+        for face in faces:
+            embedding_vector = face['embedding']
+            insert_document(str(uuid.uuid4()), embedding_vector)
+            list_vector.append(embedding_vector)
+            cv2.imwrite(f'{target_folder}/{str(uuid.uuid4())}.jpg', frame)
+
+        
+
+
+def handle_sadtalker(path,case_id,target_folder):
 
     url = "http://192.168.50.231:8003/upload"
     payload = {
@@ -899,6 +921,8 @@ def handle_sadtalker(path,case_id):
     headers = {}
     print(path,payload)
     response = requests.request("POST", url, headers=headers, data=payload, files=files)
+    for video in response.json()["videos"]:
+        analyst_video_sadtalker(video,target_folder)
     print(response.json()["videos"])
     return 
 
@@ -937,7 +961,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                                 if(angle > 10):
                                     flag_straight = False
                         if(flag_straight == True):
-                            handle_sadtalker(full_path,case_id)
+                            handle_sadtalker(full_path,case_id,target_folder)
                        
         list_file = []
         for path in os.listdir(tracking_folder):
