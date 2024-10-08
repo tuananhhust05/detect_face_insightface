@@ -886,11 +886,14 @@ def insert_document(doc_id, vector):
     except Exception as e:
         print("insert_document",e)
 
-def handle_sadtalker(path):
+def handle_sadtalker(path,case_id):
     url = "http://192.168.50.231:8003/upload"
-    payload = {}
+    payload = {
+        'case_id':case_id 
+    }
+    name_file = path.split("/")[len(path.split("/")) -1 ]
     files=[
-      ('files',('jackma.jfif',open( path ,'rb'),'application/octet-stream'))
+      ('files',(name_file,open( path ,'rb'),'application/octet-stream'))
     ]
     headers = {}
     response = requests.request("POST", url, headers=headers, data=payload, files=files)
@@ -932,7 +935,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                                 if(angle > 10):
                                     flag_straight = False
                         if(flag_straight == True):
-                            handle_sadtalker(full_path)
+                            handle_sadtalker(full_path,case_id)
                        
         list_file = []
         for path in os.listdir(tracking_folder):
