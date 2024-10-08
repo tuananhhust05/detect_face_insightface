@@ -887,6 +887,7 @@ def insert_document(doc_id, vector):
         print("insert_document",e)
 
 def handle_sadtalker(path,case_id):
+
     url = "http://192.168.50.231:8003/upload"
     payload = {
         'case_id':case_id 
@@ -896,8 +897,9 @@ def handle_sadtalker(path,case_id):
       ('files',(name_file,open( path ,'rb'),'application/octet-stream'))
     ]
     headers = {}
+    print(path,payload)
     response = requests.request("POST", url, headers=headers, data=payload, files=files)
-    print(response.text["videos"])
+    print(response.json())
     return 
 
 def handle_main(case_id, tracking_folder, target_folder):
