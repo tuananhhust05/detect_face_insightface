@@ -639,7 +639,7 @@ def trimvideo(folder,videofile,count_thread,case_id):
     print(f"ffmpeg -i {videofile} -c:v copy -c:a copy {new_path} -y && rm {videofile} && mv {new_path} {videofile}")
     subprocess.run(f"ffmpeg -i {videofile} -c:v copy -c:a copy {new_path} -y && rm {videofile} && mv {new_path} {videofile}", shell=True, check=True)
     for i in range(count_thread):
-        t = threading.Thread(target=cutvideo, args=(videofile,time_per_segment*i,time_per_segment,f"/home/ubuntua5000/storage_facesxss/videos/{case_id}/{folder}/{i}.mp4",i))
+        t = threading.Thread(target=cutvideo, args=(videofile,time_per_segment*i,time_per_segment,f"{dir_project}/videos/{case_id}/{folder}/{i}.mp4",i))
         threads.append(t)
         t.start()
 
