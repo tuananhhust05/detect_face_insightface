@@ -1,0 +1,126 @@
+{
+    "time": [
+        [
+            {
+                "path": "/home/ubuntua5000/storage_facesx/faces/db696a35-0043-4aba-a844-295e3432a118/video_talkshow_low/0/93_0_face.jpg",
+                "time": 31.714285714285715
+            },
+            {
+                "path": "",
+                "time": 74.0
+            }
+        ],
+        [
+            {
+                "path": "/home/ubuntua5000/storage_facesx/faces/db696a35-0043-4aba-a844-295e3432a118/video_talkshow_low/2/62_0_face.jpg",
+                "time": 184.12
+            },
+            {
+                "path": "",
+                "time": 221.12
+            }
+        ],
+        [
+            {
+                "path": "/home/ubuntua5000/storage_facesx/faces/db696a35-0043-4aba-a844-295e3432a118/video_talkshow_low/3/62_0_face.jpg",
+                "time": 245.34666666666666
+            },
+            {
+                "path": "",
+                "time": 294.68
+            }
+        ],
+        [
+            {
+                "path": "/home/ubuntua5000/storage_facesx/faces/db696a35-0043-4aba-a844-295e3432a118/video_talkshow_low/5/62_0_face.jpg",
+                "time": 380.1333333333333
+            },
+            {
+                "path": "",
+                "time": 441.8
+            }
+        ],
+        [
+            {
+                "path": "/home/ubuntua5000/storage_facesx/faces/db696a35-0043-4aba-a844-295e3432a118/video_talkshow_low/6/62_0_face.jpg",
+                "time": 452.7446153846154
+            },
+            {
+                "path": "",
+                "time": 515.36
+            }
+        ],
+        [
+            {
+                "path": "/home/ubuntua5000/storage_facesx/faces/db696a35-0043-4aba-a844-295e3432a118/video_talkshow_low/11/186_0_face.jpg",
+                "time": 872.5885714285715
+            },
+            {
+                "path": "",
+                "time": 883.1600000000001
+            }
+        ],
+        [
+            {
+                "path": "/home/ubuntua5000/storage_facesx/faces/db696a35-0043-4aba-a844-295e3432a118/video_talkshow_low/12/62_0_face.jpg",
+                "time": 893.2914285714286
+            },
+            {
+                "path": "",
+                "time": 956.72
+            }
+        ],
+        [
+            {
+                "path": "/home/ubuntua5000/storage_facesx/faces/db696a35-0043-4aba-a844-295e3432a118/video_talkshow_low/14/93_0_face.jpg",
+                "time": 1074.2400000000002
+            },
+            {
+                "path": "",
+                "time": 1074.2400000000002
+            }
+        ],
+        [
+            {
+                "path": "/home/ubuntua5000/storage_facesx/faces/db696a35-0043-4aba-a844-295e3432a118/video_talkshow_low/15/248_0_face.jpg",
+                "time": 1142.8666666666668
+            },
+            {
+                "path": "",
+                "time": 1177.4
+            }
+        ],
+        [
+            {
+                "path": "/home/ubuntua5000/storage_facesx/faces/db696a35-0043-4aba-a844-295e3432a118/video_talkshow_low/16/62_0_face.jpg",
+                "time": 1198.1028571428571
+            },
+            {
+                "path": "",
+                "time": 1250.96
+            }
+        ],
+        [
+            {
+                "path": "/home/ubuntua5000/storage_facesx/faces/db696a35-0043-4aba-a844-295e3432a118/video_talkshow_low/18/310_0_face.jpg",
+                "time": 1398.08
+            },
+            {
+                "path": "",
+                "time": 1346.28
+            }
+        ],
+        [
+            {
+                "path": "/home/ubuntua5000/storage_facesx/faces/db696a35-0043-4aba-a844-295e3432a118/video_talkshow_low/24/62_0_face.jpg",
+                "time": 1772.487619047619
+            },
+            {
+                "path": "",
+                "time": 1793.6304761904762
+            }
+        ]
+    ],
+    "age": 44.0625,
+    "gender": 1.0
+}
