@@ -957,8 +957,8 @@ def analyst_video_sadtalker(path, target_folder):
                     count_inserted = count_inserted + 1 
                     print("inserted",count_inserted)
                     list_vector.append(embedding_vector)
-                    bbox = [int(b) for b in face['bbox']]
-                    cv2.imwrite(f'/home/ubuntua5000/detect/detect/image_sadtalker/{str(uuid.uuid4())}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+                    # bbox = [int(b) for b in face['bbox']]
+                    # cv2.imwrite(f'/home/ubuntua5000/detect/detect/image_sadtalker/{str(uuid.uuid4())}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
             except Exception as e:
                     print("error recognize sanalyst_video_sadtalker",e)
     except Exception as e:
