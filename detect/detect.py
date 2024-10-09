@@ -71,7 +71,7 @@ for j in range(num_gpus):
         '/home/ubuntua5000/.insightface/models/buffalo_l/det_10g.onnx',
         providers=providers
     )
-    model_ele.prepare(ctx_id=j, det_size=(640, 640))
+    model_ele.prepare(ctx_id=j, det_thresh=0.1, det_size=(640, 640))
     list_model_detect.append(model_ele)
 # torch.cuda.set_device(gpu_id)
 # device = torch.device(f'cuda:{gpu_id}')
@@ -98,7 +98,7 @@ for j in range(num_gpus):
         })
     ]
     app_ele = FaceAnalysis('buffalo_l',providers=providers)
-    app_ele.prepare(ctx_id=j,det_thresh=0.4, det_size=(640, 640))
+    app_ele.prepare(ctx_id=j,det_thresh=0.1, det_size=(640, 640))
     list_model_analyst.append(app_ele)
 
 list_vector = []
@@ -223,11 +223,11 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         if frame_count % frame_rate == 0:
             print("frame_count", frame_count)
             
-            # facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
+            facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
             flagDetect = True
-            # if(len(facechecks) > 0):
-            #     if(len(facechecks[0]) > 0):
-            #         flagDetect = True
+            if(len(facechecks) > 0):
+                if(len(facechecks[0]) > 0):
+                    flagDetect = True
             
             if(flagDetect == True):
                 print("Có mặt......")
