@@ -896,7 +896,7 @@ def analyst_video_sadtalker(path, target_folder):
         print(f"ffmpeg -i {path} -c:v copy -c:a copy {new_path} -y && rm {path} && mv {new_path} {path}")
         subprocess.run(f"ffmpeg -i {path} -c:v copy -c:a copy {new_path} -y && rm {path} && mv {new_path} {path}", shell=True, check=True)
 
-        cap = cv2.VideoCapture(path, cv2.CAP_FFMPEG)
+        cap = cv2.VideoCapture(path)
         count = 0
         while True:
             ret, frame = cap.read()
