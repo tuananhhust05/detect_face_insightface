@@ -306,7 +306,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 global list_vector 
 
                                 list_vector.append(face['embedding'])
-                                
+                                # insert elasticsearch 
+                                insert_document(str(uuid.uuid4()), face['embedding'])
                                 # for optimizing picture 
                                 # picture_queue.put(mydict)
                                 url = "http://gfpgan.192.168.50.231.nip.io/restore-file"
@@ -319,8 +320,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
                                 requests.request("POST", url, headers=headers, data=payload)
 
-                                # insert elasticsearch 
-                                insert_document(str(uuid.uuid4()), face['embedding'])
+                               
                             else:
                             
                                 try:
@@ -357,6 +357,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                     print("error recognizing ",e)
     # check in face_other again 
     for face_other in list_face_other_in_thread:
+         print("check again....")
          similarity  = checkface(face_other['embedding'].tolist())
          if(similarity > 0):
             if len(array_em_result) == 0:
@@ -371,6 +372,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             frame_count_current = face_other["frame_count"]
             filename = f"{frame_count_current}_0_face.jpg"
             url = face_other["url"]
+            list_vector.append(face['embedding'])
+            # insert elasticsearch 
+            insert_document(str(uuid.uuid4()), face_other['embedding'])
             subprocess.run(f"mv {url} {dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}", shell=True, check=True)
 
           
