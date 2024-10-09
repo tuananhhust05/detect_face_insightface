@@ -71,7 +71,7 @@ for j in range(num_gpus):
         '/home/ubuntua5000/.insightface/models/buffalo_l/det_10g.onnx',
         providers=providers
     )
-    model_ele.prepare(ctx_id=j, det_thresh=0.3,det_size=(640, 640))
+    model_ele.prepare(ctx_id=j, det_thresh=0.1,det_size=(640, 640))
     list_model_detect.append(model_ele)
 # torch.cuda.set_device(gpu_id)
 # device = torch.device(f'cuda:{gpu_id}')
