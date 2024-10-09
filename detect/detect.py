@@ -47,13 +47,13 @@ print(f"Using device: {device}")
 weight_point = 0.45
 time_per_frame_global = 1
 ctx_id = 0 if device.type == 'cuda' else  -1
-app_recognize = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
+app_recognize = FaceAnalysis('buffalo_l',providers=['CPUExecutionProvider'])
 app_recognize.prepare(ctx_id=-1, det_thresh=0.1, det_size=(640, 640))
 
-app_recognize2 = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
+app_recognize2 = FaceAnalysis('buffalo_l',providers=['CPUExecutionProvider'])
 app_recognize2.prepare(ctx_id=-1, det_thresh=0.3, det_size=(640, 640))
 
-app_recognize3 = FaceAnalysis('buffalo_l',providers=['CUDAExecutionProvider'])
+app_recognize3 = FaceAnalysis('buffalo_l',providers=['CPUExecutionProvider'])
 app_recognize3.prepare(ctx_id=-1, det_thresh=0.5, det_size=(640, 640))
 
 num_gpus = torch.cuda.device_count()
