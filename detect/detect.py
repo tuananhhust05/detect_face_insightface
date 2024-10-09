@@ -928,8 +928,8 @@ def analyst_video_sadtalker(path, target_folder):
                 for face in faces:
                     embedding_vector = face['embedding']
                     insert_document(str(uuid.uuid4()), embedding_vector)
+                    print("inserted")
                     list_vector.append(embedding_vector)
-                    cv2.imwrite(f'{target_folder}/{str(uuid.uuid4())}.jpg', frame)
             except Exception as e:
                     print("error recognize sanalyst_video_sadtalker",e)
     except Exception as e:
