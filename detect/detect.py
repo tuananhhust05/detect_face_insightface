@@ -202,8 +202,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     if(duration == 0):
         return 
     
-    cap2 = cv2.VideoCapture(video_file)
-    # cap2 = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
+    cap2 = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
     cap = VideoCaptureThreading(video_file)
 
     fps = cap2.get(cv2.CAP_PROP_FPS)
@@ -304,15 +303,15 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 insert_document(str(uuid.uuid4()), face['embedding'])
                                 # for optimizing picture 
                                 # picture_queue.put(mydict)
-                                # url = "http://gfpgan.192.168.50.231.nip.io/restore-file"
-                                # payload = json.dumps({
-                                #    "file_path": mydict["proofImage"]
-                                # })
-                                # headers = {
-                                #     'Content-Type': 'application/json'
-                                # }
+                                url = "http://gfpgan.192.168.50.231.nip.io/restore-file"
+                                payload = json.dumps({
+                                   "file_path": mydict["proofImage"]
+                                })
+                                headers = {
+                                    'Content-Type': 'application/json'
+                                }
 
-                                # requests.request("POST", url, headers=headers, data=payload)
+                                requests.request("POST", url, headers=headers, data=payload)
 
                                
                             else:
