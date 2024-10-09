@@ -360,6 +360,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
          print("check again....")
          similarity  = checkface(face_other['embedding'].tolist())
          if(similarity > 0):
+            print("check again.... ok..")
             if len(array_em_result) == 0:
                 array_em_result.append({
                     "speaker": 0,
