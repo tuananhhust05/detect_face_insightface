@@ -84,7 +84,7 @@ providers = [
     })
 ]
 
-model = model_zoo.get_model(                                 # Load the model with  providers
+model = model_zoo.get_model(                                  # Load the model with  providers
     '/home/ubuntua5000/.insightface/models/buffalo_l/det_10g.onnx',
     providers=providers
 )
