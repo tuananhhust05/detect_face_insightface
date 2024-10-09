@@ -902,6 +902,7 @@ def analyst_video_sadtalker(path, target_folder):
             if not ret:
                 break
             count = count + 1 
+            count_inserted = 0
             print("sadtalker ....",  count)
             try:
                 faces = []
@@ -927,7 +928,8 @@ def analyst_video_sadtalker(path, target_folder):
                 for face in faces:
                     embedding_vector = face['embedding']
                     insert_document(str(uuid.uuid4()), embedding_vector)
-                    print("inserted")
+                    count_inserted = count_inserted + 1 
+                    print("inserted",count_inserted)
                     list_vector.append(embedding_vector)
             except Exception as e:
                     print("error recognize sanalyst_video_sadtalker",e)
