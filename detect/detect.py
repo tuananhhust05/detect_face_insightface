@@ -897,12 +897,12 @@ def analyst_video_sadtalker(path, target_folder):
 
         cap = cv2.VideoCapture(path)
         count = 0
+        count_inserted = 0
         while True:
             ret, frame = cap.read()
             if not ret:
                 break
             count = count + 1 
-            count_inserted = 0
             print("sadtalker ....",  count)
             try:
                 faces = []
