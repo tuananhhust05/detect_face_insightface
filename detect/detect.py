@@ -224,7 +224,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             print("frame_count", frame_count)
             
             facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
-            flagDetect = True
+            flagDetect = False
             if(len(facechecks) > 0):
                 if(len(facechecks[0]) > 0):
                     flagDetect = True
