@@ -528,7 +528,7 @@ def create_video_apperance(case_id,thread_count,folder):
                     full_path = f"{dir_full_new}/{path}"
                     list_img.append(full_path)
     img_array = []
-    size=(120,120)
+    size=(1080,1080)
     for filename in list_img:
         img = cv2.imread(filename)
         height, width, layers = img.shape
@@ -537,7 +537,7 @@ def create_video_apperance(case_id,thread_count,folder):
         img_array.append(img)
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
-    out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4", fourcc, 2.0, size)
+    out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4", fourcc, 1.0, size)
     outputpathpre= f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4"
     output = f"{dir_project}/video_apperance/{case_id}/{folder}.mp4"
     outputfinal = f"{dir_project}/video_apperance/{case_id}/final.mp4"
@@ -613,7 +613,7 @@ def cutvideo(videofile,start,duration,output,stt):
     while(flag == True):
         try:
             gpu_id = gpu_ids[stt_handle % num_gpus]
-            command = f"ffmpeg -hwaccel cuda -hwaccel_device {gpu_id} -ss {start} -i {videofile} -vf \"scale=640:640,pad=640:640:(ow-iw)/2:(oh-ih)/2\" -t {duration} -c:v h264_nvenc -preset fast -b:v 5M {output} -y"
+            command = f"ffmpeg -hwaccel cuda -hwaccel_device {gpu_id} -ss {start} -i {videofile} -vf \"scale=1080:1080,pad=1080:1080:(ow-iw)/2:(oh-ih)/2\" -t {duration} -c:v h264_nvenc -preset fast -b:v 5M {output} -y"
             subprocess.run(command, shell=True, check=True)
             flag = False
         except Exception as e:
@@ -817,7 +817,6 @@ def handle_other_face():
                 face = list_vector_other[i]
                 for face_compare in list_vector_other:
                     if(face_compare["face_id"] != face["face_id"]):
-                        # if(checkOnArr(list_face_not_check, face_compare["face_id"]) == False):
                             print("Caculation2...", i)
                             cos = cosin(face["embedding"], face_compare["embedding"])
                             if(cos > (weight_point - 0.15) ):
