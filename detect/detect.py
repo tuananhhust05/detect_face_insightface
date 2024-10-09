@@ -215,7 +215,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     count_face = 0 
     list_face_other_in_thread = []
     while True:
-        ret, frame = cap2.read()
+        ret, frame = cap.read()
         if not ret:
             break
         frame_count += 1
