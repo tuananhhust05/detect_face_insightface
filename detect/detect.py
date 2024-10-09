@@ -44,7 +44,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 
-weight_point = 0.35
+weight_point = 0.4
 time_per_frame_global = 1
 ctx_id = 0 if device.type == 'cuda' else  -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CPUExecutionProvider'])
@@ -223,11 +223,11 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         if frame_count % frame_rate == 0:
             print("frame_count", frame_count)
             
-            facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
-            flagDetect = False
-            if(len(facechecks) > 0):
-                if(len(facechecks[0]) > 0):
-                    flagDetect = True
+            # facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
+            flagDetect = True
+            # if(len(facechecks) > 0):
+            #     if(len(facechecks[0]) > 0):
+            #         flagDetect = True
             
             if(flagDetect == True):
                 print("Có mặt......")
