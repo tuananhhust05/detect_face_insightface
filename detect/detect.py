@@ -542,7 +542,7 @@ def create_video_apperance(case_id,thread_count,folder,file_extension,video_file
     #     out.write(img_array[i])
     # out.release()
     
-    outputpathpre= f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4"
+    outputpathpre= f"{dir_project}/video_apperance/{case_id}/{folder}.mp4"
     listfile_child = []
     appearance = appearances.find_one({"case_id": case_id, "file":f"{folder}{file_extension}"})
     if(appearance != None and "id" in appearance):
@@ -597,8 +597,8 @@ def create_video_apperance(case_id,thread_count,folder,file_extension,video_file
         outputfinal = f"{dir_project}/video_apperance/{case_id}/final.mp4"
         
         # predecode
-        subprocess.run(f"ffmpeg -i {outputpathpre} -codec:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p {output} -y", shell=True, check=True)
-        subprocess.run(f"rm -rf {outputpathpre}", shell=True, check=True)
+        # subprocess.run(f"ffmpeg -i {outputpathpre} -codec:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p {output} -y", shell=True, check=True)
+        # subprocess.run(f"rm -rf {outputpathpre}", shell=True, check=True)
 
         if not os.path.isfile(outputfinal):
            subprocess.run(f"cp {output} {outputfinal}", shell=True, check=True)
