@@ -265,13 +265,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                     if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}"):
                                         os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
                                     
-                                    # face_img = frame[bbox[1]:bbox[3], bbox[0]:bbox[2]]
-                                    # resized_image = cv2.resize(face_img, (120, 120), interpolation=cv2.INTER_LINEAR)
-                                    # kernel = np.array([[0, -1, 0], 
-                                    #                 [-1, 5,-1], 
-                                    #                 [0, -1, 0]])
-                                    # Apply the sharpening filter
-                                    # sharpened = cv2.filter2D(resized_image, -1, kernel)
                                     cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]], [int(cv2.IMWRITE_JPEG_QUALITY), 100])
 
                     
@@ -516,7 +509,7 @@ def groupJson(folder,video_file,count_thread,case_id):
 
     return 
 
-def create_video_apperance(case_id,thread_count,folder):
+def create_video_apperance(case_id,thread_count,folder,file_extension):
     if not os.path.exists(f"{dir_project}/video_apperance"):
         os.makedirs(f"{dir_project}/video_apperance")
     if not os.path.exists(f"{dir_project}/video_apperance/{case_id}"):
@@ -542,73 +535,78 @@ def create_video_apperance(case_id,thread_count,folder):
         img_array.append(img)
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
-    out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4", fourcc, 1.0, size)
     outputpathpre= f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4"
-    output = f"{dir_project}/video_apperance/{case_id}/{folder}.mp4"
-    outputfinal = f"{dir_project}/video_apperance/{case_id}/final.mp4"
+    out = cv2.VideoWriter(f"{outputpathpre}", fourcc, 1.0, size)
     for i in range(len(img_array)):
         out.write(img_array[i])
-    
     out.release()
     
-    subprocess.run(f"ffmpeg -i {outputpathpre} -codec:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p {output} -y", shell=True, check=True)
-    subprocess.run(f"rm -rf {outputpathpre}", shell=True, check=True)
-    
+    listfile_child = []
+    appearance = appearances.find_one({"case_id": case_id, "file":f"{folder}{file_extension}"})
+    if(appearance != None and "id" in appearance):
+        print("appearance",appearance)
+        output = f"{dir_project}/video_apperance/{case_id}/{folder}.mp4"
+        outputfinal = f"{dir_project}/video_apperance/{case_id}/final.mp4"
+
+        
+        subprocess.run(f"ffmpeg -i {outputpathpre} -codec:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p {output} -y", shell=True, check=True)
+        subprocess.run(f"rm -rf {outputpathpre}", shell=True, check=True)
+        
 
 
-    if not os.path.isfile(outputfinal):
-       subprocess.run(f"cp {output} {outputfinal}", shell=True, check=True)
-    else:
-       try: 
-            working_directory = f"{dir_project}/video_apperance/{case_id}"
-            listmp4file = os.listdir(working_directory)
-            # List of video files
-            files = []
-            for file in listmp4file:
-                if(file != "final.mp4" and "mp4" in file):
-                    files.append(file)
+        if not os.path.isfile(outputfinal):
+           subprocess.run(f"cp {output} {outputfinal}", shell=True, check=True)
+        else:
+            try: 
+                    working_directory = f"{dir_project}/video_apperance/{case_id}"
+                    listmp4file = os.listdir(working_directory)
+                    # List of video files
+                    files = []
+                    for file in listmp4file:
+                        if(file != "final.mp4" and "mp4" in file):
+                            files.append(file)
 
 
 
-            # Create a list of file arguments
-            filelist = ''.join(f"file '{os.path.join(working_directory, f)}'\n" for f in files).encode('utf-8')
+                    # Create a list of file arguments
+                    filelist = ''.join(f"file '{os.path.join(working_directory, f)}'\n" for f in files).encode('utf-8')
 
-            # Run the FFmpeg command using subprocess and stdin pipe
-            command = [
-                "ffmpeg",
-                "-hwaccel", "cuda",  
-                "-f", "concat",
-                "-safe", "0",
-                "-protocol_whitelist", "file,pipe",
-                "-i", "-",  
-                "-c", "copy",
-                "-y",  
-                "final.mp4"
-            ]
-            print(command,filelist,working_directory)
-            try:
-                subprocess.run(
-                    command,
-                    input=filelist,
-                    check=True,
-                    text=False,  
-                    cwd=working_directory
-                )
-                print("Videos concatenated successfully into final.mp4")
-            except subprocess.CalledProcessError as e:
-                print(f"An error occurred: {e}")
-            except Exception as ex:
-                print(f"An unexpected error occurred: {ex}")
+                    # Run the FFmpeg command using subprocess and stdin pipe
+                    command = [
+                        "ffmpeg",
+                        "-hwaccel", "cuda",  
+                        "-f", "concat",
+                        "-safe", "0",
+                        "-protocol_whitelist", "file,pipe",
+                        "-i", "-",  
+                        "-c", "copy",
+                        "-y",  
+                        "final.mp4"
+                    ]
+                    print(command,filelist,working_directory)
+                    try:
+                        subprocess.run(
+                            command,
+                            input=filelist,
+                            check=True,
+                            text=False,  
+                            cwd=working_directory
+                        )
+                        print("Videos concatenated successfully into final.mp4")
+                    except subprocess.CalledProcessError as e:
+                        print(f"An error occurred: {e}")
+                    except Exception as ex:
+                        print(f"An unexpected error occurred: {ex}")
 
-          
-       except Exception as e:
-            print("error merge file",e)
+                
+            except Exception as e:
+                    print("error merge file",e)
 
-    videos.insert_one({
-        "id":str(uuid.uuid4()),
-        "case_id":case_id,
-        "path":outputfinal,
-    })
+        videos.insert_one({
+            "id":str(uuid.uuid4()),
+            "case_id":case_id,
+            "path":outputfinal,
+        })
 
     return 
 
@@ -715,7 +713,7 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
             t.join()
 
         groupJson(folder,video_file_origin,count_thread,case_id)
-        create_video_apperance(case_id,count_thread,folder)
+        create_video_apperance(case_id,count_thread,folder,file_extension)
     else:
         handleimage(folder,video_file_origin,case_id,file_extension)
     return 
@@ -845,29 +843,6 @@ def handle_other_face():
     except Exception as e:
         print("handle_other_face.....", e)
 
-# def optimize_picture(queue):
-#     while True:
-#         print("take picture .....")
-#         picture = queue.get()
-#         # if ( ( picture != None) and ( "proofImage" in picture ) ) :
-#         url = "http://gfpgan.192.168.50.231.nip.io/restore-file"
-#         payload = json.dumps({
-#         "file_path": picture["proofImage"]
-#         })
-#         headers = {
-#         'Content-Type': 'application/json'
-#         }
-
-#         requests.request("POST", url, headers=headers, data=payload)
-        
-#         print("optimized ...", picture["proofImage"])
-
-# def handle_loop_optimize_picture(count_thread):
-#     for index in range(count_thread):
-#         t = threading.Thread(target=optimize_picture, args=(picture_queue,))
-#         t.start()
-
-# handle_loop_optimize_picture(20)
 
 def handle_apperance_other_face():
     list_apperance_other = []
