@@ -251,7 +251,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                     faces = list_model_analyst[gpu_id].get(frame)
                     
                     for face in faces:
-                        if face["det_score"] > 0.5:
+                        if face["det_score"] > 0.3:
                             similarity  = checkface(face['embedding'].tolist())
                             print("similarity.....",similarity)
                             if(similarity > 0):
@@ -995,7 +995,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                 full_path = f"{tracking_folder}/{path}"
                 list_file.append(full_path)
         if(len(list_file) > 0):
-            handle_multiplefile(list_file,40,case_id)
+            handle_multiplefile(list_file,60,case_id)
             cases.update_many({
                 "id":case_id
             },{
