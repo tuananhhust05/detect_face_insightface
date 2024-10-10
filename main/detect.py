@@ -195,7 +195,7 @@ class VideoCaptureThreading:
 
 def call_optimize_image(path):  
     try:                      
-        url = "http://gfpgan.192.168.50.10.nip.io/restore-file"
+        url = "http://192.168.50.10:8005/restore-file"
         payload = json.dumps({
         "file_path": path
         })
