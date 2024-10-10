@@ -964,12 +964,13 @@ def handle_main(case_id, tracking_folder, target_folder):
                         embedding_vector = face['embedding']
                         list_vector.append(embedding_vector)
                         insert_document(str(uuid.uuid4()), embedding_vector)
+                        print("Có mặt ........")
                         pose = face['pose']
-                        print("Có mặt ........",pose)
+                        print(pose)
                         flag_straight = True
                         for angle in pose:
                            if(flag_straight == True):
-                                if(angle > 6):
+                                if(angle > 7):
                                     flag_straight = False
                         if(flag_straight == True):
                             handle_sadtalker(full_path,case_id,target_folder)
