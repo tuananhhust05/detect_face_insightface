@@ -321,7 +321,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 # picture_queue.put(mydict)
                                 
                                 threading.Thread(target=call_optimize_image, args=(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',)).start()
-
                                
                             else:
                             
@@ -374,6 +373,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 array_em_result[0]["frames"].append(face_other["frame_count"])
             frame_count_current = face_other["frame_count"]
             filename = f"{frame_count_current}_0_face.jpg"
+            threading.Thread(target=call_optimize_image, args=(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',)).start()
             url = face_other["url"]
             list_vector.append(face['embedding'])
             # insert elasticsearch 
