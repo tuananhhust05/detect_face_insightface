@@ -251,7 +251,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                     faces = list_model_analyst[gpu_id].get(frame)
                     
                     for face in faces:
-                        if face["det_score"] > 0.1:
+                        if face["det_score"] > 0.5:
                             similarity  = checkface(face['embedding'].tolist())
                             print("similarity.....",similarity)
                             if(similarity > 0):
