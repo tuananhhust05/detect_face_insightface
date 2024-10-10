@@ -363,28 +363,28 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 except Exception as e:
                     print("error recognizing ",e)
     # check in face_other again 
-    for face_other in list_face_other_in_thread:
-         print("check again....")
-         similarity  = checkface(face_other['embedding'].tolist())
-         if(similarity > 0):
-            print("check again.... ok..")
-            if len(array_em_result) == 0:
-                array_em_result.append({
-                    "speaker": 0,
-                    "gender":int(face_other['gender']),
-                    "age":int(face_other['age']),
-                    "frames": [face_other["frame_count"]],
-                })
-            else:
-                array_em_result[0]["frames"].append(face_other["frame_count"])
-            frame_count_current = face_other["frame_count"]
-            filename = f"{frame_count_current}_0_face.jpg"
-            threading.Thread(target=call_optimize_image, args=(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',)).start()
-            url = face_other["url"]
-            list_vector.append(face['embedding'])
-            # insert elasticsearch 
-            insert_document(str(uuid.uuid4()), face_other['embedding'])
-            subprocess.run(f"mv {url} {dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}", shell=True, check=True)
+    # for face_other in list_face_other_in_thread:
+    #      print("check again....")
+    #      similarity  = checkface(face_other['embedding'].tolist())
+    #      if(similarity > 0):
+    #         print("check again.... ok..")
+    #         if len(array_em_result) == 0:
+    #             array_em_result.append({
+    #                 "speaker": 0,
+    #                 "gender":int(face_other['gender']),
+    #                 "age":int(face_other['age']),
+    #                 "frames": [face_other["frame_count"]],
+    #             })
+    #         else:
+    #             array_em_result[0]["frames"].append(face_other["frame_count"])
+    #         frame_count_current = face_other["frame_count"]
+    #         filename = f"{frame_count_current}_0_face.jpg"
+    #         threading.Thread(target=call_optimize_image, args=(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',)).start()
+    #         url = face_other["url"]
+    #         list_vector.append(face['embedding'])
+    #         # insert elasticsearch 
+    #         insert_document(str(uuid.uuid4()), face_other['embedding'])
+    #         subprocess.run(f"mv {url} {dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}", shell=True, check=True)
 
           
              
