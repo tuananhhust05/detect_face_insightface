@@ -38,7 +38,7 @@ targets = mydb["targets"]
 videos = mydb["videos"]
 cases = mydb["cases"]
 
-dir_project = "/home/ubuntua5000/storage_facesx"
+dir_project = "/home/poc4a5000/storage_facesx"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
@@ -68,7 +68,7 @@ for j in range(num_gpus):
         })
     ]
     model_ele = model_zoo.get_model(
-        '/home/ubuntua5000/.insightface/models/buffalo_l/det_10g.onnx',
+        '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
         providers=providers
     )
     model_ele.prepare(ctx_id=j, det_thresh=0.1,det_size=(640, 640))
@@ -85,7 +85,7 @@ providers = [
 ]
 
 model = model_zoo.get_model(                                  # Load the model with  providers
-    '/home/ubuntua5000/.insightface/models/buffalo_l/det_10g.onnx',
+    '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
     providers=providers
 )
 model.prepare(ctx_id=0, det_size=(640, 640))
@@ -957,7 +957,7 @@ def analyst_video_sadtalker(path, target_folder):
                     print("inserted",count_inserted)
                     list_vector.append(embedding_vector)
                     # bbox = [int(b) for b in face['bbox']]
-                    # cv2.imwrite(f'/home/ubuntua5000/detect/detect/image_sadtalker/{str(uuid.uuid4())}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+                    # cv2.imwrite(f'/home/poc4a5000/detect/detect/image_sadtalker/{str(uuid.uuid4())}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
             except Exception as e:
                     print("error recognize sanalyst_video_sadtalker",e)
     except Exception as e:
@@ -1092,7 +1092,7 @@ def analyst():
     delete_all_documents(index_name)
     
     subprocess.run(f"cd {dir_project} && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && rm -rf video_apperance && mkdir video_apperance", shell=True, check=True)
-    subprocess.run(f"cd /home/ubuntua5000/facesx/sad-talker/uploads && rm -rf db696a35-0043-4aba-a844-295e3432a118 && mkdir db696a35-0043-4aba-a844-295e3432a118", shell=True, check=True)
+    subprocess.run(f"cd /home/poc4a5000/facesx/sad-talker/uploads && rm -rf db696a35-0043-4aba-a844-295e3432a118 && mkdir db696a35-0043-4aba-a844-295e3432a118", shell=True, check=True)
     
     handle_main(case_id,tracking_folder,target_folder)
 
