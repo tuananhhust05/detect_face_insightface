@@ -24,6 +24,7 @@ mapping = {
 # Create the index with the defined mapping
 try:
     if not es.indices.exists(index=index_name):
+        es.indices.delete(index='test-index', ignore=[400, 404])
         es.indices.create(index=index_name, body=mapping)
         print(f"Index '{index_name}' created successfully.")
     else:
