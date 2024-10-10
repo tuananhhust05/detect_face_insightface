@@ -1092,7 +1092,7 @@ def analyst():
     delete_all_documents(index_name)
     
     subprocess.run(f"cd {dir_project} && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && rm -rf video_apperance && mkdir video_apperance", shell=True, check=True)
-    subprocess.run(f"cd /home/poc4a5000/facesx/sad-talker/uploads && rm -rf db696a35-0043-4aba-a844-295e3432a118 && mkdir db696a35-0043-4aba-a844-295e3432a118", shell=True, check=True)
+    subprocess.run(f"cd /home/poc4a5000/facesx/engine/sad-talker/uploads && rm -rf db696a35-0043-4aba-a844-295e3432a118 && mkdir db696a35-0043-4aba-a844-295e3432a118", shell=True, check=True)
     
     handle_main(case_id,tracking_folder,target_folder)
 
