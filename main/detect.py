@@ -535,7 +535,7 @@ def create_video_apperance(case_id,thread_count,folder):
         img_array.append(img)
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
-    out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4", fourcc, 2.0, size)
+    out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4", fourcc, 1.0, size)
     outputpathpre= f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4"
     output = f"{dir_project}/video_apperance/{case_id}/{folder}.mp4"
     outputfinal = f"{dir_project}/video_apperance/{case_id}/final.mp4"
@@ -708,7 +708,8 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
             t.join()
 
         groupJson(folder,video_file_origin,count_thread,case_id)
-        create_video_apperance(case_id,count_thread,folder,file_extension,video_file_origin)
+        # create_video_apperance(case_id,count_thread,folder,file_extension,video_file_origin)
+        create_video_apperance(case_id,count_thread,folder)
     else:
         handleimage(folder,video_file_origin,case_id,file_extension)
     return 
