@@ -724,7 +724,7 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
             t.join()
 
         groupJson(folder,video_file_origin,count_thread,case_id)
-        # create_video_apperance(case_id,count_thread,folder,file_extension,video_file_origin)
+        # create_video_apperance(case_id,count_thread,folder,file_extension, video_file_origin)
         create_video_apperance(case_id,count_thread,folder)
     else:
         handleimage(folder,video_file_origin,case_id,file_extension)
