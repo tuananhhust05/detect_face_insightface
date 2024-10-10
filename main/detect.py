@@ -452,9 +452,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     return 
 
 
-
-
-
 def groupJson(folder,video_file,count_thread,case_id):
     final_result = {
         "time":[]
@@ -709,7 +706,7 @@ def handleimage(folder,img_url,case_id,file_extension):
 
 def process_videos(folder,video_file_origin,count_thread,case_id):
     filename, file_extension = os.path.splitext(video_file_origin)
-    if(file_extension == ".mp4"):
+    if( (file_extension == ".mp4") or (file_extension == ".webm") or (file_extension == ".mov") or (file_extension == ".mkv")):
         duration = getduration(video_file_origin)
         time_per_segment = duration / count_thread
 
@@ -932,9 +929,6 @@ def analyst_video_sadtalker(path, target_folder):
                     print("error recognize sanalyst_video_sadtalker",e)
     except Exception as e:
         print("error analyst_video_sadtalker",e)
-
-
-        
 
 
 def handle_sadtalker(path,case_id,target_folder):
