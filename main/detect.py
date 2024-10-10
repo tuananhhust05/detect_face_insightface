@@ -273,10 +273,10 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         frame = video_stream.read()
         # if not ret:
         #     break
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            video_stream.release()
-            video_stream.stop()
-            break
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     video_stream.release()
+        #     video_stream.stop()
+        #     break
 
         frame_count += 1
         
