@@ -303,7 +303,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 insert_document(str(uuid.uuid4()), face['embedding'])
                                 # for optimizing picture 
                                 # picture_queue.put(mydict)
-                                url = "http://gfpgan.192.168.50.231.nip.io/restore-file"
+                                url = "http://gfpgan.192.168.50.10.nip.io/restore-file"
                                 payload = json.dumps({
                                    "file_path": mydict["proofImage"]
                                 })
@@ -969,7 +969,7 @@ def analyst_video_sadtalker(path, target_folder):
 
 def handle_sadtalker(path,case_id,target_folder):
     try:
-        url = "http://192.168.50.231:8003/upload"
+        url = "http://192.168.50.10:8003/upload"
         payload = {
             'case_id':case_id 
         }
