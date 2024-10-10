@@ -509,149 +509,99 @@ def groupJson(folder,video_file,count_thread,case_id):
 
     return 
 
-def create_video_apperance(case_id,thread_count,folder,file_extension,video_file_origin):
-    working_directory = f"{dir_project}/video_apperance/{case_id}"
-
+def create_video_apperance(case_id,thread_count,folder):
     if not os.path.exists(f"{dir_project}/video_apperance"):
         os.makedirs(f"{dir_project}/video_apperance")
     if not os.path.exists(f"{dir_project}/video_apperance/{case_id}"):
         os.makedirs(f"{dir_project}/video_apperance/{case_id}")
-    # list_img = []
-    # list_dir_file = os.listdir(f"{dir_project}/outputs/{case_id}/{folder}")
-    # for dir in list_dir_file:
-    #     dir_full = f"{dir_project}/outputs/{case_id}/{folder}/{dir}"
-    #     dir_full_new = dir_full
-    #     print(dir_full)
-    #     if  os.path.exists(dir_full_new):
-    #         for path in os.listdir(dir_full_new):
-    #             if os.path.isfile(os.path.join(dir_full_new, path)):
-    #                 full_path = f"{dir_full_new}/{path}"
-    #                 list_img.append(full_path)
-    # img_array = []
-    # size=(1080,1080)
-    # for filename in list_img:
-    #     img = cv2.imread(filename)
-    #     height, width, layers = img.shape
-    #     size_inter = (width,height)
-    #     size = size_inter
-    #     img_array.append(img)
+    list_img = []
+    list_dir_file = os.listdir(f"{dir_project}/outputs/{case_id}/{folder}")
+    for dir in list_dir_file:
+        dir_full = f"{dir_project}/outputs/{case_id}/{folder}/{dir}"
+        dir_full_new = dir_full
+        print(dir_full)
+        if  os.path.exists(dir_full_new):
+            for path in os.listdir(dir_full_new):
+                if os.path.isfile(os.path.join(dir_full_new, path)):
+                    full_path = f"{dir_full_new}/{path}"
+                    list_img.append(full_path)
+    img_array = []
+    size=(120,120)
+    for filename in list_img:
+        img = cv2.imread(filename)
+        height, width, layers = img.shape
+        size_inter = (width,height)
+        size = size_inter
+        img_array.append(img)
 
-    # fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
-    # out = cv2.VideoWriter(f"{outputpathpre}", fourcc, 1.0, size)
-    # for i in range(len(img_array)):
-    #     out.write(img_array[i])
-    # out.release()
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
+    out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4", fourcc, 2.0, size)
+    outputpathpre= f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4"
+    output = f"{dir_project}/video_apperance/{case_id}/{folder}.mp4"
+    outputfinal = f"{dir_project}/video_apperance/{case_id}/final.mp4"
+    for i in range(len(img_array)):
+        out.write(img_array[i])
     
-    outputpathpre= f"{dir_project}/video_apperance/{case_id}/{folder}.mp4"
-    listfile_child = []
-    appearance = appearances.find_one({"case_id": case_id, "file":f"{folder}{file_extension}"})
-    if(appearance != None and "id" in appearance):
-        print("appearance",appearance)
-        times = appearance["time"]
-        for time in times:
-            if ( ("start" in time) and ("end" in time)):
-                start = float(time['start'])
-                end = float(time['end'])
-                if(start > end):
-                    start = float(time['end'])
-                    end = float(time['start'])
-                duration = end - start 
-                file_name_child = f"{uuid.uuid4()}.mp4"
-                file_name_child_path = f"{dir_project}/video_apperance/{case_id}/{file_name_child}"
-                listfile_child.append(file_name_child)
-                command_trim = f"ffmpeg -i {video_file_origin} -ss {start} -t {duration} -c:v copy -c:a copy  {file_name_child_path} -y"
-                print("trim ....", command_trim)
-                subprocess.run(command_trim, shell=True, check=True)
+    out.release()
+    
+    subprocess.run(f"ffmpeg -i {outputpathpre} -codec:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p {output} -y", shell=True, check=True)
+    subprocess.run(f"rm -rf {outputpathpre}", shell=True, check=True)
+    
 
-        # Create a list of file arguments
-        filelist_child = ''.join(f"file '{os.path.join(working_directory, f)}'\n" for f in listfile_child).encode('utf-8')
-        command_merge_child = [
-                        "ffmpeg",
-                        "-hwaccel", "cuda",  
-                        "-f", "concat",
-                        "-safe", "0",
-                        "-protocol_whitelist", "file,pipe",
-                        "-i", "-",  
-                        "-c", "copy",
-                        "-y",  
-                        outputpathpre
-                    ]
-        try:
-            subprocess.run(
-                command_merge_child,
-                input=filelist_child,
-                check=True,
-                text=False,  
-                cwd=working_directory
-            )
-            print("Videos concatenated successfully into final.mp4")
-        except subprocess.CalledProcessError as e:
-            print(f"An error occurred: {e}")
-        except Exception as ex:
-            print(f"An unexpected error occurred: {ex}")
 
-        for file in listfile_child:
-            subprocess.run(f"rm -rf {working_directory}/{file}", shell=True, check=True)
-
-        output = f"{dir_project}/video_apperance/{case_id}/{folder}.mp4"
-        outputfinal = f"{dir_project}/video_apperance/{case_id}/final.mp4"
-        
-        # predecode
-        # subprocess.run(f"ffmpeg -i {outputpathpre} -codec:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p {output} -y", shell=True, check=True)
-        # subprocess.run(f"rm -rf {outputpathpre}", shell=True, check=True)
-
-        if not os.path.isfile(outputfinal):
-           subprocess.run(f"cp {output} {outputfinal}", shell=True, check=True)
-        else:
-            try: 
-                    listmp4file = os.listdir(working_directory)
-                    # List of video files
-                    files = []
-                    for file in listmp4file:
-                        if(file != "final.mp4" and "mp4" in file):
-                            files.append(file)
+    if not os.path.isfile(outputfinal):
+       subprocess.run(f"cp {output} {outputfinal}", shell=True, check=True)
+    else:
+       try: 
+            working_directory = f"{dir_project}/video_apperance/{case_id}"
+            listmp4file = os.listdir(working_directory)
+            # List of video files
+            files = []
+            for file in listmp4file:
+                if(file != "final.mp4" and "mp4" in file):
+                    files.append(file)
 
 
 
-                    # Create a list of file arguments
-                    filelist = ''.join(f"file '{os.path.join(working_directory, f)}'\n" for f in files).encode('utf-8')
+            # Create a list of file arguments
+            filelist = ''.join(f"file '{os.path.join(working_directory, f)}'\n" for f in files).encode('utf-8')
 
-                    # Run the FFmpeg command using subprocess and stdin pipe
-                    command = [
-                        "ffmpeg",
-                        "-hwaccel", "cuda",  
-                        "-f", "concat",
-                        "-safe", "0",
-                        "-protocol_whitelist", "file,pipe",
-                        "-i", "-",  
-                        "-c", "copy",
-                        "-y",  
-                        "final.mp4"
-                    ]
+            # Run the FFmpeg command using subprocess and stdin pipe
+            command = [
+                "ffmpeg",
+                "-hwaccel", "cuda",  
+                "-f", "concat",
+                "-safe", "0",
+                "-protocol_whitelist", "file,pipe",
+                "-i", "-",  
+                "-c", "copy",
+                "-y",  
+                "final.mp4"
+            ]
+            print(command,filelist,working_directory)
+            try:
+                subprocess.run(
+                    command,
+                    input=filelist,
+                    check=True,
+                    text=False,  
+                    cwd=working_directory
+                )
+                print("Videos concatenated successfully into final.mp4")
+            except subprocess.CalledProcessError as e:
+                print(f"An error occurred: {e}")
+            except Exception as ex:
+                print(f"An unexpected error occurred: {ex}")
 
-                    try:
-                        subprocess.run(
-                            command,
-                            input=filelist,
-                            check=True,
-                            text=False,  
-                            cwd=working_directory
-                        )
-                        print("Videos concatenated successfully into final.mp4")
-                    except subprocess.CalledProcessError as e:
-                        print(f"An error occurred: {e}")
-                    except Exception as ex:
-                        print(f"An unexpected error occurred: {ex}")
+          
+       except Exception as e:
+            print("error merge file",e)
 
-                
-            except Exception as e:
-                    print("error merge file",e)
-
-        videos.insert_one({
-            "id":str(uuid.uuid4()),
-            "case_id":case_id,
-            "path":outputfinal,
-        })
+    videos.insert_one({
+        "id":str(uuid.uuid4()),
+        "case_id":case_id,
+        "path":outputfinal,
+    })
 
     return 
 
