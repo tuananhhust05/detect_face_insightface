@@ -611,7 +611,7 @@ def cutvideo(videofile,start,duration,output,stt):
     while(flag == True):
         try:
             gpu_id = gpu_ids[stt_handle % num_gpus]
-            command = f"ffmpeg -hwaccel cuda -hwaccel_device {gpu_id} -ss {start} -i {videofile} -vf \"scale=1080:1080,pad=1080:1080:(ow-iw)/2:(oh-ih)/2\" -t {duration} -c:v h264_nvenc -preset fast -b:v 5M {output} -y"
+            command = f"ffmpeg -hwaccel cuda -hwaccel_device {gpu_id} -ss {start} -i {videofile} -vf \"scale=640:640,pad=640:640:(ow-iw)/2:(oh-ih)/2\" -t {duration} -c:v h264_nvenc -preset fast -b:v 5M {output} -y"
             subprocess.run(command, shell=True, check=True)
             flag = False
         except Exception as e:
