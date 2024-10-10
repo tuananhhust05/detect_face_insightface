@@ -302,7 +302,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 # insert elasticsearch 
                                 insert_document(str(uuid.uuid4()), face['embedding'])
                                 # for optimizing picture 
-                                # picture_queue.put(mydict)
+                                picture_queue.put(mydict)
                                 # url = "http://gfpgan.192.168.50.10.nip.io/restore-file"
                                 # payload = json.dumps({
                                 #    "file_path": mydict["proofImage"]
@@ -435,6 +435,30 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     cap.release()
     
     return 
+
+def optimize_picture(queue):
+    while True:
+        print("take picture .....")
+        picture = queue.get()
+        # if ( ( picture != None) and ( "proofImage" in picture ) ) :
+        url = "http://192.168.50.10:8005/restore-file"
+        payload = json.dumps({
+        "file_path": picture["proofImage"]
+        })
+        headers = {
+        'Content-Type': 'application/json'
+        }
+
+        requests.request("POST", url, headers=headers, data=payload)
+        
+        print("optimized ...", picture["proofImage"])
+
+def handle_loop_optimize_picture(count_thread):
+    for index in range(count_thread):
+        t = threading.Thread(target=optimize_picture, args=(picture_queue,))
+        t.start()
+
+handle_loop_optimize_picture(20)
 
 def groupJson(folder,video_file,count_thread,case_id):
     final_result = {
