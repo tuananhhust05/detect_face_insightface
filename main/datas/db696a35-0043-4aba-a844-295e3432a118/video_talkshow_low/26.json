@@ -2,13 +2,18 @@
     {
         "speaker": 0,
         "gender": 1.0,
-        "age": 39.0,
+        "age": 47.857142857142854,
         "frames": [
+            31,
+            62,
+            93,
+            124,
+            155,
             186,
             217
         ],
         "frame_count": 217,
-        "duration": 74,
+        "duration": 46,
         "frame_rate": 31.0
     }
 ]
