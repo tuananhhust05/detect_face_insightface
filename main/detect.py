@@ -44,7 +44,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 
-weight_point = 0.6
+weight_point = 0.65
 time_per_frame_global = 2
 ctx_id = 0 if device.type == 'cuda' else  -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CPUExecutionProvider'])
@@ -231,7 +231,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     count_face = 0 
     list_face_other_in_thread = []
     while True:
-        ret, frame = cap2.read()
+        ret, frame = cap.read()
         if not ret:
             break
         # origin_frame = frame 
