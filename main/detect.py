@@ -219,7 +219,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         return 
     
     cap2 = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
-    cap = VideoCaptureThreading(video_file)
+    # cap = VideoCaptureThreading(video_file)
 
     fps = cap2.get(cv2.CAP_PROP_FPS)
     fps = ( fps + 1 ) // 1
@@ -231,14 +231,13 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     count_face = 0 
     list_face_other_in_thread = []
     while True:
-        ret, frame = cap.read()
+        ret, frame = cap2.read()
         if not ret:
             break
         # origin_frame = frame 
         frame_count += 1
-        
+        print("frame_count", frame_count)
         if frame_count % frame_rate == 0:
-            print("frame_count", frame_count)
             
             # facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
             # flagDetect = False
