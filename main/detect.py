@@ -234,7 +234,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         ret, frame = cap2.read()
         if not ret:
             break
-        origin_frame = frame 
+        # origin_frame = frame 
         frame_count += 1
         
         if frame_count % frame_rate == 0:
@@ -301,7 +301,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 color = (255, 0, 0)
                                 thickness = 2
                                 try:
-                                    cv2.rectangle(origin_frame, top_left, bottom_right, color, thickness)
+                                    cv2.rectangle(frame, top_left, bottom_right, color, thickness)
                                     cv2.imwrite(f'{dir_project}/outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
                                 except Exception as e:
                                     print(f"error save outputs")
@@ -345,7 +345,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                             #     if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}"):
                             #         os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
                             #     try:
-                            #         cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', origin_frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+                            #         cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
                             #     except Exception as e:
                             #         print(f"Error saving faces other ....")
                             # except Exception as e:
