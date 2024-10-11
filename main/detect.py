@@ -456,7 +456,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
     return 
 
 
-def groupJson(folder,video_file,count_thread,case_id):
+def groupJson(folder,video_file,count_thread,case_id, file_extension):
     final_result = {
         "time":[]
     }
@@ -507,7 +507,7 @@ def groupJson(folder,video_file,count_thread,case_id):
     with open(f"{dir_project}/final_result/{case_id}/{folder}/final_result.json", 'w') as f:
         json.dump(final_result, f, indent=4)
     
-    final_result["file"] = f"{folder}.mp4" 
+    final_result["file"] = f"{folder}{file_extension}" 
     final_result["id"] = str(uuid.uuid4())
     final_result["case_id"] = case_id
     final_result["createdAt"] = current_date()
@@ -727,7 +727,7 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
         for t in threads:
             t.join()
 
-        groupJson(folder,video_file_origin,count_thread,case_id)
+        groupJson(folder,video_file_origin,count_thread,case_id, file_extension)
         # create_video_apperance(case_id,count_thread,folder,file_extension, svideo_file_origin)
         create_video_apperance(case_id,count_thread,folder)
     else:
