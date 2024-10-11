@@ -30,25 +30,21 @@ query_vector = np.random.rand(512).tolist()
 # insert_document(index_name, doc_id, title, query_vector)
 # Function to perform a cosine similarity search
 def search_with_cosine_similarity(index, query_vec):
-    search_query = {
-        "size": 1,
+    search_query ={
         "query": {
             "script_score": {
                 "query": {
-                    "knn": {
-                    "field": "content_vector", 
-                    "query_vector": vector,  
-                    "k": 1                   
-                    }
+                    "match_all": {}
                 },
-            "script": {
-                "source": "cosineSimilarity(params.query_vector, 'content_vector') + 1.0",
-                "params": {
-                "query_vector": vector
+                "script": {
+                    "source": "cosineSimilarity(params.query_vector, 'content_vector') + 1",
+                    "params": {
+                        "query_vector": query_vec
+                    }
                 }
             }
-            }
-        }
+        },
+        "size": 1,
     }
 
 
