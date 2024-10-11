@@ -331,39 +331,39 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                             
                             # threading.Thread(target=call_optimize_image, args=(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',)).start()
                             
-                        else:
+                        # else:
                         
-                            try:
-                                bbox = [int(b) for b in face['bbox']]
-                                filename = f"{frame_count}_{str(uuid.uuid4())}_face.jpg"
-                                if not os.path.exists(f"{dir_project}/faces/{case_id}/{folder}/{index_local}"):
-                                    os.makedirs(f"{dir_project}/faces/{case_id}/{folder}/{index_local}")
-                                if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}"):
-                                    os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
-                                try:
-                                    cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', origin_frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
-                                except Exception as e:
-                                    print(f"Error saving faces other ....")
-                            except Exception as e:
-                                print(f"Error saving frame: {e}")
+                            # try:
+                            #     bbox = [int(b) for b in face['bbox']]
+                            #     filename = f"{frame_count}_{str(uuid.uuid4())}_face.jpg"
+                            #     if not os.path.exists(f"{dir_project}/faces/{case_id}/{folder}/{index_local}"):
+                            #         os.makedirs(f"{dir_project}/faces/{case_id}/{folder}/{index_local}")
+                            #     if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}"):
+                            #         os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
+                            #     try:
+                            #         cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', origin_frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+                            #     except Exception as e:
+                            #         print(f"Error saving faces other ....")
+                            # except Exception as e:
+                            #     print(f"Error saving frame: {e}")
                             
-                            mydict = { 
-                                    "id":  str(uuid.uuid4()), 
-                                    "case_id": case_id,
-                                    "embedding": face['embedding'],
-                                    "similarity_face":similarity,
-                                    "gender":int(face['gender']),
-                                    "age":int(face['age']),
-                                    "time_invideo":"",
-                                    "proofImage":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
-                                    "url":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
-                                    "createdAt":current_date(),
-                                    "updatedAt":current_date(),
-                                    "file":folder,
-                                    "frame_count":frame_count
-                                    }
-                            list_face_other_in_thread.append(mydict)
-                            list_vector_other.append(mydict)
+                            # mydict = { 
+                            #         "id":  str(uuid.uuid4()), 
+                            #         "case_id": case_id,
+                            #         "embedding": face['embedding'],
+                            #         "similarity_face":similarity,
+                            #         "gender":int(face['gender']),
+                            #         "age":int(face['age']),
+                            #         "time_invideo":"",
+                            #         "proofImage":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
+                            #         "url":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
+                            #         "createdAt":current_date(),
+                            #         "updatedAt":current_date(),
+                            #         "file":folder,
+                            #         "frame_count":frame_count
+                            #         }
+                            # list_face_other_in_thread.append(mydict)
+                            # list_vector_other.append(mydict)
             except Exception as e:
                 print("error recognizing ",e)
     # check in face_other again 
