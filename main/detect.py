@@ -44,7 +44,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 
-weight_point = 0.65
+weight_point = 0.6
 time_per_frame_global = 2
 ctx_id = 0 if device.type == 'cuda' else  -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CPUExecutionProvider'])
@@ -60,35 +60,35 @@ num_gpus = torch.cuda.device_count()
 print(f"Number of GPUs available: {num_gpus}")
 gpu_ids = list(range(num_gpus)) 
 
-# list_model_detect = []
-# for j in range(num_gpus):
-#     providers = [
-#         ('CUDAExecutionProvider', {
-#             'device_id': j,
-#         })
-#     ]
-#     model_ele = model_zoo.get_model(
-#         '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
-#         providers=providers
-#     )
-#     model_ele.prepare(ctx_id=j, det_thresh=0.1,det_size=(640, 640))
-#     list_model_detect.append(model_ele)
+list_model_detect = []
+for j in range(num_gpus):
+    providers = [
+        ('CUDAExecutionProvider', {
+            'device_id': j,
+        })
+    ]
+    model_ele = model_zoo.get_model(
+        '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
+        providers=providers
+    )
+    model_ele.prepare(ctx_id=j, det_thresh=0.1,det_size=(640, 640))
+    list_model_detect.append(model_ele)
 # torch.cuda.set_device(gpu_id)
 # device = torch.device(f'cuda:{gpu_id}')
 
 # Define providers with device_id
-# torch.cuda.set_device(0)
-# providers = [
-#     ('CUDAExecutionProvider', {
-#         'device_id': 0,
-#     })
-# ]
+torch.cuda.set_device(0)
+providers = [
+    ('CUDAExecutionProvider', {
+        'device_id': 0,
+    })
+]
 
-# model = model_zoo.get_model(                                  # Load the model with  providers
-#     '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
-#     providers=providers
-# )
-# model.prepare(ctx_id=0, det_size=(640, 640))
+model = model_zoo.get_model(                                  # Load the model with  providers
+    '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
+    providers=providers
+)
+model.prepare(ctx_id=0, det_size=(640, 640))
 
 list_model_analyst = []
 for j in range(num_gpus):
@@ -234,10 +234,11 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         ret, frame = cap2.read()
         if not ret:
             break
-        # origin_frame = frame 
+        origin_frame = frame 
         frame_count += 1
-        print("frame_count", frame_count)
+        
         if frame_count % frame_rate == 0:
+            print("frame_count", frame_count)
             
             # facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
             # flagDetect = False
@@ -300,7 +301,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 color = (255, 0, 0)
                                 thickness = 2
                                 try:
-                                    cv2.rectangle(frame, top_left, bottom_right, color, thickness)
+                                    cv2.rectangle(origin_frame, top_left, bottom_right, color, thickness)
                                     cv2.imwrite(f'{dir_project}/outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
                                 except Exception as e:
                                     print(f"error save outputs")
@@ -323,14 +324,15 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                     }
                             facematches.insert_one(mydict)
                             mydict["embedding"] = face['embedding']
-                            # list_vector_widden.append(mydict)
+                            list_vector_widden.append(mydict)
 
-                            # global list_vector 
-                            # list_vector.append(face['embedding'])
+                            global list_vector 
 
+                            list_vector.append(face['embedding'])
                             # insert elasticsearch 
                             insert_document(str(uuid.uuid4()), face['embedding'])
-                   
+                            # for optimizing picture 
+                            # picture_queue.put(mydict)
                             
                             # threading.Thread(target=call_optimize_image, args=(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',)).start()
                             
@@ -344,7 +346,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                             #     if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}"):
                             #         os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
                             #     try:
-                            #         cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+                            #         cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', origin_frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
                             #     except Exception as e:
                             #         print(f"Error saving faces other ....")
                             # except Exception as e:
@@ -669,12 +671,12 @@ def trimvideo(folder,videofile,count_thread,case_id):
     return 
 
 def handleimage(folder,img_url,case_id,file_extension):
-    img = cv2.imread(img_url)
-    #    facechecks = list_model_detect[0].detect(img,input_size=(640, 640))
-    #    if(len(facechecks) > 0):
-    faces = list_model_analyst[0].get(img)
-    for face in faces:
-        if face["det_score"] > 0.5:
+   img = cv2.imread(img_url)
+   facechecks = model.detect(img,input_size=(640, 640))
+   if(len(facechecks) > 0):
+       faces = list_model_analyst[0].get(img)
+       for face in faces:
+         if face["det_score"] > 0.5:
             similarity  = checkface(face['embedding'].tolist())
             if(similarity > 0):
                 bbox = [int(b) for b in face['bbox']]
@@ -929,7 +931,7 @@ def analyst_video_sadtalker(path, target_folder):
                     insert_document(str(uuid.uuid4()), embedding_vector)
                     count_inserted = count_inserted + 1 
                     print("inserted",count_inserted)
-                    # list_vector.append(embedding_vector)
+                    list_vector.append(embedding_vector)
                     # bbox = [int(b) for b in face['bbox']]
                     # cv2.imwrite(f'/home/poc4a5000/detect/detect/image_sadtalker/{str(uuid.uuid4())}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
             except Exception as e:
@@ -983,7 +985,7 @@ def handle_main(case_id, tracking_folder, target_folder):
 
                     for face in faces:
                         embedding_vector = face['embedding']
-                        # list_vector.append(embedding_vector)
+                        list_vector.append(embedding_vector)
                         insert_document(str(uuid.uuid4()), embedding_vector)
                         print("Có mặt ........")
                         pose = face['pose']
