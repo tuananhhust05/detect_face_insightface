@@ -235,9 +235,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         if not ret:
             break
         frame_count += 1
-        print("frame_count", frame_count)
+        
         if frame_count % frame_rate == 0:
-            
+            print("frame_count", frame_count)
             
             # facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
             # flagDetect = False
@@ -248,7 +248,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             # if(flagDetect == True):
             # print("Có mặt......")
             try:
-                
                 faces = list_model_analyst[gpu_id].get(frame)
                 
                 flag_loop = False
