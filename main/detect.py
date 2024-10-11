@@ -248,7 +248,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             # if(flagDetect == True):
             # print("Có mặt......")
             try:
-                torch.cuda.set_device(gpu_id)
+                
                 faces = list_model_analyst[gpu_id].get(frame)
                 
                 flag_loop = False
