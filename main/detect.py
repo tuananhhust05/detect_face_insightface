@@ -45,7 +45,7 @@ print(f"Using device: {device}")
 
 
 weight_point = 0.6
-time_per_frame_global = 1
+time_per_frame_global = 2
 ctx_id = 0 if device.type == 'cuda' else  -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CPUExecutionProvider'])
 app_recognize.prepare(ctx_id=-1, det_thresh=0.1, det_size=(640, 640))
@@ -560,7 +560,7 @@ def create_video_apperance(case_id,thread_count,folder):
         img_array.append(img)
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
-    out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4", fourcc, 1.0, size)
+    out = cv2.VideoWriter(f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4", fourcc, 1/time_per_frame_global , size)
     outputpathpre= f"{dir_project}/video_apperance/{case_id}/{folder}_pre.mp4"
     output = f"{dir_project}/video_apperance/{case_id}/{folder}.mp4"
     outputfinal = f"{dir_project}/video_apperance/{case_id}/final.mp4"
