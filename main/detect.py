@@ -287,6 +287,11 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                     os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
                                 
                                 try:
+                                    height, width = frame.shape[:2]
+                                    a = max(0, bbox[1])
+                                    b = min(height, bbox[3])
+                                    c = max(0, bbox[0])
+                                    d = min(width, bbox[2])
                                     cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
                                 except Exception as e:
                                     print(f"error save faces")
