@@ -329,7 +329,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                             # for optimizing picture 
                             # picture_queue.put(mydict)
                             
-                            threading.Thread(target=call_optimize_image, args=(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',)).start()
+                            # threading.Thread(target=call_optimize_image, args=(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',)).start()
                             
                         else:
                         
