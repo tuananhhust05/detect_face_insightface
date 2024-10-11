@@ -287,7 +287,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                     os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
                                 
                                 try:
-                                    cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', origin_frame[bbox[1]:bbox[3], bbox[0]:bbox[2]], [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+                                    cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
                                 except Exception as e:
                                     print(f"error save faces")
                 
@@ -297,7 +297,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 thickness = 2
                                 try:
                                     cv2.rectangle(origin_frame, top_left, bottom_right, color, thickness)
-                                    cv2.imwrite(f'{dir_project}/outputs/{case_id}/{folder}/{index_local}/{filename}', origin_frame)
+                                    cv2.imwrite(f'{dir_project}/outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
                                 except Exception as e:
                                     print(f"error save outputs")
                             except Exception as e:
