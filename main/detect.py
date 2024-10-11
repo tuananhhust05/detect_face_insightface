@@ -44,7 +44,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 
-weight_point = 0.6
+weight_point = 0.625
 time_per_frame_global = 2
 ctx_id = 0 if device.type == 'cuda' else  -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CPUExecutionProvider'])
@@ -235,9 +235,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         if not ret:
             break
         frame_count += 1
-        
+        print("frame_count", frame_count)
         if frame_count % frame_rate == 0:
-            print("frame_count", frame_count)
             
             # facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
             # flagDetect = False
@@ -254,7 +253,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 for face in faces:
                     if(flag_loop == True):
                         break
-                    if face["det_score"] > 0.4:
+                    if face["det_score"] > 0.6:
                         similarity  = checkface(face['embedding'].tolist())
                         print("similarity.....",similarity)
                         if(similarity > 0):
