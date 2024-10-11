@@ -240,128 +240,132 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         if frame_count % frame_rate == 0:
             print("frame_count", frame_count)
             
-            facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
-            flagDetect = False
-            if(len(facechecks) > 0):
-                if(len(facechecks[0]) > 0):
-                    flagDetect = True
+            # facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
+            # flagDetect = False
+            # if(len(facechecks) > 0):
+            #     if(len(facechecks[0]) > 0):
+            #         flagDetect = True
             
-            if(flagDetect == True):
-                print("Có mặt......")
-                try:
-                    faces = list_model_analyst[gpu_id].get(frame)
-                    
-                    for face in faces:
-                        if face["det_score"] > 0.4:
-                            similarity  = checkface(face['embedding'].tolist())
-                            print("similarity.....",similarity)
-                            if(similarity > 0):
-                            # if True:
-                                count_face = count_face + 1 
-                                sum_age = sum_age + int(face['age'])
-                                sum_gender = sum_gender + int(face['gender'])
-    
-                                if len(array_em_result) == 0:
-                                    array_em_result.append({
-                                        "speaker": 0,
-                                        "gender":int(face['gender']),
-                                        "age":int(face['age']),
-                                        "frames": [frame_count],
-                                    })
-                                else:
-                                    if(count_face > 0):
-                                        array_em_result[0]["age"] = sum_age / count_face 
-                                        array_em_result[0]["gender"] = sum_gender / count_face 
-                                        array_em_result[0]["frames"].append(frame_count)
+            # if(flagDetect == True):
+            print("Có mặt......")
+            try:
+                faces = list_model_analyst[gpu_id].get(frame)
+                
+                flag_loop = False
+                for face in faces:
+                    if(flag_loop == True):
+                        break
+                    if face["det_score"] > 0.4:
+                        similarity  = checkface(face['embedding'].tolist())
+                        print("similarity.....",similarity)
+                        if(similarity > 0):
+                            flag_loop = True
+                        # if True:
+                            count_face = count_face + 1 
+                            sum_age = sum_age + int(face['age'])
+                            sum_gender = sum_gender + int(face['gender'])
 
-                                try:
-                                    bbox = [int(b) for b in face['bbox']]
-                                    filename = f"{frame_count}_0_face.jpg"
-                                    if not os.path.exists(f"{dir_project}/faces/{case_id}/{folder}/{index_local}"):
-                                        os.makedirs(f"{dir_project}/faces/{case_id}/{folder}/{index_local}")
-                                    if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}"):
-                                        os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
-                                    
-                                    try:
-                                      cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', origin_frame[bbox[1]:bbox[3], bbox[0]:bbox[2]], [int(cv2.IMWRITE_JPEG_QUALITY), 100])
-                                    except Exception as e:
-                                      print(f"error save faces")
-                    
-                                    top_left = (bbox[0], bbox[1])
-                                    bottom_right = (bbox[2], bbox[3])
-                                    color = (255, 0, 0)
-                                    thickness = 2
-                                    try:
-                                        cv2.rectangle(origin_frame, top_left, bottom_right, color, thickness)
-                                        cv2.imwrite(f'{dir_project}/outputs/{case_id}/{folder}/{index_local}/{filename}', origin_frame)
-                                    except Exception as e:
-                                        print(f"error save outputs")
-                                except Exception as e:
-                                    print(f"Error saving frame: {e}")
-                                
-                                mydict = { 
-                                        "id":  str(uuid.uuid4()), 
-                                        "case_id": case_id,
-                                        "face_id": 0,
-                                        "similarity_face":similarity,
-                                        "gender":int(face['gender']),
-                                        "age":int(face['age']),
-                                        "time_invideo":"",
-                                        "proofImage":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
-                                        "url":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
-                                        "createdAt":current_date(),
-                                        "updatedAt":current_date(),
-                                        "file":folder
-                                        }
-                                facematches.insert_one(mydict)
-                                mydict["embedding"] = face['embedding']
-                                list_vector_widden.append(mydict)
-
-                                global list_vector 
-
-                                list_vector.append(face['embedding'])
-                                # insert elasticsearch 
-                                insert_document(str(uuid.uuid4()), face['embedding'])
-                                # for optimizing picture 
-                                # picture_queue.put(mydict)
-                                
-                                threading.Thread(target=call_optimize_image, args=(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',)).start()
-                               
+                            if len(array_em_result) == 0:
+                                array_em_result.append({
+                                    "speaker": 0,
+                                    "gender":int(face['gender']),
+                                    "age":int(face['age']),
+                                    "frames": [frame_count],
+                                })
                             else:
-                            
-                                try:
-                                    bbox = [int(b) for b in face['bbox']]
-                                    filename = f"{frame_count}_{str(uuid.uuid4())}_face.jpg"
-                                    if not os.path.exists(f"{dir_project}/faces/{case_id}/{folder}/{index_local}"):
-                                        os.makedirs(f"{dir_project}/faces/{case_id}/{folder}/{index_local}")
-                                    if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}"):
-                                        os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
-                                    try:
-                                       cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', origin_frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
-                                    except Exception as e:
-                                       print(f"Error saving faces other ....")
-                                except Exception as e:
-                                    print(f"Error saving frame: {e}")
+                                if(count_face > 0):
+                                    array_em_result[0]["age"] = sum_age / count_face 
+                                    array_em_result[0]["gender"] = sum_gender / count_face 
+                                    array_em_result[0]["frames"].append(frame_count)
+
+                            try:
+                                bbox = [int(b) for b in face['bbox']]
+                                filename = f"{frame_count}_0_face.jpg"
+                                if not os.path.exists(f"{dir_project}/faces/{case_id}/{folder}/{index_local}"):
+                                    os.makedirs(f"{dir_project}/faces/{case_id}/{folder}/{index_local}")
+                                if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}"):
+                                    os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
                                 
-                                mydict = { 
-                                        "id":  str(uuid.uuid4()), 
-                                        "case_id": case_id,
-                                        "embedding": face['embedding'],
-                                        "similarity_face":similarity,
-                                        "gender":int(face['gender']),
-                                        "age":int(face['age']),
-                                        "time_invideo":"",
-                                        "proofImage":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
-                                        "url":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
-                                        "createdAt":current_date(),
-                                        "updatedAt":current_date(),
-                                        "file":folder,
-                                        "frame_count":frame_count
-                                        }
-                                list_face_other_in_thread.append(mydict)
-                                list_vector_other.append(mydict)
-                except Exception as e:
-                    print("error recognizing ",e)
+                                try:
+                                    cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', origin_frame[bbox[1]:bbox[3], bbox[0]:bbox[2]], [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+                                except Exception as e:
+                                    print(f"error save faces")
+                
+                                top_left = (bbox[0], bbox[1])
+                                bottom_right = (bbox[2], bbox[3])
+                                color = (255, 0, 0)
+                                thickness = 2
+                                try:
+                                    cv2.rectangle(origin_frame, top_left, bottom_right, color, thickness)
+                                    cv2.imwrite(f'{dir_project}/outputs/{case_id}/{folder}/{index_local}/{filename}', origin_frame)
+                                except Exception as e:
+                                    print(f"error save outputs")
+                            except Exception as e:
+                                print(f"Error saving frame: {e}")
+                            
+                            mydict = { 
+                                    "id":  str(uuid.uuid4()), 
+                                    "case_id": case_id,
+                                    "face_id": 0,
+                                    "similarity_face":similarity,
+                                    "gender":int(face['gender']),
+                                    "age":int(face['age']),
+                                    "time_invideo":"",
+                                    "proofImage":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                    "url":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                    "createdAt":current_date(),
+                                    "updatedAt":current_date(),
+                                    "file":folder
+                                    }
+                            facematches.insert_one(mydict)
+                            mydict["embedding"] = face['embedding']
+                            list_vector_widden.append(mydict)
+
+                            global list_vector 
+
+                            list_vector.append(face['embedding'])
+                            # insert elasticsearch 
+                            insert_document(str(uuid.uuid4()), face['embedding'])
+                            # for optimizing picture 
+                            # picture_queue.put(mydict)
+                            
+                            threading.Thread(target=call_optimize_image, args=(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',)).start()
+                            
+                        else:
+                        
+                            try:
+                                bbox = [int(b) for b in face['bbox']]
+                                filename = f"{frame_count}_{str(uuid.uuid4())}_face.jpg"
+                                if not os.path.exists(f"{dir_project}/faces/{case_id}/{folder}/{index_local}"):
+                                    os.makedirs(f"{dir_project}/faces/{case_id}/{folder}/{index_local}")
+                                if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}"):
+                                    os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
+                                try:
+                                    cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', origin_frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+                                except Exception as e:
+                                    print(f"Error saving faces other ....")
+                            except Exception as e:
+                                print(f"Error saving frame: {e}")
+                            
+                            mydict = { 
+                                    "id":  str(uuid.uuid4()), 
+                                    "case_id": case_id,
+                                    "embedding": face['embedding'],
+                                    "similarity_face":similarity,
+                                    "gender":int(face['gender']),
+                                    "age":int(face['age']),
+                                    "time_invideo":"",
+                                    "proofImage":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                    "url":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
+                                    "createdAt":current_date(),
+                                    "updatedAt":current_date(),
+                                    "file":folder,
+                                    "frame_count":frame_count
+                                    }
+                            list_face_other_in_thread.append(mydict)
+                            list_vector_other.append(mydict)
+            except Exception as e:
+                print("error recognizing ",e)
     # check in face_other again 
     # for face_other in list_face_other_in_thread:
     #      print("check again....")
@@ -627,7 +631,7 @@ def cutvideo(videofile,start,duration,output,stt):
     while(flag == True):
         try:
             gpu_id = gpu_ids[stt_handle % num_gpus]
-            command = f"ffmpeg -hwaccel cuda -hwaccel_device {gpu_id} -ss {start} -i {videofile} -vf \"scale=640:640,pad=640:640:(ow-iw)/2:(oh-ih)/2\" -t {duration} -c:v h264_nvenc -preset fast -b:v 5M {output} -y"
+            command = f"ffmpeg -hwaccel cuda -hwaccel_device {gpu_id} -ss {start} -i {videofile} -vf \"scale=480:480,pad=480:480:(ow-iw)/2:(oh-ih)/2\" -t {duration} -c:v h264_nvenc -preset fast -b:v 5M {output} -y"
             subprocess.run(command, shell=True, check=True)
             flag = False
         except Exception as e:
@@ -724,7 +728,7 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
             t.join()
 
         groupJson(folder,video_file_origin,count_thread,case_id)
-        # create_video_apperance(case_id,count_thread,folder,file_extension, video_file_origin)
+        # create_video_apperance(case_id,count_thread,folder,file_extension, svideo_file_origin)
         create_video_apperance(case_id,count_thread,folder)
     else:
         handleimage(folder,video_file_origin,case_id,file_extension)
