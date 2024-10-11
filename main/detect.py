@@ -209,7 +209,7 @@ def call_optimize_image(path):
         print(f"call_optimize_image {ex}")
         return
 
-def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id):
+def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id,extension):
     array_em_result = []
     list_result_ele = []
     frame_count = 0 
@@ -315,7 +315,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                     "url":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
                                     "createdAt":current_date(),
                                     "updatedAt":current_date(),
-                                    "file":folder
+                                    "file":f"{folder}{extension}"
                                     }
                             facematches.insert_one(mydict)
                             mydict["embedding"] = face['embedding']
@@ -720,7 +720,7 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
         threads = []
         for i, video_file in enumerate(video_files):
             gpu_id = gpu_ids[i % num_gpus]
-            t = threading.Thread(target=extract_frames, args=(folder,video_file,i,time_per_segment,case_id,gpu_id))
+            t = threading.Thread(target=extract_frames, args=(folder,video_file,i,time_per_segment,case_id,gpu_id,file_extension))
             threads.append(t)
             t.start()
 
@@ -1005,10 +1005,10 @@ def handle_main(case_id, tracking_folder, target_folder):
             },{
                 "$set":{
                     "end":current_date(),
-                    "status":"grouping"
+                    "status":"completed"
                 }
             })
-            handle_other_face()
+            # handle_other_face()
         return 
     except Exception as e:
         print("error handle_main",e)
