@@ -247,7 +247,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             #         flagDetect = True
             
             # if(flagDetect == True):
-            print("Có mặt......")
+            # print("Có mặt......")
             try:
                 faces = list_model_analyst[gpu_id].get(frame)
                 
