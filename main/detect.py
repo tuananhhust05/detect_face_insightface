@@ -81,8 +81,23 @@ def current_date():
   date_string = now.strftime(format_date)
   return datetime.datetime.strptime(date_string, format_date)
 
+def callworker(link, case_id, file):
+    try:
+        url = link
+        payload = json.dumps({
+            "case_id": case_id,
+            "tracking_file": file
+        })
+        headers = {
+        'Content-Type': 'application/json'
+        }
+        requests.request("POST", url, headers=headers, data=payload)
+    except Exception as e:
+        print("error call worker ....", e)
+
 def handle_multiplefile(listfile,thread,case_id):
-    for file in listfile:
+    threads = []
+    for i,file in listfile:
         file_name = file.split(".")[0]
         if "/" in file_name: 
             file_name = file_name.split("/")[len(file_name.split("/")) - 1]
@@ -124,17 +139,13 @@ def handle_multiplefile(listfile,thread,case_id):
             os.makedirs(f"{dir_project}/final_result/{case_id}/{file_name}")
     
         folder = file_name
-        url = "http://192.168.50.10:6000/analyst/ele"
-        payload = json.dumps({
-            "case_id": case_id,
-            "tracking_file": file
-        })
-        headers = {
-        'Content-Type': 'application/json'
-        }
-        print("Start ....")
-        requests.request("POST", url, headers=headers, data=payload)
-        print("done")
+        port = 6000 + i 
+        link = f"http://192.168.50.10:{port}/analyst/ele"
+        t = threading.Thread(target=callworker, args=(link, case_id, file))
+        threads.append(t)
+        t.start()
+    for t in threads:
+        t.join()
     
     return 
 

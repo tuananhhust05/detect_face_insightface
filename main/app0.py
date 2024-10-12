@@ -681,7 +681,7 @@ def handle_main(case_id, tracking_file):
             os.makedirs(f"{dir_project}/video_apperance")
         if not os.path.exists(f"{dir_project}/video_apperance/{case_id}"):
             os.makedirs(f"{dir_project}/video_apperance/{case_id}")
-        handle_multiplefile([tracking_file],20,case_id)
+        handle_multiplefile([tracking_file],15,case_id)
         return 
     except Exception as e:
         print("error handle_main",e)
