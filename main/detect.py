@@ -124,13 +124,17 @@ def handle_multiplefile(listfile,thread,case_id):
             os.makedirs(f"{dir_project}/final_result/{case_id}/{file_name}")
     
         folder = file_name
-        # process_videos(folder,file,thread,case_id)
-        data = {
+        url = "http://192.168.50.10:6000/analyst/ele"
+        payload = json.dumps({
             "case_id": case_id,
             "tracking_file": file
+        })
+        headers = {
+        'Content-Type': 'application/json'
         }
-        requests.post('http://192.168.50.10:6000/analyst/ele', data=data)
-        # subprocess.run(f"rm -rf videos/{file_name}", shell=True, check=True)
+        print("Start ....")
+        requests.request("POST", url, headers=headers, data=payload)
+        print("done")
     
     return 
 
