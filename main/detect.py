@@ -99,7 +99,9 @@ def handle_multiplefile(listfile,case_id):
     try:
         print("listfile....",listfile)
         threads = []
-        for i,file in listfile:
+        count = 0 
+        for file in listfile:
+            print("start for ...")
             file_name = file.split(".")[0]
             if "/" in file_name: 
                 file_name = file_name.split("/")[len(file_name.split("/")) - 1]
@@ -141,7 +143,8 @@ def handle_multiplefile(listfile,case_id):
                 os.makedirs(f"{dir_project}/final_result/{case_id}/{file_name}")
         
             folder = file_name
-            port = 6000 + i 
+            port = 6000 + count 
+            count = count + 1 
             link = f"http://192.168.50.10:{port}/analyst/ele"
             print("Call api")
             t = threading.Thread(target=callworker, args=(link, case_id, file))
