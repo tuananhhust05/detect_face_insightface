@@ -700,6 +700,9 @@ def analyst():
         })
     except Exception as e:
         print("error handle_main",e)
+        return jsonify({
+            "data":"error ....."
+        })
 if __name__ == '__main__':
     api.run(debug=True, port=port, host='0.0.0.0')
 

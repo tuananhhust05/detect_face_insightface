@@ -43,7 +43,13 @@ dir_project = "/home/poc4a5000/storage_facesx"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-
+# Define providers with device_id
+torch.cuda.set_device(0)
+providers = [
+    ('CUDAExecutionProvider', {
+        'device_id': 0,
+    })
+]
 weight_point = 0.625
 time_per_frame_global = 2
 ctx_id = 0 if device.type == 'cuda' else  -1
@@ -60,15 +66,6 @@ num_gpus = torch.cuda.device_count()
 print(f"Number of GPUs available: {num_gpus}")
 gpu_ids = list(range(num_gpus)) 
 
-
-
-# Define providers with device_id
-torch.cuda.set_device(0)
-providers = [
-    ('CUDAExecutionProvider', {
-        'device_id': 0,
-    })
-]
 
 
 list_vector = []
