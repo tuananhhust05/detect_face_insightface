@@ -46,26 +46,41 @@ print(f"Using device: {device}")
 
 weight_point = 0.625
 time_per_frame_global = 2
-gpu_id_global = 0
-port = 6000 + gpu_id_global
-
+ctx_id = 0 if device.type == 'cuda' else  -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CPUExecutionProvider'])
-app_recognize.prepare(ctx_id=gpu_id_global, det_thresh=0.1, det_size=(640, 640))
+app_recognize.prepare(ctx_id=-1, det_thresh=0.1, det_size=(640, 640))
 
 app_recognize2 = FaceAnalysis('buffalo_l',providers=['CPUExecutionProvider'])
-app_recognize2.prepare(ctx_id=gpu_id_global, det_thresh=0.3, det_size=(640, 640))
+app_recognize2.prepare(ctx_id=-1, det_thresh=0.3, det_size=(640, 640))
 
 app_recognize3 = FaceAnalysis('buffalo_l',providers=['CPUExecutionProvider'])
-app_recognize3.prepare(ctx_id=gpu_id_global, det_thresh=0.5, det_size=(640, 640))
+app_recognize3.prepare(ctx_id=-1, det_thresh=0.5, det_size=(640, 640))
 
+num_gpus = torch.cuda.device_count()
+print(f"Number of GPUs available: {num_gpus}")
+gpu_ids = list(range(num_gpus)) 
 
-
+# list_model_detect = []
+# for j in range(num_gpus):
+#     providers = [
+#         ('CUDAExecutionProvider', {
+#             'device_id': j,
+#         })
+#     ]
+#     model_ele = model_zoo.get_model(
+#         '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
+#         providers=providers
+#     )
+#     model_ele.prepare(ctx_id=j, det_thresh=0.1,det_size=(640, 640))
+#     list_model_detect.append(model_ele)
+# torch.cuda.set_device(gpu_id)
+# device = torch.device(f'cuda:{gpu_id}')
 
 # Define providers with device_id
 torch.cuda.set_device(0)
 providers = [
     ('CUDAExecutionProvider', {
-        'device_id': gpu_id_global,
+        'device_id': 0,
     })
 ]
 
@@ -73,15 +88,26 @@ model = model_zoo.get_model(                                 # Load the model wi
     '/home/poc4a5000/.insightface/models/buffalo_l/det_10g.onnx',
     providers=providers
 )
-model.prepare(ctx_id=gpu_id_global, det_size=(640, 640))
+model.prepare(ctx_id=0, det_size=(640, 640))
 
-model_analyst = FaceAnalysis('buffalo_l',providers=providers)
-model_analyst.prepare(ctx_id=gpu_id_global,det_thresh=0.3, det_size=(640, 640))
-
+list_model_analyst = []
+for j in range(num_gpus):
+    providers = [
+        ('CUDAExecutionProvider', {
+            'device_id': j,
+        })
+    ]
+    app_ele = FaceAnalysis('buffalo_l',providers=providers)
+    app_ele.prepare(ctx_id=j,det_thresh=0.3, det_size=(640, 640))
+    list_model_analyst.append(app_ele)
 
 list_vector = []
 
 list_vector_other = []
+
+list_vector_widden = []
+
+picture_queue = Queue()  # for optimizing picture 
 
 def getduration(file):
     try:
@@ -101,7 +127,6 @@ def cosin(question, answer):
     answer = torch.tensor(answer).to(device)
     cosine = torch.dot(question, answer) / (torch.norm(question) * torch.norm(answer))
     return cosine.item()  
-
 
 def search_with_cosine_similarity(query_vec):
     search_query = {
@@ -124,7 +149,6 @@ def search_with_cosine_similarity(query_vec):
     response = es.search(index=index_name, body=search_query)
     return response
 
-
 def checkface(vector):
     try:
         response = search_with_cosine_similarity(vector)
@@ -138,13 +162,36 @@ def checkface(vector):
         print(f"checkface: {ex}")
         return 0 
 
-
 def current_date():
   format_date = "%Y-%m-%d %H:%M:%S"
   now = datetime.datetime.now()
   date_string = now.strftime(format_date)
   return datetime.datetime.strptime(date_string, format_date)
 
+class VideoCaptureThreading:
+    def __init__(self, src=0):
+        self.src = src
+        self.cap = cv2.VideoCapture(self.src)
+        # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
+        self.ret, self.frame = self.cap.read()
+        self.running = True
+        self.thread = Thread(target=self.update, args=())
+        self.thread.start()
+
+    def update(self):
+        while self.running:
+            self.ret, self.frame = self.cap.read()
+
+    def read(self):
+        return self.ret, self.frame
+
+    def stop(self):
+        self.running = False
+        self.thread.join()
+
+    def release(self):
+        self.cap.release()
 
 def call_optimize_image(path):  
     try:                      
@@ -162,21 +209,27 @@ def call_optimize_image(path):
         print(f"call_optimize_image {ex}")
         return
 
-
 def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id,extension):
     array_em_result = []
     list_result_ele = []
     frame_count = 0 
     duration = getduration(video_file)
+
     if(duration == 0):
         return 
+    
     cap2 = cv2.VideoCapture(video_file, cv2.CAP_FFMPEG)
+    cap = VideoCaptureThreading(video_file)
+
     fps = cap2.get(cv2.CAP_PROP_FPS)
     fps = ( fps + 1 ) // 1
     frame_rate = time_per_frame_global * fps 
+
+
     sum_age = 0 
     sum_gender = 0 
     count_face = 0 
+    list_face_other_in_thread = []
     while True:
         ret, frame = cap2.read()
         if not ret:
@@ -184,8 +237,18 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
         frame_count += 1
         print("frame_count", frame_count)
         if frame_count % frame_rate == 0:
+            
+            # facechecks = list_model_detect[gpu_id].detect(frame,input_size=(640, 640))
+            # flagDetect = False
+            # if(len(facechecks) > 0):
+            #     if(len(facechecks[0]) > 0):
+            #         flagDetect = True
+            
+            # if(flagDetect == True):
+            # print("Có mặt......")
             try:
-                faces = model_analyst.get(frame)
+                faces = list_model_analyst[gpu_id].get(frame)
+                
                 flag_loop = False
                 for face in faces:
                     if(flag_loop == True):
@@ -193,9 +256,9 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                     if face["det_score"] > 0.6:
                         similarity  = checkface(face['embedding'].tolist())
                         print("similarity.....",similarity)
-
                         if(similarity > 0):
                             flag_loop = True
+                        # if True:
                             count_face = count_face + 1 
                             sum_age = sum_age + int(face['age'])
                             sum_gender = sum_gender + int(face['gender'])
@@ -220,7 +283,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                     os.makedirs(f"{dir_project}/faces/{case_id}/{folder}/{index_local}")
                                 if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}"):
                                     os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
-
+                                
                                 try:
                                     height, width = frame.shape[:2]
                                     a = max(1, bbox[1])
@@ -235,13 +298,11 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 bottom_right = (bbox[2], bbox[3])
                                 color = (255, 0, 0)
                                 thickness = 2
-
                                 try:
                                     cv2.rectangle(frame, top_left, bottom_right, color, thickness)
                                     cv2.imwrite(f'{dir_project}/outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
                                 except Exception as e:
                                     print(f"error save outputs")
-
                             except Exception as e:
                                 print(f"Error saving frame: {e}")
                             
@@ -261,17 +322,81 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                     }
                             facematches.insert_one(mydict)
                             mydict["embedding"] = face['embedding']
+                            list_vector_widden.append(mydict)
 
+                            global list_vector 
+
+                            list_vector.append(face['embedding'])
                             # insert elasticsearch 
                             insert_document(str(uuid.uuid4()), face['embedding'])
-                           
+                            # for optimizing picture 
+                            # picture_queue.put(mydict)
+                            
+                            # threading.Thread(target=call_optimize_image, args=(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',)).start()
+                            
+                        # else:
+                        
+                            # try:
+                            #     bbox = [int(b) for b in face['bbox']]
+                            #     filename = f"{frame_count}_{str(uuid.uuid4())}_face.jpg"
+                            #     if not os.path.exists(f"{dir_project}/faces/{case_id}/{folder}/{index_local}"):
+                            #         os.makedirs(f"{dir_project}/faces/{case_id}/{folder}/{index_local}")
+                            #     if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}"):
+                            #         os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
+                            #     try:
+                            #         cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+                            #     except Exception as e:
+                            #         print(f"Error saving faces other ....")
+                            # except Exception as e:
+                            #     print(f"Error saving frame: {e}")
+                            
+                            # mydict = { 
+                            #         "id":  str(uuid.uuid4()), 
+                            #         "case_id": case_id,
+                            #         "embedding": face['embedding'],
+                            #         "similarity_face":similarity,
+                            #         "gender":int(face['gender']),
+                            #         "age":int(face['age']),
+                            #         "time_invideo":"",
+                            #         "proofImage":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
+                            #         "url":f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',
+                            #         "createdAt":current_date(),
+                            #         "updatedAt":current_date(),
+                            #         "file":folder,
+                            #         "frame_count":frame_count
+                            #         }
+                            # list_face_other_in_thread.append(mydict)
+                            # list_vector_other.append(mydict)
             except Exception as e:
                 print("error recognizing ",e)
-
+    # check in face_other again 
+    # for face_other in list_face_other_in_thread:
+    #      print("check again....")
+    #      similarity  = checkface(face_other['embedding'].tolist())
+    #      if(similarity > 0):
+    #         print("check again.... ok..")
+    #         if len(array_em_result) == 0:
+    #             array_em_result.append({
+    #                 "speaker": 0,
+    #                 "gender":int(face_other['gender']),
+    #                 "age":int(face_other['age']),
+    #                 "frames": [face_other["frame_count"]],
+    #             })
+    #         else:
+    #             array_em_result[0]["frames"].append(face_other["frame_count"])
+    #         frame_count_current = face_other["frame_count"]
+    #         filename = f"{frame_count_current}_0_face.jpg"
+    #         threading.Thread(target=call_optimize_image, args=(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}',)).start()
+    #         url = face_other["url"]
+    #         list_vector.append(face['embedding'])
+    #         # insert elasticsearch 
+    #         insert_document(str(uuid.uuid4()), face_other['embedding'])
+    #         subprocess.run(f"mv {url} {dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}", shell=True, check=True)
 
           
-             
-
+    cap.release()
+    cap2.release()
+    
     for ele in array_em_result:
         ele["frame_count"] = frame_count
         ele["duration"] = duration
@@ -328,9 +453,6 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
     with open(f"{dir_project}/results/{case_id}/{folder}/{index_local}.json", 'w') as f:
         json.dump(list_result_ele, f, indent=4)
-    
-
-    cap2.release()
     
     return 
 
@@ -408,7 +530,7 @@ def groupJson(folder,video_file,count_thread,case_id, file_extension):
 
     return 
 
-def create_video_apperance(case_id,thread_count,folder, extension):
+def create_video_apperance(case_id,thread_count,folder):
     if not os.path.exists(f"{dir_project}/video_apperance"):
         os.makedirs(f"{dir_project}/video_apperance")
     if not os.path.exists(f"{dir_project}/video_apperance/{case_id}"):
@@ -501,7 +623,6 @@ def create_video_apperance(case_id,thread_count,folder, extension):
         "id":str(uuid.uuid4()),
         "case_id":case_id,
         "path":outputfinal,
-        "file":f"{folder}{extension}"
     })
 
     return 
@@ -550,7 +671,7 @@ def handleimage(folder,img_url,case_id,file_extension):
    img = cv2.imread(img_url)
    facechecks = model.detect(img,input_size=(640, 640))
    if(len(facechecks) > 0):
-       faces = model_analyst.get(img)
+       faces = list_model_analyst[0].get(img)
        for face in faces:
          if face["det_score"] > 0.5:
             similarity  = checkface(face['embedding'].tolist())
@@ -600,7 +721,7 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
         video_files = [f"{dir_project}/videos/{case_id}/{folder}/{i}.mp4" for i in range(count_thread)]  
         threads = []
         for i, video_file in enumerate(video_files):
-            gpu_id = gpu_id_global
+            gpu_id = gpu_ids[i % num_gpus]
             t = threading.Thread(target=extract_frames, args=(folder,video_file,i,time_per_segment,case_id,gpu_id,file_extension))
             threads.append(t)
             t.start()
@@ -610,7 +731,7 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
 
         groupJson(folder,video_file_origin,count_thread,case_id, file_extension)
         # create_video_apperance(case_id,count_thread,folder,file_extension, svideo_file_origin)
-        create_video_apperance(case_id,count_thread,folder,file_extension)
+        create_video_apperance(case_id,count_thread,folder)
     else:
         handleimage(folder,video_file_origin,case_id,file_extension)
     return 
@@ -663,6 +784,93 @@ def handle_multiplefile(listfile,thread,case_id):
     
     return 
 
+def checkOnArr(arr,num):
+    for ele in arr:
+        if ele == num:
+            return True
+    return False
+
+def insert_to_database(id,embedding,face_id,similarity_face,gender,age,proofImage,url,file,case_id):
+    try:
+        face_id_insert = face_id 
+        similarity  = checkface(embedding.tolist())
+        if(similarity > 0): face_id_insert = 0
+        mydict = { 
+                "id":id, 
+                "case_id": case_id,
+                "similarity_face":similarity_face,
+                "gender":gender,
+                "age":age,
+                "time_invideo":"",
+                "proofImage":proofImage,
+                "url": url,
+                "createdAt":current_date(),
+                "updatedAt":current_date(),
+                "file":file,
+                "face_id":face_id_insert
+            }
+        facematches.insert_one(mydict)
+    except Exception as e:
+        print("insert_to_database.....", e)
+
+def handle_other_face():
+    try:
+        face_id_max = 1 
+        global list_vector_other
+        print("Start.... handle_other_face")
+        for i in range(len(list_vector_other)):
+            face = list_vector_other[i]
+            if("face_id" not in face):
+                face["face_id"] = face_id_max 
+                for face_compare in list_vector_other:
+                    if(face_compare["id"] != face["id"]):
+                        print("caculation ....",i)
+                        cos = cosin(face["embedding"], face_compare["embedding"])
+                        if(cos > (weight_point-0.05) ):
+                            face_compare["face_id"] = face_id_max
+                face_id_max = face_id_max + 1
+        list_face_not_check = []
+        list_inserted = []
+        for i in range(len(list_vector_other)):
+      
+            if(checkOnArr(list_face_not_check, face["face_id"]) == False):
+                print("list_face_not_check",list_face_not_check)
+                face = list_vector_other[i]
+                for face_compare in list_vector_other:
+                    if(face_compare["face_id"] != face["face_id"]):
+                            print("Caculation2...", i)
+                            cos = cosin(face["embedding"], face_compare["embedding"])
+                            if(cos > (weight_point - 0.15) ):
+                                if(checkOnArr(list_face_not_check, face_compare["face_id"]) == False):
+                                    list_face_not_check.append(face_compare["face_id"])
+                                for face_change in list_vector_other:
+                                    if(face_change["face_id"] == face_compare["face_id"]):
+                                        face_change["face_id"] = face["face_id"]
+                print("length list_vector",len(list_vector))
+                t = threading.Thread(target=insert_to_database, args=(face["id"],face["embedding"],face["face_id"],face["similarity_face"],face["gender"],face["age"],face["proofImage"],face["url"],face["file"],face["case_id"]))
+                t.start()
+                t.join()
+                list_inserted.append(face["id"])
+
+        for face in list_vector_other:
+            if(checkOnArr(list_inserted, face["id"]) == False):
+                print("insert....")
+                del(face["embedding"])
+                facematches.insert_one(face)
+
+    except Exception as e:
+        print("handle_other_face.....", e)
+
+
+def handle_apperance_other_face():
+    list_apperance_other = []
+    for face in list_vector_other:
+        check = False
+        file = face["file"]
+        face_id = face["face_id"]
+        for apperance in list_apperance_other:
+           print("..")
+
 
 def insert_document(doc_id, vector):
     try:
@@ -674,34 +882,205 @@ def insert_document(doc_id, vector):
     except Exception as e:
         print("insert_document",e)
 
-def handle_main(case_id, tracking_file):
+def analyst_video_sadtalker(path, target_folder):
     try:
-        # global list_vector
+        # redecode
+        origin_videofile = path
+        file = origin_videofile.split("/")[ len(origin_videofile.split("/")) -1 ]
+        name_file = file.split(".")[0]
+        new_name = f"{name_file}_tempt"
+        new_path = origin_videofile.replace(name_file,new_name)
+        print(f"ffmpeg -i {path} -c:v copy -c:a copy {new_path} -y && rm {path} && mv {new_path} {path}")
+        subprocess.run(f"ffmpeg -i {path} -c:v copy -c:a copy {new_path} -y && rm {path} && mv {new_path} {path}", shell=True, check=True)
+
+        cap = cv2.VideoCapture(path)
+        count = 0
+        count_inserted = 0
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            count = count + 1 
+            print("sadtalker ....",  count)
+            try:
+                faces = []
+                try:
+                    faces = app_recognize3.get(frame)
+                except Exception as e:
+                    print("fail recognize 1 ...")
+                    faces = []
+
+                if(len(faces) == 0):
+                    try:
+                       faces = app_recognize2.get(frame)
+                    except Exception as e:
+                       print("fail recognize 2 ...")
+                       faces = []
+
+                if(len(faces) == 0):
+                    try:
+                       faces = app_recognize.get(frame)
+                    except Exception as e:
+                       print("fail recognize 3 ...")
+                       faces = []
+                for face in faces:
+                    embedding_vector = face['embedding']
+                    insert_document(str(uuid.uuid4()), embedding_vector)
+                    count_inserted = count_inserted + 1 
+                    print("inserted",count_inserted)
+                    list_vector.append(embedding_vector)
+                    # bbox = [int(b) for b in face['bbox']]
+                    # cv2.imwrite(f'/home/poc4a5000/detect/detect/image_sadtalker/{str(uuid.uuid4())}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+            except Exception as e:
+                    print("error recognize sanalyst_video_sadtalker",e)
+    except Exception as e:
+        print("error analyst_video_sadtalker",e)
+
+
+def handle_sadtalker(path,case_id,target_folder):
+    try:
+        url = "http://192.168.50.10:8003/upload"
+        payload = {
+            'case_id':case_id 
+        }
+        name_file = path.split("/")[len(path.split("/")) -1 ]
+        files=[
+        ('files',(name_file,open( path ,'rb'),'application/octet-stream'))
+        ]
+        headers = {}
+        print(path,payload)
+        response = requests.request("POST", url, headers=headers, data=payload, files=files)
+        for video in response.json()["videos"]:
+            analyst_video_sadtalker(video,target_folder)
+        print(response.json()["videos"])
+        return 
+    except Exception as e:
+        print("error handle_sadtalker",e)
+
+def handle_main(case_id, tracking_folder, target_folder):
+    try:
+        global list_vector
+
         if not os.path.exists(f"{dir_project}/video_apperance"):
             os.makedirs(f"{dir_project}/video_apperance")
         if not os.path.exists(f"{dir_project}/video_apperance/{case_id}"):
             os.makedirs(f"{dir_project}/video_apperance/{case_id}")
-        handle_multiplefile([tracking_file],20,case_id)
+
+        flag_target_folder = True
+        for path in os.listdir(target_folder):
+            if(flag_target_folder == True):
+                if os.path.isfile(os.path.join(target_folder, path)):
+                    full_path = f"{target_folder}/{path}"
+                    img = cv2.imread(full_path)
+                    print("full_path",full_path)
+                    faces = app_recognize3.get(img)
+                    if(len(faces) == 0):
+                        faces = app_recognize2.get(img)
+                    
+                    if(len(faces) == 0):
+                        faces = app_recognize.get(img)
+
+                    for face in faces:
+                        embedding_vector = face['embedding']
+                        list_vector.append(embedding_vector)
+                        insert_document(str(uuid.uuid4()), embedding_vector)
+                        print("Có mặt ........")
+                        pose = face['pose']
+                        print(pose)
+                        flag_straight = True
+                        for angle in pose:
+                           if(flag_straight == True):
+                                if(angle > 7):
+                                    flag_straight = False
+                        if(flag_straight == True):
+                            handle_sadtalker(full_path,case_id,target_folder)
+                       
+        list_file = []
+        for path in os.listdir(tracking_folder):
+            if os.path.isfile(os.path.join(tracking_folder, path)):
+                full_path = f"{tracking_folder}/{path}"
+                list_file.append(full_path)
+        if(len(list_file) > 0):
+            handle_multiplefile(list_file,60,case_id)
+            cases.update_many({
+                "id":case_id
+            },{
+                "$set":{
+                    "end":current_date(),
+                    "status":"completed"
+                }
+            })
+            # handle_other_face()
         return 
     except Exception as e:
         print("error handle_main",e)
-
+        cases.update_many({
+            "id":case_id
+        },{
+            "$set":{
+                "end":current_date(),
+                "status":"completed"
+            }
+        })
+    
+def delete_all_documents(index):
+    try:
+        response = es.delete_by_query(index=index, body={
+            "query": {
+                "match_all": {}
+            }
+        })
+        print(f"Deleted {response['deleted']} documents from index '{index}'.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 api = Flask(__name__)
-@api.route('/analyst/ele', methods=["POST"])
+@api.route('/analyst', methods=["POST"])
 def analyst():
-    try:
-        case_id = request.json['case_id']
-        tracking_file = request.json['tracking_file']
-        print("case_id", case_id)
-        handle_main(case_id, tracking_file)
-        return jsonify({
-            "data":"ok"
-        })
-    except Exception as e:
-        print("error handle_main",e)
+    case_id = request.json['case_id']
+    tracking_folder = request.json['tracking_folder']
+    target_folder = request.json['target_folder']
+    
+    myquery = { "case_id": case_id }
+    facematches.delete_many(myquery)
+    appearances.delete_many(myquery)
+    videos.delete_many(myquery)
+    
+    cases.update_many({
+        "id":case_id
+    },{
+        "$set":{
+            "start":current_date(),
+            "status":"processing"
+        }
+    })
+    
+    global list_vector 
+    global list_vector_other
+    list_vector_other = []
+    list_vector  = []
+
+    delete_all_documents(index_name)
+    
+    subprocess.run(f"cd {dir_project} && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && rm -rf video_apperance && mkdir video_apperance", shell=True, check=True)
+    subprocess.run(f"cd /home/poc4a5000/facesx/engine/sad-talker/uploads && rm -rf db696a35-0043-4aba-a844-295e3432a118 && mkdir db696a35-0043-4aba-a844-295e3432a118", shell=True, check=True)
+    
+    handle_main(case_id,tracking_folder,target_folder)
+
+    cases.update_many({
+        "id":case_id
+    },{
+        "$set":{
+            "status":"completed"
+        }
+    })
+
+    return jsonify({
+        "data":"ok"
+    })
+
 if __name__ == '__main__':
-    api.run(debug=True, port=port, host='0.0.0.0')
+    api.run(debug=True, port=5234, host='0.0.0.0')
 
 
 
