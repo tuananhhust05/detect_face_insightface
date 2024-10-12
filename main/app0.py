@@ -511,7 +511,7 @@ def cutvideo(videofile,start,duration,output,stt):
     stt_handle = stt 
     while(flag == True):
         try:
-            gpu_id = gpu_ids[stt_handle % num_gpus]
+            gpu_id = gpu_id_global
             command = f"ffmpeg -hwaccel cuda -hwaccel_device {gpu_id} -ss {start} -i {videofile} -vf \"scale=480:480,pad=480:480:(ow-iw)/2:(oh-ih)/2\" -t {duration} -c:v h264_nvenc -preset fast -b:v 5M {output} -y"
             subprocess.run(command, shell=True, check=True)
             flag = False
