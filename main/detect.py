@@ -95,7 +95,7 @@ def callworker(link, case_id, file):
     except Exception as e:
         print("error call worker ....", e)
 
-def handle_multiplefile(listfile,thread,case_id):
+def handle_multiplefile(listfile,case_id):
     try:
         print("listfile....",listfile)
         threads = []
@@ -282,7 +282,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                 full_path = f"{tracking_folder}/{path}"
                 list_file.append(full_path)
         if(len(list_file) > 0):
-            handle_multiplefile(list_file,60,case_id)
+            handle_multiplefile(list_file,case_id)
             cases.update_many({
                 "id":case_id
             },{
