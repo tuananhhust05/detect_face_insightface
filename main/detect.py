@@ -96,58 +96,63 @@ def callworker(link, case_id, file):
         print("error call worker ....", e)
 
 def handle_multiplefile(listfile,thread,case_id):
-    threads = []
-    for i,file in listfile:
-        file_name = file.split(".")[0]
-        if "/" in file_name: 
-            file_name = file_name.split("/")[len(file_name.split("/")) - 1]
+    try:
+        print("listfile....",listfile)
+        threads = []
+        for i,file in listfile:
+            file_name = file.split(".")[0]
+            if "/" in file_name: 
+                file_name = file_name.split("/")[len(file_name.split("/")) - 1]
+            
+            if not os.path.exists(f"{dir_project}/faces/{case_id}"):
+                os.makedirs(f"{dir_project}/faces/{case_id}")
+
+            if not os.path.exists(f"{dir_project}/faces/{case_id}/{file_name}"):
+                os.makedirs(f"{dir_project}/faces/{case_id}/{file_name}")
+            
+            if not os.path.exists(f"{dir_project}/outputs/{case_id}"):
+                os.makedirs(f"{dir_project}/outputs/{case_id}")
+
+            if not os.path.exists(f"{dir_project}/outputs/{case_id}/{file_name}"):
+                os.makedirs(f"{dir_project}/outputs/{case_id}/{file_name}")
+            
+            if not os.path.exists(f"{dir_project}/videos/{case_id}"):
+                os.makedirs(f"{dir_project}/videos/{case_id}")
+
+            if not os.path.exists(f"{dir_project}/videos/{case_id}/{file_name}"):
+                os.makedirs(f"{dir_project}/videos/{case_id}/{file_name}")
+            
+            if not os.path.exists(f"{dir_project}/datas/{case_id}"):
+                os.makedirs(f"{dir_project}/datas/{case_id}")
+
+            if not os.path.exists(f"{dir_project}/datas/{case_id}/{file_name}"):
+                os.makedirs(f"{dir_project}/datas/{case_id}/{file_name}")
         
-        if not os.path.exists(f"{dir_project}/faces/{case_id}"):
-            os.makedirs(f"{dir_project}/faces/{case_id}")
+            if not os.path.exists(f"{dir_project}/results/{case_id}"):
+                os.makedirs(f"{dir_project}/results/{case_id}")
 
-        if not os.path.exists(f"{dir_project}/faces/{case_id}/{file_name}"):
-            os.makedirs(f"{dir_project}/faces/{case_id}/{file_name}")
+            if not os.path.exists(f"{dir_project}/results/{case_id}/{file_name}"):
+                os.makedirs(f"{dir_project}/results/{case_id}/{file_name}")
+            
+            if not os.path.exists(f"{dir_project}/final_result/{case_id}"):
+                os.makedirs(f"{dir_project}/final_result/{case_id}")
+
+            if not os.path.exists(f"{dir_project}/final_result/{case_id}/{file_name}"):
+                os.makedirs(f"{dir_project}/final_result/{case_id}/{file_name}")
         
-        if not os.path.exists(f"{dir_project}/outputs/{case_id}"):
-            os.makedirs(f"{dir_project}/outputs/{case_id}")
-
-        if not os.path.exists(f"{dir_project}/outputs/{case_id}/{file_name}"):
-            os.makedirs(f"{dir_project}/outputs/{case_id}/{file_name}")
+            folder = file_name
+            port = 6000 + i 
+            link = f"http://192.168.50.10:{port}/analyst/ele"
+            print("Call api")
+            t = threading.Thread(target=callworker, args=(link, case_id, file))
+            threads.append(t)
+            t.start()
+        for t in threads:
+            t.join()
         
-        if not os.path.exists(f"{dir_project}/videos/{case_id}"):
-            os.makedirs(f"{dir_project}/videos/{case_id}")
-
-        if not os.path.exists(f"{dir_project}/videos/{case_id}/{file_name}"):
-            os.makedirs(f"{dir_project}/videos/{case_id}/{file_name}")
-        
-        if not os.path.exists(f"{dir_project}/datas/{case_id}"):
-            os.makedirs(f"{dir_project}/datas/{case_id}")
-
-        if not os.path.exists(f"{dir_project}/datas/{case_id}/{file_name}"):
-            os.makedirs(f"{dir_project}/datas/{case_id}/{file_name}")
-       
-        if not os.path.exists(f"{dir_project}/results/{case_id}"):
-            os.makedirs(f"{dir_project}/results/{case_id}")
-
-        if not os.path.exists(f"{dir_project}/results/{case_id}/{file_name}"):
-            os.makedirs(f"{dir_project}/results/{case_id}/{file_name}")
-        
-        if not os.path.exists(f"{dir_project}/final_result/{case_id}"):
-            os.makedirs(f"{dir_project}/final_result/{case_id}")
-
-        if not os.path.exists(f"{dir_project}/final_result/{case_id}/{file_name}"):
-            os.makedirs(f"{dir_project}/final_result/{case_id}/{file_name}")
-    
-        folder = file_name
-        port = 6000 + i 
-        link = f"http://192.168.50.10:{port}/analyst/ele"
-        t = threading.Thread(target=callworker, args=(link, case_id, file))
-        threads.append(t)
-        t.start()
-    for t in threads:
-        t.join()
-    
-    return 
+        return 
+    except Exception as e:
+        print("handle_multiplefile ....", e)
 
 def insert_document(doc_id, vector):
     try:
