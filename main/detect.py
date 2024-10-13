@@ -50,7 +50,7 @@ providers = [
         'device_id': 0,
     })
 ]
-weight_point = 0.625
+weight_point = 0.65
 time_per_frame_global = 2
 ctx_id = 0 if device.type == 'cuda' else  -1
 app_recognize = FaceAnalysis('buffalo_l',providers=['CPUExecutionProvider'])
