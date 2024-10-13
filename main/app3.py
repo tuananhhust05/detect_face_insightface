@@ -45,7 +45,7 @@ print(f"Using device: {device}")
 
 
 weight_point = 0.625
-time_per_frame_global = 2
+time_per_frame_global = 1
 gpu_id_global = 3
 port = 6000 + gpu_id_global
 
