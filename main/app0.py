@@ -190,7 +190,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 for face in faces:
                     if(flag_loop == True):
                         break
-                    if face["det_score"] > 0.725:
+                    if face["det_score"] > 0.7:
                         similarity  = checkface(face['embedding'].tolist())
                         print("similarity.....",similarity)
 
@@ -365,7 +365,6 @@ def groupJson(folder,video_file,count_thread,case_id, file_extension):
                         {"path":duration[0]["path"], "time":duration[0]["time"] + stt * time_per_segment},
                         {"path":"","time":duration[1]["time"] + stt * time_per_segment}
                     ])
-
 
     if count_face > 0 : 
         final_result['age'] = sum_age / count_face
