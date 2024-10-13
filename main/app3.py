@@ -44,7 +44,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 
-weight_point = 0.65
+weight_point = 0.625
 time_per_frame_global = 2
 gpu_id_global = 3
 port = 6000 + gpu_id_global
@@ -190,7 +190,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 for face in faces:
                     if(flag_loop == True):
                         break
-                    if face["det_score"] > 0.6:
+                    if face["det_score"] > 0.65:
                         similarity  = checkface(face['embedding'].tolist())
                         print("similarity.....",similarity)
 
