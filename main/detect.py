@@ -81,12 +81,13 @@ def current_date():
   date_string = now.strftime(format_date)
   return datetime.datetime.strptime(date_string, format_date)
 
-def callworker(link, case_id, file):
+def callworker(link, case_id, file,name):
     try:
         url = link
         payload = json.dumps({
             "case_id": case_id,
-            "tracking_file": file
+            "tracking_file": file,
+            "name":name
         })
         headers = {
         'Content-Type': 'application/json'
@@ -95,7 +96,7 @@ def callworker(link, case_id, file):
     except Exception as e:
         print("error call worker ....", e)
 
-def handle_multiplefile(listfile,case_id):
+def handle_multiplefile(listfile,case_id,name):
     try:
         print("listfile....",listfile)
         threads = []
@@ -147,7 +148,7 @@ def handle_multiplefile(listfile,case_id):
             count = count + 1 
             link = f"http://192.168.50.10:{port}/analyst/ele"
             print("Call api")
-            t = threading.Thread(target=callworker, args=(link, case_id, file))
+            t = threading.Thread(target=callworker, args=(link, case_id, file,name))
             threads.append(t)
             t.start()
         for t in threads:
@@ -242,7 +243,7 @@ def handle_sadtalker(path,case_id,target_folder):
     except Exception as e:
         print("error handle_sadtalker",e)
 
-def handle_main(case_id, tracking_folder, target_folder):
+def handle_main(case_id, tracking_folder, target_folder,name):
     try:
         global list_vector
 
@@ -285,7 +286,7 @@ def handle_main(case_id, tracking_folder, target_folder):
                 full_path = f"{tracking_folder}/{path}"
                 list_file.append(full_path)
         if(len(list_file) > 0):
-            handle_multiplefile(list_file,case_id)
+            handle_multiplefile(list_file,case_id,name)
             cases.update_many({
                 "id":case_id
             },{
@@ -325,7 +326,7 @@ def analyst():
     case_id = request.json['case_id']
     tracking_folder = request.json['tracking_folder']
     target_folder = request.json['target_folder']
-    
+    name =  request.json['name']
     myquery = { "case_id": case_id }
     facematches.delete_many(myquery)
     appearances.delete_many(myquery)
@@ -346,7 +347,7 @@ def analyst():
     subprocess.run(f"cd {dir_project} && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && rm -rf video_apperance && mkdir video_apperance", shell=True, check=True)
     subprocess.run(f"cd /home/poc4a5000/facesx/engine/sad-talker/uploads && rm -rf db696a35-0043-4aba-a844-295e3432a118 && mkdir db696a35-0043-4aba-a844-295e3432a118", shell=True, check=True)
     
-    handle_main(case_id,tracking_folder,target_folder)
+    handle_main(case_id,tracking_folder,target_folder,name)
 
     cases.update_many({
         "id":case_id

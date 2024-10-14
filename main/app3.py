@@ -163,7 +163,7 @@ def call_optimize_image(path):
         return
 
 
-def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id,extension):
+def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id,extension,name):
     array_em_result = []
     list_result_ele = []
     frame_count = 0 
@@ -237,6 +237,12 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                                 thickness = 2
 
                                 try:
+                                    text = str(name)
+                                    position = (bbox[0], bbox[1])
+                                    font = cv2.FONT_HERSHEY_SIMPLEX
+                                    font_scale = 1
+
+                                    cv2.putText(frame, text, position, font, font_scale, color, thickness)
                                     cv2.rectangle(frame, top_left, bottom_right, color, thickness)
                                     cv2.imwrite(f'{dir_project}/outputs/{case_id}/{folder}/{index_local}/{filename}', frame)
                                 except Exception as e:
@@ -603,7 +609,7 @@ def handleimage(folder,img_url,case_id,file_extension):
                     "updatedAt":current_date(),
                 })
 
-def process_videos(folder,video_file_origin,count_thread,case_id):
+def process_videos(folder,video_file_origin,count_thread,case_id, name):
     filename, file_extension = os.path.splitext(video_file_origin)
     if( (file_extension == ".mp4") or (file_extension == ".webm") or (file_extension == ".mkv") or (file_extension == ".mov")):
         duration = getduration(video_file_origin)
@@ -615,7 +621,7 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
         threads = []
         for i, video_file in enumerate(video_files):
             gpu_id = gpu_id_global
-            t = threading.Thread(target=extract_frames, args=(folder,video_file,i,time_per_segment,case_id,gpu_id,file_extension))
+            t = threading.Thread(target=extract_frames, args=(folder,video_file,i,time_per_segment,case_id,gpu_id,file_extension,name))
             threads.append(t)
             t.start()
 
@@ -629,7 +635,7 @@ def process_videos(folder,video_file_origin,count_thread,case_id):
         handleimage(folder,video_file_origin,case_id,file_extension)
     return 
 
-def handle_multiplefile(listfile,thread,case_id):
+def handle_multiplefile(listfile,thread,case_id, name):
     for file in listfile:
         file_name = file.split(".")[0]
         if "/" in file_name: 
@@ -672,7 +678,7 @@ def handle_multiplefile(listfile,thread,case_id):
             os.makedirs(f"{dir_project}/final_result/{case_id}/{file_name}")
     
         folder = file_name
-        process_videos(folder,file,thread,case_id)
+        process_videos(folder,file,thread,case_id, name)
         subprocess.run("rm -rf videos/{file_name}", shell=True, check=True)
     
     return 
@@ -688,14 +694,14 @@ def insert_document(doc_id, vector):
     except Exception as e:
         print("insert_document",e)
 
-def handle_main(case_id, tracking_file):
+def handle_main(case_id, tracking_file, name):
     try:
         # global list_vector
         if not os.path.exists(f"{dir_project}/video_apperance"):
             os.makedirs(f"{dir_project}/video_apperance")
         if not os.path.exists(f"{dir_project}/video_apperance/{case_id}"):
             os.makedirs(f"{dir_project}/video_apperance/{case_id}")
-        handle_multiplefile([tracking_file],15,case_id)
+        handle_multiplefile([tracking_file],15,case_id, name)
         return 
     except Exception as e:
         print("error handle_main",e)
@@ -707,8 +713,9 @@ def analyst():
     try:
         case_id = request.json['case_id']
         tracking_file = request.json['tracking_file']
+        name = request.json['name']
         print("case_id", case_id)
-        handle_main(case_id, tracking_file)
+        handle_main(case_id, tracking_file, name)
         return jsonify({
             "data":"ok"
         })
