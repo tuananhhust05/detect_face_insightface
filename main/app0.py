@@ -264,7 +264,22 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
 
                             # insert elasticsearch 
                             insert_document(str(uuid.uuid4()), face['embedding'])
-                           
+                        
+                        else:
+                            print("save other faces .....")
+                            try:
+                                bbox = [int(b) for b in face['bbox']]
+                                filename = f"{frame_count}_{str(uuid.uuid4())}_face.jpg"
+                                if not os.path.exists(f"{dir_project}/faces/{case_id}/{folder}/{index_local}"):
+                                    os.makedirs(f"{dir_project}/faces/{case_id}/{folder}/{index_local}")
+                                if not os.path.exists(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}"):
+                                    os.makedirs(f"{dir_project}/outputs/{case_id}/{folder}/{index_local}")
+                                try:
+                                    cv2.imwrite(f'{dir_project}/faces/{case_id}/{folder}/{index_local}/{filename}', frame[bbox[1]:bbox[3], bbox[0]:bbox[2]])
+                                except Exception as e:
+                                    print(f"Error saving faces other ....")
+                            except Exception as e:
+                                print(f"Error saving frame: {e}")
             except Exception as e:
                 print("error recognizing ",e)
 
