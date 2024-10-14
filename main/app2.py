@@ -44,7 +44,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 
-weight_point = 0.625
+weight_point = 0.65
 time_per_frame_global = 2
 gpu_id_global = 2
 port = 6000 + gpu_id_global
@@ -190,7 +190,7 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 for face in faces:
                     if(flag_loop == True):
                         break
-                    if face["det_score"] > 0.675:
+                    if face["det_score"] > 0.65:
                         similarity  = checkface(face['embedding'].tolist())
                         print("similarity.....",similarity)
 
@@ -365,6 +365,7 @@ def groupJson(folder,video_file,count_thread,case_id, file_extension):
                         {"path":duration[0]["path"], "time":duration[0]["time"] + stt * time_per_segment},
                         {"path":"","time":duration[1]["time"] + stt * time_per_segment}
                     ])
+
 
     if count_face > 0 : 
         final_result['age'] = sum_age / count_face
@@ -704,6 +705,7 @@ def analyst():
         })
 if __name__ == '__main__':
     api.run(debug=True, port=port, host='0.0.0.0')
+
 
 
 
