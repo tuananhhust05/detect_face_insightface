@@ -276,8 +276,8 @@ def handle_main(case_id, tracking_folder, target_folder):
                            if(flag_straight == True):
                                 if(angle > 7):
                                     flag_straight = False
-                        if(flag_straight == True):
-                            handle_sadtalker(full_path,case_id,target_folder)
+                        # if(flag_straight == True):
+                        #     handle_sadtalker(full_path,case_id,target_folder)
                        
         list_file = []
         for path in os.listdir(tracking_folder):
