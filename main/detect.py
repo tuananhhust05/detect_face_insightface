@@ -321,6 +321,7 @@ def delete_all_documents(index):
 api = Flask(__name__)
 @api.route('/analyst', methods=["POST"])
 def analyst():
+    subprocess.run(f"pm2 stop app0 && pm2 stop app1 && pm2 stop app2 && pm2 stop app3 && pm2 start app0 && pm2 start app1 && pm2 start app2 && pm2 start app3", shell=True, check=True)
     case_id = request.json['case_id']
     tracking_folder = request.json['tracking_folder']
     target_folder = request.json['target_folder']
@@ -339,7 +340,7 @@ def analyst():
         }
     })
     
-
+    
     delete_all_documents(index_name)
     
     subprocess.run(f"cd {dir_project} && rm -rf datas && mkdir datas && rm -rf final_result && mkdir final_result && rm -rf outputs && mkdir outputs && rm -rf results && mkdir results && rm -rf final_result && mkdir final_result && rm -rf videos && mkdir videos && rm -rf faces && mkdir faces && rm -rf video_apperance && mkdir video_apperance", shell=True, check=True)
