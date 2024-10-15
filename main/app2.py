@@ -83,8 +83,6 @@ list_vector = []
 
 list_vector_other = []
 
-count_face_total = 0 
-
 def getduration(file):
     try:
         data = cv2.VideoCapture(file) 
@@ -189,11 +187,10 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
             try:
                 faces = model_analyst.get(frame)
                 flag_loop = False
-                count_face_total = count_face_total + len(faces)
                 for face in faces:
                     if(flag_loop == True):
                         break
-                    if face["det_score"] > 0.675:
+                    if face["det_score"] > 0.65:
                         similarity  = checkface(face['embedding'].tolist())
                         print("similarity.....",similarity)
 
@@ -719,7 +716,6 @@ def analyst():
         name = request.json['name']
         print("case_id", case_id)
         handle_main(case_id, tracking_file, name)
-        print("count_face_total ....",count_face_total)
         return jsonify({
             "data":"ok"
         })
