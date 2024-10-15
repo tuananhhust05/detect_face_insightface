@@ -44,7 +44,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 
-weight_point = 0.4
+weight_point = 0.5
 time_per_frame_global = 2
 gpu_id_global = 3
 port = 6000 + gpu_id_global
