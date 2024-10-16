@@ -1,0 +1,5 @@
+NVIDIA-SMI 560.35.03              Driver Version: 560.35.03      CUDA Version: 12.6
+cudnn version: 90100
+
+cudnn, cuda and onnxruntime-gpu must matched 
+https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html

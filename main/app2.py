@@ -188,8 +188,8 @@ def extract_frames(folder,video_file,index_local,time_per_segment,case_id,gpu_id
                 faces = model_analyst.get(frame)
                 flag_loop = False
                 for face in faces:
-                    if(flag_loop == True):
-                        break
+                    # if(flag_loop == True):
+                    #     break
                     if face["det_score"] > 0.6:
                         similarity  = checkface(face['embedding'].tolist())
                         print("similarity.....",similarity)
